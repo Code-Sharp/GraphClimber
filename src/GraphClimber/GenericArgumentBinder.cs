@@ -156,18 +156,6 @@ namespace GraphClimber
 
     }
 
-    public interface IMyGenerics
-    {
-
-        void A<TEnumerable, TOther>(IEnumerable<TEnumerable> hey, IEnumerable<TOther> you)
-            where TEnumerable : IEnumerable<TOther>, new()
-            where TOther : struct;
-
-    }
-
-
-
-
     public interface IGenericArgumentBinder
     {
 
