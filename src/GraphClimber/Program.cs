@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace GraphClimber
 {
@@ -6,6 +8,8 @@ namespace GraphClimber
     {
         static void Main(string[] args)
         {
+            MethodInfo hey;
+            new GenericArgumentBinder().TryBind(typeof (IMyGenerics).GetMethods()[0], new []{typeof(List<List<int>>), typeof(List<int>)}, out hey);
         }
     }
 
