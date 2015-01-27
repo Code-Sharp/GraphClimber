@@ -8,14 +8,11 @@ namespace GraphClimber
     /// <typeparam name="TField"></typeparam>
     public interface IProcessor<TField>
     {
-
         /// <summary>
         /// A method that will be called when a value of type <typeparamref name="TField"/>
         /// is found within the graph climbed.
         /// </summary>
-        /// <param name="value"></param>
         /// <param name="descriptor"></param>
-        void Process(TField value, IValueDescriptor<TField> descriptor);
-
+        void ProcessForReadWrite(IReadWriteValueDescriptor<TField> descriptor);
     }
 }
