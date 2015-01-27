@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 namespace GraphClimber.Tests
 {
@@ -38,6 +40,7 @@ namespace GraphClimber.Tests
             }
         }
 
+        [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
         private class TestDataAttribute : Attribute
         {
             private readonly Type _realType;
@@ -78,12 +81,20 @@ namespace GraphClimber.Tests
                 where TEnumerable : IEnumerable<TKaki>;
 
 
+            [TestData(typeof(int[][]), false)]
             [TestData(typeof(int[,][]), true, typeof(int))]
             void ArrayTest<TArray>(TArray[,][] array);
 
             [TestData(typeof (int[][]), true, typeof (int[]))]
             void OtherArrayTest<TEnumerable>(TEnumerable[] array)
                 where TEnumerable : IEnumerable<int>;
+
+
+            [TestData(typeof(int[]), false)]
+            [TestData(typeof(Stopwatch), true, typeof(Stopwatch))]
+            void NewTest<T>(T a)
+                where T : new();
+
         }
 
     }

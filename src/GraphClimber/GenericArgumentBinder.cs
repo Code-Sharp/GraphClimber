@@ -56,34 +56,35 @@ namespace GraphClimber
 
             private bool TryBind(Type parameterType, Type realType)
             {
-                if (parameterType.IsGenericParameter)
+                if (parameterType.IsGenericParameter && !AssertGenericParameterAttributes(parameterType, realType))
                 {
-                    var hasStructFlag = parameterType.GenericParameterAttributes.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint);
-
-                    if (hasStructFlag && !realType.IsValueType)
-                    {
-                        return false;
-                    }
-
-                    if (parameterType.GenericParameterAttributes.HasFlag(GenericParameterAttributes.DefaultConstructorConstraint) && !hasStructFlag &&
-                        realType.GetConstructor(Type.EmptyTypes) == null)
-                    {
-                        return false;
-                    }
-
-                    if (parameterType.GenericParameterAttributes.HasFlag(GenericParameterAttributes.ReferenceTypeConstraint) && 
-                        realType.IsValueType)
-                    {
-                        return false;
-                    }
-
-
-                    if (parameterType.GetGenericParameterConstraints().Any(constraint => !TryBind(constraint, realType)))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
 
+                if (!AssertGenericTypes(parameterType, ref realType)) return false;
+
+                if (!AssertGenericParameter(parameterType, realType))
+                {
+                    return false;
+                }
+
+                if (!AssertArrayTypes(parameterType, realType))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            /// <summary>
+            /// Asserts and returnes whether the given to types has matching
+            /// type with matching generic arguments
+            /// </summary>
+            /// <param name="parameterType"></param>
+            /// <param name="realType"></param>
+            /// <returns></returns>
+            private bool AssertGenericTypes(Type parameterType, ref Type realType)
+            {
                 if (parameterType.IsGenericType)
                 {
                     var genericParameterType = parameterType.GetGenericTypeDefinition();
@@ -122,37 +123,116 @@ namespace GraphClimber
                             return false;
                         }
                     }
+                }
+                return true;
+            }
 
+            /// <summary>
+            /// Checkes whether the generic parameter type
+            /// given is not setted to other real type that is not as the
+            /// given <paramref name="realType"/>
+            /// </summary>
+            /// <param name="parameterType"></param>
+            /// <param name="realType"></param>
+            /// <returns></returns>
+            private bool AssertGenericParameter(Type parameterType, Type realType)
+            {
+                if (!parameterType.IsGenericParameter)
+                {
+                    return true;
                 }
 
-                if (parameterType.IsGenericParameter)
+                Type oldRealType = _genericConstraintsToType[parameterType];
+                if (oldRealType != null && oldRealType != realType)
                 {
-                    Type oldRealType = _genericConstraintsToType[parameterType];
-                    if (oldRealType != null && oldRealType != realType)
+                    return false;
+                }
+
+                _genericConstraintsToType[parameterType] = realType;
+
+                return true;
+            }
+
+            /// <summary>
+            /// Asserts that the given <paramref name="parameterType"/> and
+            /// <paramref name="realType"/> are both compatible in case
+            /// that they are arrays.
+            /// </summary>
+            /// <param name="parameterType"></param>
+            /// <param name="realType"></param>
+            /// <returns></returns>
+            private bool AssertArrayTypes(Type parameterType, Type realType)
+            {
+                if (parameterType.IsArray && realType.IsArray)
+                {
+                    if (parameterType.GetArrayRank() != realType.GetArrayRank())
                     {
                         return false;
                     }
 
-                    _genericConstraintsToType[parameterType] = realType;
-                }
-
-                if (parameterType.IsArray && realType.IsArray)
-                {
                     if (!TryBind(parameterType.GetElementType(), realType.GetElementType()))
                     {
                         return false;
                     }
                 }
+                return true;
+            }
+
+            /// <summary>
+            /// Asserts generic arguments for special attributes : new(), class, struct
+            /// </summary>
+            /// <param name="parameterType"></param>
+            /// <param name="realType"></param>
+            /// <returns></returns>
+            private bool AssertGenericParameterAttributes(Type parameterType, Type realType)
+            {
+                var hasStructFlag =
+                    parameterType.GenericParameterAttributes.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint);
+
+                // If the struct flag is not honored
+                if (hasStructFlag && !realType.IsValueType)
+                {
+                    return false;
+                }
+
+                // If the default constructor is not honored : (When struct - constructor is not needed)
+                if (parameterType.GenericParameterAttributes.HasFlag(GenericParameterAttributes.DefaultConstructorConstraint) &&
+                    !hasStructFlag &&
+                    realType.GetConstructor(Type.EmptyTypes) == null)
+                {
+                    return false;
+                }
+
+                // If "class" constraint is not honored
+                if (parameterType.GenericParameterAttributes.HasFlag(GenericParameterAttributes.ReferenceTypeConstraint) &&
+                    realType.IsValueType)
+                {
+                    return false;
+                }
+
+                // Bind parameter type to real type (Hard stuff)
+                if (parameterType.GetGenericParameterConstraints().Any(constraint => !TryBind(constraint, realType)))
+                {
+                    return false;
+                }
 
                 return true;
             }
 
-            private static Type FindGenericInterface(Type realType, Type genericParameterType)
+            /// <summary>
+            /// Finds an implemented (generic) interface in <paramref name="realType"/>
+            /// that matches the generic interface given in <paramref name="genericInterfaceType"/>
+            /// </summary>
+            /// <param name="realType"></param>
+            /// <param name="genericInterfaceType"></param>
+            /// <returns></returns>
+            private static Type FindGenericInterface(Type realType, Type genericInterfaceType)
             {
                 var realInterface =
                     realType.GetInterfaces()
                         .FirstOrDefault(
-                            i => i.IsGenericType && i.GetGenericTypeDefinition() == genericParameterType);
+                            i => i.IsGenericType && i.GetGenericTypeDefinition() == genericInterfaceType);
+
                 return realInterface;
             }
         }
