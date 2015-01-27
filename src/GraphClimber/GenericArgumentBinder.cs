@@ -61,7 +61,10 @@ namespace GraphClimber
                     return false;
                 }
 
-                if (!AssertGenericTypes(parameterType, ref realType)) return false;
+                if (!AssertGenericTypes(parameterType, ref realType))
+                {
+                    return false;
+                }
 
                 if (!AssertGenericParameter(parameterType, realType))
                 {
@@ -69,6 +72,14 @@ namespace GraphClimber
                 }
 
                 if (!AssertArrayTypes(parameterType, realType))
+                {
+                    return false;
+                }
+
+                if (!parameterType.IsGenericParameter && 
+                    !parameterType.IsGenericType &&
+                    !parameterType.IsArray &&  
+                    parameterType != realType)
                 {
                     return false;
                 }
@@ -89,41 +100,59 @@ namespace GraphClimber
                 {
                     var genericParameterType = parameterType.GetGenericTypeDefinition();
 
+                    IEnumerable<Type> realTypes = new[] {realType};
+
                     if (!realType.IsGenericType)
                     {
-                        var genericInterface = FindGenericInterface(realType, genericParameterType);
+                        var genericInterface = FindGenericInterface(realType, genericParameterType).ToList();
 
-                        if (genericInterface == null)
+                        if (!genericInterface.Any())
                         {
                             return false;
                         }
 
-                        realType = genericInterface;
+                        realTypes = genericInterface;
                     }
 
-                    var genericRealType = realType.GetGenericTypeDefinition();
-
-                    if (genericParameterType != genericRealType)
+                    foreach (var possibleRealType in realTypes)
                     {
-                        genericRealType = FindGenericInterface(realType, genericParameterType);
-
-                        if (genericRealType == null)
+                        if (GenericBind(parameterType, possibleRealType, genericParameterType))
                         {
-                            return false;
+                            return true;
                         }
                     }
 
-                    var parameterGenericArguments = parameterType.GetGenericArguments();
-                    var realGenericArguments = realType.GetGenericArguments();
+                    return false;
+                }
 
-                    for (int i = 0; i < parameterGenericArguments.Length; i++)
+                return true;
+            }
+
+            private bool GenericBind(Type parameterType, Type possibleRealType, Type genericParameterType)
+            {
+                var genericRealType = possibleRealType.GetGenericTypeDefinition();
+
+                if (genericParameterType != genericRealType)
+                {
+                    genericRealType = FindGenericInterface(possibleRealType, genericParameterType).FirstOrDefault();
+
+                    if (genericRealType == null)
                     {
-                        if (!TryBind(parameterGenericArguments[i], realGenericArguments[i]))
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
+
+                var parameterGenericArguments = parameterType.GetGenericArguments();
+                var realGenericArguments = possibleRealType.GetGenericArguments();
+
+                for (int i = 0; i < parameterGenericArguments.Length; i++)
+                {
+                    if (!TryBind(parameterGenericArguments[i], realGenericArguments[i]))
+                    {
+                        return false;
+                    }
+                }
+
                 return true;
             }
 
@@ -226,14 +255,11 @@ namespace GraphClimber
             /// <param name="realType"></param>
             /// <param name="genericInterfaceType"></param>
             /// <returns></returns>
-            private static Type FindGenericInterface(Type realType, Type genericInterfaceType)
+            private static IEnumerable<Type> FindGenericInterface(Type realType, Type genericInterfaceType)
             {
-                var realInterface =
-                    realType.GetInterfaces()
-                        .FirstOrDefault(
+                return realType.GetInterfaces()
+                        .Where(
                             i => i.IsGenericType && i.GetGenericTypeDefinition() == genericInterfaceType);
-
-                return realInterface;
             }
         }
 

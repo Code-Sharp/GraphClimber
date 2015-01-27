@@ -95,6 +95,46 @@ namespace GraphClimber.Tests
             void NewTest<T>(T a)
                 where T : new();
 
+            [TestData(typeof(TestClass), true, typeof(TestClass))]
+            [TestData(typeof(OtherTestClass), true, typeof(OtherTestClass))]
+            [TestData(typeof(OtherStuff), false)]
+            void TestAllInterfaceImplementatinos<T>(T obj)
+                where T : IEquatable<int>;
+
+        }
+
+        class OtherTestClass : IEquatable<DateTime>, IEquatable<int>
+        {
+            public bool Equals(int other)
+            {
+                throw new NotSupportedException();
+            }
+
+            public bool Equals(DateTime other)
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        class TestClass : IEquatable<int>, IEquatable<DateTime>
+        {
+            public bool Equals(int other)
+            {
+                throw new NotSupportedException();
+            }
+
+            public bool Equals(DateTime other)
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        class OtherStuff : IEquatable<DateTime>
+        {
+            public bool Equals(DateTime other)
+            {
+                throw new NotImplementedException();
+            }
         }
 
     }
