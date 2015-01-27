@@ -1,18 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
 
 namespace GraphClimber
 {
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            MethodInfo hey;
-            new GenericArgumentBinder().TryBind(typeof (IMyGenerics).GetMethods()[0], new []{typeof(List<List<int>>), typeof(List<int>)}, out hey);
-        }
-    }
-
 
     public interface IGraphClimber<TProcessor>
     {
