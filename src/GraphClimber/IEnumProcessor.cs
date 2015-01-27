@@ -13,11 +13,10 @@ namespace GraphClimber
         /// <typeparam name="TEnum">The type of the enum</typeparam>
         /// <typeparam name="TUnderlying">The underlying type of the enum</typeparam>
         /// <remarks>
-        /// It is safe to cast the given <paramref name="value"/> to <typeparamref name="TUnderlying"/>
+        /// It is safe to cast the given <see cref="descriptor"/>.<see cref="IReadValueDescriptor{TRuntime}.Get"/> to <typeparamref name="TUnderlying"/>
         /// </remarks>
-        /// <param name="value"></param>
         /// <param name="descriptor"></param>
-        void Process<TEnum, TUnderlying>(TEnum value, IValueDescriptor<TEnum> descriptor);
+        void Process<TEnum, TUnderlying>(IReadWriteValueDescriptor<TEnum> descriptor);
 
         /// <summary>
         /// Processes an enumeration value that is boxed inside an object
@@ -25,11 +24,9 @@ namespace GraphClimber
         /// <typeparam name="TEnum">The type of the enum</typeparam>
         /// <typeparam name="TUnderlying">The underlying type of the enum</typeparam>
         /// <remarks>
-        /// It is safe to cast the given <paramref name="value"/> to <typeparamref name="TUnderlying"/>
+        /// It is safe to cast the given <see cref="descriptor"/>.<see cref="IReadValueDescriptor{TRuntime}.Get"/> to <typeparamref name="TUnderlying"/>
         /// </remarks>
-        /// <param name="value"></param>
         /// <param name="descriptor"></param>
-        void Process<TEnum, TUnderlying>(TEnum value, IValueDescriptor<object> descriptor);
-
+        void Process<TEnum, TUnderlying>(IReadWriteValueDescriptor<TEnum, object> descriptor);
     }
 }

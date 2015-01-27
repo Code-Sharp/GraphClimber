@@ -5,10 +5,9 @@ using System.Reflection;
 
 namespace GraphClimber
 {
-
     class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             GenericArgumentBinder binder = new GenericArgumentBinder();
             MethodInfo[] methods;
@@ -84,18 +83,18 @@ namespace GraphClimber
 
     }
 
-    public class MyInheritedProcessor : IProcessor<int[]>, IRevisitedFilter
-//	, IInheritedProcessor<IAsyncResult>
+    public class MyInheritedProcessor : IWriteProcessor<IAsyncResult>, IProcessor<int[]>, IRevisitedFilter
     {
-
-		// This thing doesn't compile on mono for some reason...
-//        public void Process<TReal>(TReal value, IValueDescriptor<IAsyncResult> descriptor) where TReal : IAsyncResult
-//        {
-//            descriptor.Set((IAsyncResult)null);
-//        }
-
-        public void Process(int[] value, IValueDescriptor<int[]> descriptor)
+        public void ProcessForWrite(IWriteValueDescriptor<IAsyncResult> descriptor)
         {
+            // Sets all fields that are assignable from IAsyncResult to null.
+            // (i.e: all fields that have static type object or IAsyncResult)
+            descriptor.Set((IAsyncResult)null);
+        }
+
+        public void ProcessForReadWrite(IReadWriteValueDescriptor<int[]> descriptor)
+        {
+            int[] value = descriptor.Get();
             value[0] = 4;
             descriptor.Set(value);
         }
@@ -103,6 +102,16 @@ namespace GraphClimber
         public bool Visited(object obj)
         {
             return false;
+        }
+    }
+
+    public class MyInheritedProcessor2 : IReadWriteProcessor<IAsyncResult>
+    {
+        public void ProcessForReadWrite(IReadWriteValueDescriptor<IAsyncResult> descriptor)
+        {
+            // Sets all field that are assignable from IAsyncResult and are
+            // actually currently from type IAsyncResult, to null.
+            descriptor.Set((IAsyncResult)null);
         }
     }
 }

@@ -55,13 +55,16 @@
     <Compile Include="IRevisitedProcessor.cs" />
     <Compile Include="IStateMember.cs" />
     <Compile Include="IStateMemberProvider.cs" />
-    <Compile Include="IValueDescriptor.cs" />
+    <Compile Include="ValueDescriptor\IReadValueDescriptor.cs" />
+    <Compile Include="ValueDescriptor\IReadWriteValueDescriptor.cs" />
+    <Compile Include="ValueDescriptor\IValueDescriptor.cs" />
     <Compile Include="Utilities\Combinatorics.cs" />
     <Compile Include="Utilities\MethodInfoExtensions.cs" />
     <Compile Include="ProcessorMethodAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\TypeExtensions.cs" />
+    <Compile Include="ValueDescriptor\IWriteValueDescriptor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
