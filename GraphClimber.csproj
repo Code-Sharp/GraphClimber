@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bulks\IPrimitiveProcessor.cs" />
+    <Compile Include="IEnumProcessor.cs" />
     <Compile Include="IInheritedProcessor.cs" />
     <Compile Include="IProcessor.cs" />
     <Compile Include="IRevisitedFilter.cs" />
