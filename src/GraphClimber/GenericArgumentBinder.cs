@@ -136,6 +136,14 @@ namespace GraphClimber
                     _genericConstraintsToType[parameterType] = realType;
                 }
 
+                if (parameterType.IsArray && realType.IsArray)
+                {
+                    if (!TryBind(parameterType.GetElementType(), realType.GetElementType()))
+                    {
+                        return false;
+                    }
+                }
+
                 return true;
             }
 

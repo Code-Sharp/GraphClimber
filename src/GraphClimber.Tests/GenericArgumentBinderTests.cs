@@ -76,6 +76,14 @@ namespace GraphClimber.Tests
             [TestData(typeof(List<List<int>>), true, typeof(List<int>), typeof(int))]
             void HardTest<TEnumerable, TKaki>(IEnumerable<TEnumerable> a)
                 where TEnumerable : IEnumerable<TKaki>;
+
+
+            [TestData(typeof(int[,][]), true, typeof(int))]
+            void ArrayTest<TArray>(TArray[,][] array);
+
+            [TestData(typeof (int[][]), true, typeof (int[]))]
+            void OtherArrayTest<TEnumerable>(TEnumerable[] array)
+                where TEnumerable : IEnumerable<int>;
         }
 
     }
