@@ -13,3 +13,4 @@ Other examples :
 
 1. Writing full API (_Current Stage_)
 2. Implementing GraphClimber with full tests
+3. Writing examples 
