@@ -41,7 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IInhreitedProcessor.cs" />
+    <Compile Include="IInheritedProcessor.cs" />
     <Compile Include="IProcessor.cs" />
     <Compile Include="IStateMember.cs" />
     <Compile Include="IValueDescriptor.cs" />

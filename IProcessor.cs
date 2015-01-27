@@ -5,7 +5,7 @@ namespace GraphClimber
 
     /// <summary>
     /// Defines an actor that can process values that are 
-    /// of type <typeparamref name="TField"/> (Without descendents, oppose to <see cref="IInhreitedProcessor{TField}"/>)
+    /// of type <typeparamref name="TField"/> (Without descendents, oppose to <see cref="IInheritedProcessor{TField}"/>)
     /// </summary>
     /// <typeparam name="TField"></typeparam>
     public interface IProcessor<TField>

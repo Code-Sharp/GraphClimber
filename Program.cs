@@ -17,7 +17,7 @@ namespace GraphClimber
 
     }
 
-    public class MyInheritedProcessor : IInhreitedProcessor<IAsyncResult>, IProcessor<int[]>, IRevisitedFilter
+    public class MyInheritedProcessor : IInheritedProcessor<IAsyncResult>, IProcessor<int[]>, IRevisitedFilter
     {
 
         public void Process<TReal>(TReal value, IValueDescriptor<IAsyncResult> descriptor) where TReal : IAsyncResult
