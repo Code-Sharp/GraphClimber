@@ -51,6 +51,7 @@
     <Compile Include="IRevisitedFilter.cs" />
     <Compile Include="IRevisitedProcessor.cs" />
     <Compile Include="IStateMember.cs" />
+    <Compile Include="IStateMemberProvider.cs" />
     <Compile Include="IValueDescriptor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
