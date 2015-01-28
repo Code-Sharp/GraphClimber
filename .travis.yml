@@ -2,3 +2,10 @@
 
 language: csharp
 solution: src/GraphClimber.sln
+
+install:
+  - nuget restore src/GraphClimber.sln
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+script:
+  - xbuild /p:Configuration=Release src/GraphClimber.sln
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./src/GraphClimber.Tests/bin/Release/GraphClimber.Tests.dll
