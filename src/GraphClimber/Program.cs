@@ -10,13 +10,15 @@ namespace GraphClimber
 
     }
 
-    public class MyInheritedProcessor : IInheritedProcessor<IAsyncResult>, IProcessor<int[]>, IRevisitedFilter
+    public class MyInheritedProcessor : IProcessor<int[]>, IRevisitedFilter
+//	, IInheritedProcessor<IAsyncResult>
     {
 
-        public void Process<TReal>(TReal value, IValueDescriptor<IAsyncResult> descriptor) where TReal : IAsyncResult
-        {
-            descriptor.Set((IAsyncResult)null);
-        }
+		// This thing doesn't compile on mono for some reason...
+//        public void Process<TReal>(TReal value, IValueDescriptor<IAsyncResult> descriptor) where TReal : IAsyncResult
+//        {
+//            descriptor.Set((IAsyncResult)null);
+//        }
 
         public void Process(int[] value, IValueDescriptor<int[]> descriptor)
         {

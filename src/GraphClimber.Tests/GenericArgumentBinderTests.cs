@@ -28,7 +28,7 @@ namespace GraphClimber.Tests
             {
                 foreach (var methodInfo in typeof (ITestData).GetMethods())
                 {
-                    foreach (var data in methodInfo.GetCustomAttributes().OfType<TestDataAttribute>())
+                    foreach (var data in methodInfo.GetCustomAttributes<TestDataAttribute>())
                     {
                         yield return new object[]
                         {
