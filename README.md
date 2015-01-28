@@ -1,6 +1,18 @@
 # GraphClimber
 Climbs on graph of objects (.net)
 
+Master | Provider
+------ | --------
+[![Build Status][MonoImgMaster]][MonoLinkMaster] | Mono CI Provided by [travis-ci][] 
+
+[MonoImgMaster]:https://travis-ci.org/shanielh/GraphClimber.png?branch=master
+[MonoLinkMaster]:https://travis-ci.org/shanielh/GraphClimber
+
+[travis-ci]:https://travis-ci.org/
+[AppVeyor]:http://www.appveyor.com/
+[JetBrains]:http://www.jetbrains.com/
+[CodeBetter]:http://codebetter.com/
+
 ## Whatttt?
 
 Yeah, For example, If you wanna check the size of a object and his descendents in your .net heap - You can do it easily with graph climber.
