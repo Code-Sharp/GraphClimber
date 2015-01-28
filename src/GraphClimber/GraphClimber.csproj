@@ -53,6 +53,7 @@
     <Compile Include="IRevisitedProcessor.cs" />
     <Compile Include="IStateMember.cs" />
     <Compile Include="IValueDescriptor.cs" />
+    <Compile Include="Mono\GenericParameterAttributePolyfills.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
