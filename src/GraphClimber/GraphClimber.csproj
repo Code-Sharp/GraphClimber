@@ -53,6 +53,7 @@
     <Compile Include="IStateMember.cs" />
     <Compile Include="IStateMemberProvider.cs" />
     <Compile Include="IValueDescriptor.cs" />
+    <Compile Include="ProcessorMethodAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
