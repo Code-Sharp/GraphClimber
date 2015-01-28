@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace GraphClimber
@@ -46,7 +47,6 @@ namespace GraphClimber
                     {
                         return false;
                     }
-
                 }
 
                 bindedMethod = _methodInfo.MakeGenericMethod(_genericConstraintsToType.Values.ToArray());
@@ -270,9 +270,24 @@ namespace GraphClimber
 
     }
 
+    /// <summary>
+    /// When calling a generic method using <see cref="MethodCallExpression" />,
+    /// It is not enough to put the arguments to the call, We also need to create a specific 
+    /// generic method for the given arguments.
+    /// 
+    /// This interface creates the generic method for the given arguments.
+    /// </summary>
     public interface IGenericArgumentBinder
     {
 
+        /// <summary>
+        /// Tries to create a specific generic instance of the given <paramref name="methodInfo"/>
+        /// using the <paramref name="realTypes"/> of the arguments that are used for the call.
+        /// </summary>
+        /// <param name="methodInfo">The generic method info</param>
+        /// <param name="realTypes">The types of the arguments that used to call the method</param>
+        /// <param name="bindedMethod">The specific generic method if exists</param>
+        /// <returns>Success / failure due to incompatible arguments</returns>
         bool TryBind(MethodInfo methodInfo, Type[] realTypes, out MethodInfo bindedMethod);
 
     }
