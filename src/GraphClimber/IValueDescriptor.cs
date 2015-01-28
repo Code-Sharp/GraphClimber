@@ -30,10 +30,11 @@ namespace GraphClimber
         /// <summary>
         /// Gets the owner of the field
         /// </summary>
+        /// <remarks>Careful, Boxing may occure</remarks>
         object Owner { get; }
 
         /// <summary>
-        /// Climbs on the (current) value that found on the owner.
+        /// Climbs on the (current) value that found in the field by the owner
         /// </summary>
         void Climb();
 
