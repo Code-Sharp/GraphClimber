@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
@@ -27,7 +28,7 @@ namespace GraphClimber.Tests
             {
                 foreach (var methodInfo in typeof (ITestData).GetMethods())
                 {
-                    foreach (var data in methodInfo.GetCustomAttributes<TestDataAttribute>())
+                    foreach (var data in methodInfo.GetCustomAttributes().OfType<TestDataAttribute>())
                     {
                         yield return new object[]
                         {
