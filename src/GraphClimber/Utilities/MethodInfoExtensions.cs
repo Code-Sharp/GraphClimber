@@ -7,27 +7,36 @@ namespace GraphClimber
 {
     internal static class MethodInfoExtensions
     {
-        public static bool TryMakeGenericMethodMethod(this MethodInfo methodInfo, Type[] genericArguments,
+        public static bool TryMakeGenericMethodMethod(this MethodInfo methodInfo, Type[] typeArguments,
             out MethodInfo bindedMethod)
-        {
-            if (!IsGenericArgumentsSubstituteCompatible(methodInfo, genericArguments))
-            {
-                bindedMethod = null;
-                return false;
-            }
-            else
-            {
-                bindedMethod = methodInfo.MakeGenericMethod(genericArguments);
-                return true;
-            }
-        }
-
-        private static bool IsGenericArgumentsSubstituteCompatible(MethodInfo methodInfo, Type[] candidate)
         {
             Type[] genericArguments = methodInfo.GetGenericArguments();
 
+            bindedMethod = null;
+
+            if (genericArguments.Length != typeArguments.Length)
+            {
+                return false;
+            }
+
+            if (!ValidateGeneralGenericConstraints(genericArguments, typeArguments))
+            {
+                return false;
+            }
+
+            if (!IsGenericArgumentsSubstitutionCompatible(genericArguments, typeArguments))
+            {
+                return false;
+            }
+
+            bindedMethod = methodInfo.MakeGenericMethod(typeArguments);
+            return true;
+        }
+
+        private static bool IsGenericArgumentsSubstitutionCompatible(Type[] genericArguments, Type[] substitution)
+        {
             Dictionary<Type, Type> currentMap =
-                genericArguments.Zip(candidate,
+                genericArguments.Zip(substitution,
                     Tuple.Create)
                     .ToDictionary(x => x.Item1, x => x.Item2);
 
@@ -51,6 +60,59 @@ namespace GraphClimber
                         }
                     }
                 }
+            }
+
+            return true;
+        }
+
+        private static bool ValidateGeneralGenericConstraints(Type[] genericArguments, Type[] typeArguments)
+        {
+            for (int i = 0; i < genericArguments.Length; i++)
+            {
+                Type genericArgument = genericArguments[i];
+                Type typeArgument = typeArguments[i];
+
+                if (!ValidateParameterTypeGeneralGenericConstraints(genericArgument, typeArgument))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool ValidateParameterTypeGeneralGenericConstraints(Type genericParameterType, Type realType)
+        {
+            bool hasStructFlag =
+                genericParameterType.GenericParameterAttributes.HasFlag
+                    (GenericParameterAttributes.NotNullableValueTypeConstraint);
+
+            bool isNonNullableStruct =
+                realType.IsValueType &&
+                !genericParameterType.IsNullable();
+
+            // If the struct flag is not honored
+            if (hasStructFlag && !isNonNullableStruct)
+            {
+                return false;
+            }
+
+            // If the default constructor is not honored : (When struct - constructor is not needed)
+            if (genericParameterType.GenericParameterAttributes.HasFlag
+                (GenericParameterAttributes.DefaultConstructorConstraint) &&
+                !(realType.IsValueType ||
+                  (!realType.IsAbstract &&
+                   realType.GetConstructor(Type.EmptyTypes) != null)))
+            {
+                return false;
+            }
+
+            // If "class" constraint is not honored
+            if (genericParameterType.GenericParameterAttributes.HasFlag
+                (GenericParameterAttributes.ReferenceTypeConstraint) &&
+                isNonNullableStruct)
+            {
+                return false;
             }
 
             return true;

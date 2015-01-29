@@ -32,6 +32,8 @@ namespace GraphClimber
     }
     public class MyClass
     {
+
+
         public void MyMethod<T, S>(T enumerable)
             where T : IEnumerable<S>
         {
@@ -39,10 +41,10 @@ namespace GraphClimber
         }
 
         public void MyMethod2<T, S, U>(T enumerable)
-            where T : IEnumerable<S>
+            where T : IEnumerable<S> 
             where S : IComparable<U>
+            where U : new() 
         {
-
         }
 
         public void MyMethod3<T>(IEnumerable<T> enumerable)
@@ -52,7 +54,7 @@ namespace GraphClimber
     
     }
 
-    class MyClass2 : IComparable<string>, IComparable<int>, ICloneable
+    class MyClass2 : IComparable<string>, IComparable<int>, IComparable<int[]>, ICloneable
     {
         public int CompareTo(int other)
         {
@@ -65,6 +67,11 @@ namespace GraphClimber
         }
 
         public object Clone()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int CompareTo(int[] other)
         {
             throw new NotImplementedException();
         }

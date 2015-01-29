@@ -70,38 +70,6 @@ namespace GraphClimber
             /// <returns></returns>
             private bool VerifyGenericConstraints(Type genericParameterType, Type realType)
             {
-                bool hasStructFlag =
-                    genericParameterType.GenericParameterAttributes.HasFlag
-                        (GenericParameterAttributes.NotNullableValueTypeConstraint);
-
-                bool isNonNullableStruct =
-                    realType.IsValueType &&
-                    !genericParameterType.IsNullable();
-
-                // If the struct flag is not honored
-                if (hasStructFlag && !isNonNullableStruct)
-                {
-                    return false;
-                }
-
-                // If the default constructor is not honored : (When struct - constructor is not needed)
-                if (genericParameterType.GenericParameterAttributes.HasFlag
-                    (GenericParameterAttributes.DefaultConstructorConstraint) &&
-                    !(hasStructFlag ||
-                      (!realType.IsAbstract &&
-                       realType.GetConstructor(Type.EmptyTypes) != null)))
-                {
-                    return false;
-                }
-
-                // If "class" constraint is not honored
-                if (genericParameterType.GenericParameterAttributes.HasFlag
-                    (GenericParameterAttributes.ReferenceTypeConstraint) &&
-                    isNonNullableStruct)
-                {
-                    return false;
-                }
-
                 // Bind constraints to real type 
                 // (Some generic parameters appear only as constraints)
                 if (genericParameterType.GetGenericParameterConstraints()
