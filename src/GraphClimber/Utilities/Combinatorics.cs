@@ -7,15 +7,9 @@ namespace GraphClimber
     {
         public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(IEnumerable<IEnumerable<T>> sets)
         {
-            if (!sets.Skip(1).Any())
+            if (!sets.Any())
             {
-                foreach (IEnumerable<T> firstSet in sets.Take(1))
-                {
-                    foreach (T element in firstSet)
-                    {
-                        yield return Singletone(element);
-                    }
-                }
+                yield return Enumerable.Empty<T>();
             }
 
             foreach (IEnumerable<T> firstSet in sets.Take(1))
