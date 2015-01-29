@@ -33,6 +33,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -53,9 +56,12 @@
     <Compile Include="IStateMember.cs" />
     <Compile Include="IStateMemberProvider.cs" />
     <Compile Include="IValueDescriptor.cs" />
+    <Compile Include="Utilities\Combinatorics.cs" />
+    <Compile Include="Utilities\MethodInfoExtensions.cs" />
     <Compile Include="ProcessorMethodAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utilities\TypeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -6,56 +6,14 @@ using System.Reflection;
 
 namespace GraphClimber
 {
-    public class CartesianProduct
-    {
-        public static IEnumerable<IEnumerable<T>> GetCartesianProduct<T>(IEnumerable<IEnumerable<T>> sets)
-        {
-            if (!sets.Skip(1).Any())
-            {
-                foreach (IEnumerable<T> firstSet in sets.Take(1))
-                {
-                    foreach (T element in firstSet)
-                    {
-                        yield return Singletone(element);
-                    }
-                }
-            }
-
-            foreach (IEnumerable<T> firstSet in sets.Take(1))
-            {
-                IEnumerable<IEnumerable<T>> previousCartesianProduct =
-                    GetCartesianProduct(sets.Skip(1));
-
-                foreach (IEnumerable<T> set in previousCartesianProduct)
-                {
-                    foreach (T element in firstSet)
-                    {
-                        yield return Singletone(element).Concat(set);
-                    }
-                }
-            }
-        }
-
-        public static IEnumerable<T> Singletone<T>(T element)
-        {
-            yield return element;
-        }
-    }
-
     public class GenericArgumentBinder : IGenericArgumentBinder
     {
-        private class GenericArgumentBinderContext
+        private class ArgumentMapper
         {
-            private readonly Type[] _runtimeParameterTypes;
-            private readonly MethodInfo _methodInfo;
-
             private readonly IDictionary<Type, HashSet<Type>> _genericConstraintsToType;
 
-            public GenericArgumentBinderContext(MethodInfo methodInfo, Type[] runtimeParameterTypes)
+            public ArgumentMapper(MethodInfo methodInfo)
             {
-                _methodInfo = methodInfo;
-                _runtimeParameterTypes = runtimeParameterTypes;
-
                 if (methodInfo.ContainsGenericParameters)
                 {
                     _genericConstraintsToType =
@@ -64,178 +22,44 @@ namespace GraphClimber
                 }
             }
 
-            public bool TryBind(out IEnumerable<MethodInfo> candidates)
+            public bool TryBind(Type parameterType, Type realType)
             {
-                Type[] staticParameterTypes =
-                    _methodInfo.GetParameters()
-                        .Select(parameter => parameter.ParameterType).ToArray();
-
-                List<MethodInfo> result = new List<MethodInfo>();
-                candidates = result;
-
-                if (staticParameterTypes.Length != _runtimeParameterTypes.Length)
-                {
-                    return false;
-                }
-
-                for (int i = 0; i < staticParameterTypes.Length; i++)
-                {
-                    Type staticParameterType = staticParameterTypes[i];
-                    Type runtimeParameterType = _runtimeParameterTypes[i];
-
-                    if (!TryBind(staticParameterType, runtimeParameterType))
-                    {
-                        return false;
-                    }
-                }
-
-                foreach (Type[] candidate in GetGenericArgumentsCandidates())
-                {
-                    MethodInfo bindedMethod = TryBindMethod(candidate);
-
-                    if (bindedMethod != null)
-                    {
-                        result.Add(bindedMethod);
-                    }
-                }
-
-                return result.Count > 0;
-            }
-
-            private MethodInfo TryBindMethod(Type[] candidate)
-            {
-                // TODO: reimplement this.
-                try
-                {
-                    MethodInfo result = _methodInfo.MakeGenericMethod(candidate);
-                    return result;
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-            }
-
-            private IEnumerable<Type[]> GetGenericArgumentsCandidates()
-            {
-                IEnumerable<IEnumerable<Type>> product =
-                    CartesianProduct.GetCartesianProduct
-                        (_genericConstraintsToType.Values);
-
-                foreach (IEnumerable<Type> candidate in product)
-                {
-                    yield return candidate.ToArray();
-                }
-            }
-
-            private bool TryBind(Type staticType, Type realType)
-            {
-                if (staticType.IsAssignableFrom(realType))
+                if (parameterType.IsAssignableFrom(realType))
                 {
                     return true;
                 }
 
                 bool result = false;
 
-                if (staticType.IsGenericParameter &&
-                    VerifyGenericConstraints(staticType, realType))
+                if (parameterType.IsGenericParameter &&
+                    VerifyGenericConstraints(parameterType, realType))
                 {
-                    _genericConstraintsToType[staticType].Add(realType);
-
+                    _genericConstraintsToType[parameterType].Add(realType);
                     result = true;
                 }
 
-                if (staticType.IsGenericType &&
-                    VerifyGenericTypesAreCompatible(staticType, realType))
+                if (parameterType.IsGenericType &&
+                    VerifyGenericTypesAreCompatible(parameterType, realType))
                 {
                     result = true;
                 }
 
-                if (staticType.IsArray &&
-                    VerifyArrayTypesAreCompatiable(staticType, realType))
+                if (parameterType.IsArray &&
+                    VerifyArrayTypesAreCompatible(parameterType, realType))
                 {
-                    result =  true;
+                    result = true;
                 }
 
                 // Try binding to base types too.
                 foreach (Type intefaceType in realType.GetInterfacesAndBase())
                 {
-                    if (TryBind(staticType, intefaceType))
+                    if (TryBind(parameterType, intefaceType))
                     {
                         result = true;
                     }
                 }
 
                 return result;
-            }
-
-            private bool VerifyGenericTypesAreCompatible(Type genericType, Type realType)
-            {
-                IEnumerable<Type> implementations =
-                    realType
-                        .GetClosedGenericTypeImplementation
-                        (genericType.GetGenericTypeDefinition());
-
-                bool result = false;
-
-                foreach (Type implementation in implementations)
-                {
-                    bool isMatched = 
-                        VerifyGenericImplementationIsCompatiable(genericType, implementation);
-
-                    if (isMatched)
-                    {
-                        result = true;
-                    }
-                }
-
-                return result;
-            }
-
-            private bool VerifyGenericImplementationIsCompatiable(Type genericType, Type implementation)
-            {
-                bool isMatched = true;
-
-                Type[] implementationArguments = implementation.GetGenericArguments();
-                Type[] staticArguments = genericType.GetGenericArguments();
-
-                for (int i = 0;
-                    i < implementationArguments.Length && isMatched;
-                    i++)
-                {
-                    if (!TryBind(staticArguments[i], implementationArguments[i]))
-                    {
-                        isMatched = false;
-                    }
-                }
-
-                return isMatched;
-            }
-
-            /// <summary>
-            /// Asserts that the given <paramref name="parameterType"/> and
-            /// <paramref name="realType"/> are both compatible in case
-            /// that they are arrays.
-            /// </summary>
-            /// <param name="parameterType"></param>
-            /// <param name="realType"></param>
-            /// <returns></returns>
-            private bool VerifyArrayTypesAreCompatiable(Type parameterType, Type realType)
-            {
-                if (parameterType.IsArray && realType.IsArray)
-                {
-                    if (parameterType.GetArrayRank() != realType.GetArrayRank())
-                    {
-                        return false;
-                    }
-
-                    if (!TryBind(parameterType.GetElementType(), realType.GetElementType()))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
             }
 
             /// <summary>
@@ -264,8 +88,8 @@ namespace GraphClimber
                 if (genericParameterType.GenericParameterAttributes.HasFlag
                     (GenericParameterAttributes.DefaultConstructorConstraint) &&
                     !(hasStructFlag ||
-                    (!realType.IsAbstract &&
-                    realType.GetConstructor(Type.EmptyTypes) != null)))
+                      (!realType.IsAbstract &&
+                       realType.GetConstructor(Type.EmptyTypes) != null)))
                 {
                     return false;
                 }
@@ -278,7 +102,8 @@ namespace GraphClimber
                     return false;
                 }
 
-                // Bind parameter type to real type (Hard stuff)
+                // Bind constraints to real type 
+                // (Some generic parameters appear only as constraints)
                 if (genericParameterType.GetGenericParameterConstraints()
                     .Any(constraint => !TryBind(constraint, realType)))
                 {
@@ -286,6 +111,139 @@ namespace GraphClimber
                 }
 
                 return true;
+            }
+
+            private bool VerifyGenericTypesAreCompatible(Type genericType, Type realType)
+            {
+                IEnumerable<Type> implementations =
+                    realType
+                        .GetClosedGenericTypeImplementation
+                        (genericType.GetGenericTypeDefinition());
+
+                bool result = false;
+
+                foreach (Type implementation in implementations)
+                {
+                    bool isMatched =
+                        VerifyGenericImplementationIsCompatible(genericType, implementation);
+
+                    if (isMatched)
+                    {
+                        result = true;
+                    }
+                }
+
+                return result;
+            }
+
+            private bool VerifyGenericImplementationIsCompatible(Type genericType, Type implementation)
+            {
+                bool isMatched = true;
+
+                Type[] implementationArguments = implementation.GetGenericArguments();
+                Type[] staticArguments = genericType.GetGenericArguments();
+
+                for (int i = 0;
+                    i < implementationArguments.Length && isMatched;
+                    i++)
+                {
+                    if (!TryBind(staticArguments[i], implementationArguments[i]))
+                    {
+                        isMatched = false;
+                    }
+                }
+
+                return isMatched;
+            }
+
+            /// <summary>
+            /// Asserts that the given <paramref name="parameterType"/> and
+            /// <paramref name="realType"/> are both compatible in case
+            /// that they are arrays.
+            /// </summary>
+            /// <param name="parameterType"></param>
+            /// <param name="realType"></param>
+            /// <returns></returns>
+            private bool VerifyArrayTypesAreCompatible(Type parameterType, Type realType)
+            {
+                if (parameterType.IsArray && realType.IsArray)
+                {
+                    if (parameterType.GetArrayRank() != realType.GetArrayRank())
+                    {
+                        return false;
+                    }
+
+                    if (!TryBind(parameterType.GetElementType(), realType.GetElementType()))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public IEnumerable<Type[]> GetGenericArgumentsCandidates()
+            {
+                IEnumerable<IEnumerable<Type>> product =
+                    Combinatorics.CartesianProduct(_genericConstraintsToType.Values);
+
+                foreach (IEnumerable<Type> candidate in product)
+                {
+                    yield return candidate.ToArray();
+                }
+            }
+        }
+
+        private class GenericArgumentBinderContext
+        {
+            private readonly Type[] _runtimeParameterTypes;
+            private readonly MethodInfo _methodInfo;
+
+            public GenericArgumentBinderContext(MethodInfo methodInfo, Type[] runtimeParameterTypes)
+            {
+                _methodInfo = methodInfo;
+                _runtimeParameterTypes = runtimeParameterTypes;
+            }
+
+            public bool TryBind(out IEnumerable<MethodInfo> candidates)
+            {
+                Type[] parameterTypes =
+                    _methodInfo.GetParameters()
+                        .Select(parameter => parameter.ParameterType)
+                        .ToArray();
+
+                List<MethodInfo> result = new List<MethodInfo>();
+                candidates = result;
+
+                if (parameterTypes.Length != _runtimeParameterTypes.Length)
+                {
+                    return false;
+                }
+
+                ArgumentMapper mapper = new ArgumentMapper(_methodInfo);
+
+                for (int i = 0; i < parameterTypes.Length; i++)
+                {
+                    Type parameterType = parameterTypes[i];
+                    Type runtimeParameterType = _runtimeParameterTypes[i];
+
+                    if (!mapper.TryBind(parameterType, runtimeParameterType))
+                    {
+                        return false;
+                    }
+                }
+
+                foreach (Type[] candidate in mapper.GetGenericArgumentsCandidates())
+                {
+                    MethodInfo bindedMethod;
+
+                    if (_methodInfo.TryMakeGenericMethodMethod(candidate, out bindedMethod))
+                    {
+                        result.Add(bindedMethod);
+                    }
+                }
+
+                return result.Count > 0;
             }
         }
 
@@ -315,8 +273,9 @@ namespace GraphClimber
             else
             {
                 IEnumerable<MethodInfo> filtered =
-                    candidates.Where(x => x.GetGenericArguments().All(y => y != typeof (object)));
- 
+                    candidates.Where(x => x.GetGenericArguments()
+                        .All(y => y != typeof (object)));
+
                 // Prefer avoiding object as a generic type.
                 if (filtered.Any())
                 {
@@ -332,71 +291,10 @@ namespace GraphClimber
                         realTypes,
                         new ParameterModifier[0]);
 
-                bindedMethod = (MethodInfo)result;
+                bindedMethod = (MethodInfo) result;
             }
 
             return anyResults;
-        }
-    }
-
-    internal static class TypeExtensions
-    {
-        public static IEnumerable<Type> GetInterfacesAndBase(this Type type)
-        {
-            Type baseType = type.BaseType;
-
-            if (baseType != null)
-            {
-                yield return baseType;
-            }
-
-            foreach (Type interfaceType in type.GetInterfaces())
-            {
-                yield return interfaceType;
-            }
-        }
-
-        public static bool IsNullable(this Type type)
-        {
-            return (type.IsGenericType &&
-                    (type.GetGenericTypeDefinition() == typeof(Nullable<>)));
-        }
-
-        /// <summary>
-        /// Returns the closed generic type of the given generic open type,
-        /// that the given type is assignable to.
-        /// </summary>
-        /// <param name="type">The given type.</param>
-        /// <param name="openGenericType">The open generic type.</param>
-        /// <returns>The closed generic type of the given generic open type,
-        /// that the given type is assignable to.</returns>
-        public static IEnumerable<Type> GetClosedGenericTypeImplementation(this Type type, Type openGenericType)
-        {
-            if (type == null)
-            {
-                return Enumerable.Empty<Type>();
-            }
-
-            if (type.IsGenericType &&
-                type.GetGenericTypeDefinition() == openGenericType)
-            {
-                return Singletone(type);
-            }
-
-            if (!openGenericType.IsInterface)
-            {
-                return type.BaseType.GetClosedGenericTypeImplementation(openGenericType);
-            }
-            else
-            {
-                return type.GetInterfaces()
-                    .SelectMany(x => GetClosedGenericTypeImplementation(x, openGenericType));
-            }
-        }
-
-        private static IEnumerable<T> Singletone<T>(T element)
-        {
-            yield return element;
         }
     }
 
