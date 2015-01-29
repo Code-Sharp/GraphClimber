@@ -8,178 +8,152 @@ namespace GraphClimber
 {
     public class GenericArgumentBinder : IGenericArgumentBinder
     {
-
-        class GenericArgumentBinderContext
+        private class ArgumentMapper
         {
-            private readonly Type[] _realTypes;
-            private readonly MethodInfo _methodInfo;
+            private readonly IDictionary<Type, HashSet<Type>> _genericConstraintsToType;
 
-            private readonly IDictionary<Type, Type> _genericConstraintsToType;
-
-            public GenericArgumentBinderContext(MethodInfo methodInfo, Type[] realTypes)
+            public ArgumentMapper(MethodInfo methodInfo)
             {
-                _methodInfo = methodInfo;
-                _realTypes = realTypes;
-
                 if (methodInfo.ContainsGenericParameters)
                 {
-                    _genericConstraintsToType = methodInfo.GetGenericArguments().ToDictionary(t => t, t => (Type)null);
+                    _genericConstraintsToType =
+                        methodInfo.GetGenericArguments()
+                            .ToDictionary(type => type, t => new HashSet<Type>());
                 }
             }
 
-            public bool TryBind(out MethodInfo bindedMethod)
+            public bool TryBind(Type parameterType, Type realType)
             {
-                var parameterTypes = _methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
-
-                bindedMethod = null;
-
-                if (parameterTypes.Length != _realTypes.Length)
-                {
-                    return false;
-                }
-
-                for (int i = 0; i < parameterTypes.Length; i++)
-                {
-                    var parameterType = parameterTypes[i];
-                    var realType = _realTypes[i];
-
-                    if (!TryBind(parameterType, realType))
-                    {
-                        return false;
-                    }
-                }
-
-                bindedMethod = _methodInfo.MakeGenericMethod(_genericConstraintsToType.Values.ToArray());
-                return true;
-            }
-
-
-            private bool TryBind(Type parameterType, Type realType)
-            {
-                if (parameterType.IsGenericParameter && !AssertGenericParameterAttributes(parameterType, realType))
-                {
-                    return false;
-                }
-
-                if (!AssertGenericTypes(parameterType, ref realType))
-                {
-                    return false;
-                }
-
-                if (!AssertGenericParameter(parameterType, realType))
-                {
-                    return false;
-                }
-
-                if (!AssertArrayTypes(parameterType, realType))
-                {
-                    return false;
-                }
-
-                if (!parameterType.IsGenericParameter && 
-                    !parameterType.IsGenericType &&
-                    !parameterType.IsArray &&  
-                    parameterType != realType)
-                {
-                    return false;
-                }
-
-                return true;
-            }
-
-            /// <summary>
-            /// Asserts and returnes whether the given to types has matching
-            /// type with matching generic arguments
-            /// </summary>
-            /// <param name="parameterType"></param>
-            /// <param name="realType"></param>
-            /// <returns></returns>
-            private bool AssertGenericTypes(Type parameterType, ref Type realType)
-            {
-                if (parameterType.IsGenericType)
-                {
-                    var genericParameterType = parameterType.GetGenericTypeDefinition();
-
-                    IEnumerable<Type> realTypes = new[] {realType};
-
-                    if (!realType.IsGenericType)
-                    {
-                        var genericInterface = FindGenericInterface(realType, genericParameterType).ToList();
-
-                        if (!genericInterface.Any())
-                        {
-                            return false;
-                        }
-
-                        realTypes = genericInterface;
-                    }
-
-                    foreach (var possibleRealType in realTypes)
-                    {
-                        if (GenericBind(parameterType, possibleRealType, genericParameterType))
-                        {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
-
-                return true;
-            }
-
-            private bool GenericBind(Type parameterType, Type possibleRealType, Type genericParameterType)
-            {
-                var genericRealType = possibleRealType.GetGenericTypeDefinition();
-
-                if (genericParameterType != genericRealType)
-                {
-                    genericRealType = FindGenericInterface(possibleRealType, genericParameterType).FirstOrDefault();
-
-                    if (genericRealType == null)
-                    {
-                        return false;
-                    }
-                }
-
-                var parameterGenericArguments = parameterType.GetGenericArguments();
-                var realGenericArguments = possibleRealType.GetGenericArguments();
-
-                for (int i = 0; i < parameterGenericArguments.Length; i++)
-                {
-                    if (!TryBind(parameterGenericArguments[i], realGenericArguments[i]))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            /// <summary>
-            /// Checkes whether the generic parameter type
-            /// given is not setted to other real type that is not as the
-            /// given <paramref name="realType"/>
-            /// </summary>
-            /// <param name="parameterType"></param>
-            /// <param name="realType"></param>
-            /// <returns></returns>
-            private bool AssertGenericParameter(Type parameterType, Type realType)
-            {
-                if (!parameterType.IsGenericParameter)
+                if (parameterType.IsAssignableFrom(realType))
                 {
                     return true;
                 }
 
-                Type oldRealType = _genericConstraintsToType[parameterType];
-                if (oldRealType != null && oldRealType != realType)
+                bool result = false;
+
+                if (parameterType.IsGenericParameter &&
+                    VerifyGenericConstraints(parameterType, realType))
+                {
+                    _genericConstraintsToType[parameterType].Add(realType);
+                    result = true;
+                }
+
+                if (parameterType.IsGenericType &&
+                    VerifyGenericTypesAreCompatible(parameterType, realType))
+                {
+                    result = true;
+                }
+
+                if (parameterType.IsArray &&
+                    VerifyArrayTypesAreCompatible(parameterType, realType))
+                {
+                    result = true;
+                }
+
+                // Try binding to base types too.
+                foreach (Type intefaceType in realType.GetInterfacesAndBase())
+                {
+                    if (TryBind(parameterType, intefaceType))
+                    {
+                        result = true;
+                    }
+                }
+
+                return result;
+            }
+
+            /// <summary>
+            /// Asserts generic arguments for special attributes : new(), class, struct
+            /// </summary>
+            /// <param name="genericParameterType"></param>
+            /// <param name="realType"></param>
+            /// <returns></returns>
+            private bool VerifyGenericConstraints(Type genericParameterType, Type realType)
+            {
+                bool hasStructFlag =
+                    genericParameterType.GenericParameterAttributes.HasFlag
+                        (GenericParameterAttributes.NotNullableValueTypeConstraint);
+
+                bool isNonNullableStruct =
+                    realType.IsValueType &&
+                    !genericParameterType.IsNullable();
+
+                // If the struct flag is not honored
+                if (hasStructFlag && !isNonNullableStruct)
                 {
                     return false;
                 }
 
-                _genericConstraintsToType[parameterType] = realType;
+                // If the default constructor is not honored : (When struct - constructor is not needed)
+                if (genericParameterType.GenericParameterAttributes.HasFlag
+                    (GenericParameterAttributes.DefaultConstructorConstraint) &&
+                    !(hasStructFlag ||
+                      (!realType.IsAbstract &&
+                       realType.GetConstructor(Type.EmptyTypes) != null)))
+                {
+                    return false;
+                }
+
+                // If "class" constraint is not honored
+                if (genericParameterType.GenericParameterAttributes.HasFlag
+                    (GenericParameterAttributes.ReferenceTypeConstraint) &&
+                    isNonNullableStruct)
+                {
+                    return false;
+                }
+
+                // Bind constraints to real type 
+                // (Some generic parameters appear only as constraints)
+                if (genericParameterType.GetGenericParameterConstraints()
+                    .Any(constraint => !TryBind(constraint, realType)))
+                {
+                    return false;
+                }
 
                 return true;
+            }
+
+            private bool VerifyGenericTypesAreCompatible(Type genericType, Type realType)
+            {
+                IEnumerable<Type> implementations =
+                    realType
+                        .GetClosedGenericTypeImplementation
+                        (genericType.GetGenericTypeDefinition());
+
+                bool result = false;
+
+                foreach (Type implementation in implementations)
+                {
+                    bool isMatched =
+                        VerifyGenericImplementationIsCompatible(genericType, implementation);
+
+                    if (isMatched)
+                    {
+                        result = true;
+                    }
+                }
+
+                return result;
+            }
+
+            private bool VerifyGenericImplementationIsCompatible(Type genericType, Type implementation)
+            {
+                bool isMatched = true;
+
+                Type[] implementationArguments = implementation.GetGenericArguments();
+                Type[] staticArguments = genericType.GetGenericArguments();
+
+                for (int i = 0;
+                    i < implementationArguments.Length && isMatched;
+                    i++)
+                {
+                    if (!TryBind(staticArguments[i], implementationArguments[i]))
+                    {
+                        isMatched = false;
+                    }
+                }
+
+                return isMatched;
             }
 
             /// <summary>
@@ -190,7 +164,7 @@ namespace GraphClimber
             /// <param name="parameterType"></param>
             /// <param name="realType"></param>
             /// <returns></returns>
-            private bool AssertArrayTypes(Type parameterType, Type realType)
+            private bool VerifyArrayTypesAreCompatible(Type parameterType, Type realType)
             {
                 if (parameterType.IsArray && realType.IsArray)
                 {
@@ -204,70 +178,124 @@ namespace GraphClimber
                         return false;
                     }
                 }
-                return true;
-            }
-
-            /// <summary>
-            /// Asserts generic arguments for special attributes : new(), class, struct
-            /// </summary>
-            /// <param name="parameterType"></param>
-            /// <param name="realType"></param>
-            /// <returns></returns>
-            private bool AssertGenericParameterAttributes(Type parameterType, Type realType)
-            {
-                var hasStructFlag =
-                    parameterType.GenericParameterAttributes.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint);
-
-                // If the struct flag is not honored
-                if (hasStructFlag && !realType.IsValueType)
-                {
-                    return false;
-                }
-
-                // If the default constructor is not honored : (When struct - constructor is not needed)
-                if (parameterType.GenericParameterAttributes.HasFlag(GenericParameterAttributes.DefaultConstructorConstraint) &&
-                    !hasStructFlag &&
-                    realType.GetConstructor(Type.EmptyTypes) == null)
-                {
-                    return false;
-                }
-
-                // If "class" constraint is not honored
-                if (parameterType.GenericParameterAttributes.HasFlag(GenericParameterAttributes.ReferenceTypeConstraint) &&
-                    realType.IsValueType)
-                {
-                    return false;
-                }
-
-                // Bind parameter type to real type (Hard stuff)
-                if (parameterType.GetGenericParameterConstraints().Any(constraint => !TryBind(constraint, realType)))
-                {
-                    return false;
-                }
 
                 return true;
             }
 
-            /// <summary>
-            /// Finds an implemented (generic) interface in <paramref name="realType"/>
-            /// that matches the generic interface given in <paramref name="genericInterfaceType"/>
-            /// </summary>
-            /// <param name="realType"></param>
-            /// <param name="genericInterfaceType"></param>
-            /// <returns></returns>
-            private static IEnumerable<Type> FindGenericInterface(Type realType, Type genericInterfaceType)
+            public IEnumerable<Type[]> GetGenericArgumentsCandidates()
             {
-                return realType.GetInterfaces()
-                        .Where(
-                            i => i.IsGenericType && i.GetGenericTypeDefinition() == genericInterfaceType);
+                IEnumerable<IEnumerable<Type>> product =
+                    Combinatorics.CartesianProduct(_genericConstraintsToType.Values);
+
+                foreach (IEnumerable<Type> candidate in product)
+                {
+                    yield return candidate.ToArray();
+                }
             }
+        }
+
+        private class GenericArgumentBinderContext
+        {
+            private readonly Type[] _runtimeParameterTypes;
+            private readonly MethodInfo _methodInfo;
+
+            public GenericArgumentBinderContext(MethodInfo methodInfo, Type[] runtimeParameterTypes)
+            {
+                _methodInfo = methodInfo;
+                _runtimeParameterTypes = runtimeParameterTypes;
+            }
+
+            public bool TryBind(out IEnumerable<MethodInfo> candidates)
+            {
+                Type[] parameterTypes =
+                    _methodInfo.GetParameters()
+                        .Select(parameter => parameter.ParameterType)
+                        .ToArray();
+
+                List<MethodInfo> result = new List<MethodInfo>();
+                candidates = result;
+
+                if (parameterTypes.Length != _runtimeParameterTypes.Length)
+                {
+                    return false;
+                }
+
+                ArgumentMapper mapper = new ArgumentMapper(_methodInfo);
+
+                for (int i = 0; i < parameterTypes.Length; i++)
+                {
+                    Type parameterType = parameterTypes[i];
+                    Type runtimeParameterType = _runtimeParameterTypes[i];
+
+                    if (!mapper.TryBind(parameterType, runtimeParameterType))
+                    {
+                        return false;
+                    }
+                }
+
+                foreach (Type[] candidate in mapper.GetGenericArgumentsCandidates())
+                {
+                    MethodInfo bindedMethod;
+
+                    if (_methodInfo.TryMakeGenericMethodMethod(candidate, out bindedMethod))
+                    {
+                        result.Add(bindedMethod);
+                    }
+                }
+
+                return result.Count > 0;
+            }
+        }
+
+        public bool TryBind(MethodInfo methodInfo, Type[] realTypes, out MethodInfo[] bindedMethods)
+        {
+            IEnumerable<MethodInfo> candidates;
+
+            bool anyResults =
+                new GenericArgumentBinderContext(methodInfo, realTypes).TryBind(out candidates);
+
+            bindedMethods = candidates.ToArray();
+
+            return anyResults;
         }
 
         public bool TryBind(MethodInfo methodInfo, Type[] realTypes, out MethodInfo bindedMethod)
         {
-            return new GenericArgumentBinderContext(methodInfo, realTypes).TryBind(out bindedMethod);
-        }
+            MethodInfo[] candidates;
 
+            bool anyResults =
+                TryBind(methodInfo, realTypes, out candidates);
+
+            if (!anyResults)
+            {
+                bindedMethod = null;
+            }
+            else
+            {
+                IEnumerable<MethodInfo> filtered =
+                    candidates.Where(x => x.GetGenericArguments()
+                        .All(y => y != typeof (object)));
+
+                // Prefer avoiding object as a generic type.
+                if (filtered.Any())
+                {
+                    candidates = filtered.ToArray();
+                }
+
+                MethodBase result =
+                    Type.DefaultBinder.SelectMethod(BindingFlags.Instance |
+                                                    BindingFlags.Static |
+                                                    BindingFlags.Public |
+                                                    BindingFlags.NonPublic,
+                        candidates,
+                        realTypes,
+                        new ParameterModifier[0]);
+
+                bindedMethod = (MethodInfo) result;
+            }
+
+            return anyResults;
+        }
     }
 
     /// <summary>
@@ -279,7 +307,6 @@ namespace GraphClimber
     /// </summary>
     public interface IGenericArgumentBinder
     {
-
         /// <summary>
         /// Tries to create a specific generic instance of the given <paramref name="methodInfo"/>
         /// using the <paramref name="realTypes"/> of the arguments that are used for the call.
@@ -289,6 +316,5 @@ namespace GraphClimber
         /// <param name="bindedMethod">The specific generic method if exists</param>
         /// <returns>Success / failure due to incompatible arguments</returns>
         bool TryBind(MethodInfo methodInfo, Type[] realTypes, out MethodInfo bindedMethod);
-
     }
 }
