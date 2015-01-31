@@ -93,9 +93,7 @@ namespace GraphClimber
                 Type[] implementationArguments = implementation.GetGenericArguments();
                 Type[] staticArguments = genericType.GetGenericArguments();
 
-                for (int i = 0;
-                    i < implementationArguments.Length;
-                    i++)
+                for (int i = 0; i < implementationArguments.Length; i++)
                 {
                     if (!TryBind(staticArguments[i], implementationArguments[i]))
                     {
