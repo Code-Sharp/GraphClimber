@@ -72,13 +72,8 @@ namespace GraphClimber
             {
                 // Bind constraints to real type 
                 // (Some generic parameters appear only as constraints)
-                if (genericParameterType.GetGenericParameterConstraints()
-                    .Any(constraint => !TryBind(constraint, realType)))
-                {
-                    return false;
-                }
-
-                return true;
+                return genericParameterType.GetGenericParameterConstraints()
+                    .All(constraint => TryBind(constraint, realType));
             }
 
             private bool VerifyGenericTypesAreCompatible(Type genericType, Type realType)
