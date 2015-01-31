@@ -12,8 +12,8 @@ namespace GraphClimber
             GenericArgumentBinder binder = new GenericArgumentBinder();
             MethodInfo[] methods;
             MethodInfo method;
-            binder.TryBind(typeof (MyClass).GetMethod("MyMethod2"),
-                new Type[] {typeof (MyClass2[])},
+            binder.TryBind(typeof (MyClass).GetMethod("MyMethod4"),
+                new Type[] {typeof (MyClass3)},
                 out methods);
 
             int[] array = {};
@@ -50,7 +50,20 @@ namespace GraphClimber
         {
 
         }
-    
+
+        public void MyMethod4<T>(T enumerable)
+            where T : IComparable<T>
+        {
+
+        }
+    }
+
+    class MyClass3 : IComparable<MyClass3>
+    {
+        public int CompareTo(MyClass3 other)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class MyClass2 : IComparable<string>, IComparable<int>, IComparable<int[]>, ICloneable

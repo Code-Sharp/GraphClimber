@@ -37,6 +37,20 @@ namespace GraphClimber
             /// <returns></returns>
             public bool TryBind(Type parameterType, Type realType)
             {
+                return InnerTryBind(parameterType, realType,
+                    new HashSet<Tuple<Type, Type>>());
+            }
+
+            private bool InnerTryBind(Type parameterType, Type realType, 
+                ISet<Tuple<Type, Type>> visitedTypes)
+            {
+                // If we already tried this pair, assume its ok.
+                // it will fail later in TryMakeGenericMethod
+                if (!visitedTypes.Add(Tuple.Create(parameterType, realType)))
+                {
+                    return true;
+                }
+
                 if (parameterType.IsAssignableFrom(realType))
                 {
                     return true;
@@ -45,20 +59,23 @@ namespace GraphClimber
                 bool result = false;
 
                 if (parameterType.IsGenericParameter &&
-                    VerifyGenericConstraints(parameterType, realType))
+                    VerifyGenericConstraints(parameterType, realType,
+                    visitedTypes))
                 {
                     _genericConstraintsToType[parameterType].Add(realType);
                     result = true;
                 }
 
                 if (parameterType.IsGenericType &&
-                    VerifyGenericTypesAreCompatible(parameterType, realType))
+                    VerifyGenericTypesAreCompatible(parameterType, realType,
+                    visitedTypes))
                 {
                     result = true;
                 }
 
                 if (parameterType.IsArray &&
-                    VerifyArrayTypesAreCompatible(parameterType, realType))
+                    VerifyArrayTypesAreCompatible(parameterType, realType,
+                    visitedTypes))
                 {
                     result = true;
                 }
@@ -66,7 +83,7 @@ namespace GraphClimber
                 // Try binding to base types too.
                 foreach (Type intefaceType in realType.GetInterfacesAndBase())
                 {
-                    if (TryBind(parameterType, intefaceType))
+                    if (InnerTryBind(parameterType, intefaceType, visitedTypes))
                     {
                         result = true;
                     }
@@ -81,16 +98,17 @@ namespace GraphClimber
             /// </summary>
             /// <param name="genericParameterType"></param>
             /// <param name="realType"></param>
+            /// <param name="visitedTypes"></param>
             /// <returns></returns>
-            private bool VerifyGenericConstraints(Type genericParameterType, Type realType)
+            private bool VerifyGenericConstraints(Type genericParameterType, Type realType, ISet<Tuple<Type, Type>> visitedTypes)
             {
                 // Bind constraints to real type 
                 // (Some generic parameters appear only as constraints)
                 return genericParameterType.GetGenericParameterConstraints()
-                    .All(constraint => TryBind(constraint, realType));
+                    .All(constraint => InnerTryBind(constraint, realType, visitedTypes));
             }
 
-            private bool VerifyGenericTypesAreCompatible(Type genericType, Type realType)
+            private bool VerifyGenericTypesAreCompatible(Type genericType, Type realType, ISet<Tuple<Type, Type>> visitedTypes)
             {
                 IEnumerable<Type> implementations =
                     realType
@@ -98,19 +116,19 @@ namespace GraphClimber
                         (genericType.GetGenericTypeDefinition());
 
                 return
-                    implementations.Where(implementation => VerifyGenericImplementationIsCompatible(genericType, implementation))
+                    implementations.Where(implementation => VerifyGenericImplementationIsCompatible(genericType, implementation, visitedTypes))
                         .ToList()
                         .Any();
             }
 
-            private bool VerifyGenericImplementationIsCompatible(Type genericType, Type implementation)
+            private bool VerifyGenericImplementationIsCompatible(Type genericType, Type implementation, ISet<Tuple<Type, Type>> visitedTypes)
             {
                 Type[] implementationArguments = implementation.GetGenericArguments();
                 Type[] staticArguments = genericType.GetGenericArguments();
 
                 for (int i = 0; i < implementationArguments.Length; i++)
                 {
-                    if (!TryBind(staticArguments[i], implementationArguments[i]))
+                    if (!InnerTryBind(staticArguments[i], implementationArguments[i], visitedTypes))
                     {
                         return false;
                     }
@@ -126,8 +144,9 @@ namespace GraphClimber
             /// </summary>
             /// <param name="parameterType"></param>
             /// <param name="realType"></param>
+            /// <param name="visitedTypes"></param>
             /// <returns></returns>
-            private bool VerifyArrayTypesAreCompatible(Type parameterType, Type realType)
+            private bool VerifyArrayTypesAreCompatible(Type parameterType, Type realType, ISet<Tuple<Type, Type>> visitedTypes)
             {
                 if (parameterType.IsArray && realType.IsArray)
                 {
@@ -136,7 +155,7 @@ namespace GraphClimber
                         return false;
                     }
 
-                    if (!TryBind(parameterType.GetElementType(), realType.GetElementType()))
+                    if (!InnerTryBind(parameterType.GetElementType(), realType.GetElementType(), visitedTypes))
                     {
                         return false;
                     }
