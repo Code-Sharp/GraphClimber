@@ -83,20 +83,9 @@ namespace GraphClimber
                         .GetClosedGenericTypeImplementation
                         (genericType.GetGenericTypeDefinition());
 
-                bool result = false;
-
-                foreach (Type implementation in implementations)
-                {
-                    bool isMatched =
-                        VerifyGenericImplementationIsCompatible(genericType, implementation);
-
-                    if (isMatched)
-                    {
-                        result = true;
-                    }
-                }
-
-                return result;
+                return
+                    implementations.Any(
+                        implementation => VerifyGenericImplementationIsCompatible(genericType, implementation));
             }
 
             private bool VerifyGenericImplementationIsCompatible(Type genericType, Type implementation)
