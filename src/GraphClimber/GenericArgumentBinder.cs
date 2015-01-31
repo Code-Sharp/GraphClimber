@@ -72,13 +72,8 @@ namespace GraphClimber
             {
                 // Bind constraints to real type 
                 // (Some generic parameters appear only as constraints)
-                if (genericParameterType.GetGenericParameterConstraints()
-                    .Any(constraint => !TryBind(constraint, realType)))
-                {
-                    return false;
-                }
-
-                return true;
+                return genericParameterType.GetGenericParameterConstraints()
+                    .All(constraint => TryBind(constraint, realType));
             }
 
             private bool VerifyGenericTypesAreCompatible(Type genericType, Type realType)
@@ -88,20 +83,10 @@ namespace GraphClimber
                         .GetClosedGenericTypeImplementation
                         (genericType.GetGenericTypeDefinition());
 
-                bool result = false;
-
-                foreach (Type implementation in implementations)
-                {
-                    bool isMatched =
-                        VerifyGenericImplementationIsCompatible(genericType, implementation);
-
-                    if (isMatched)
-                    {
-                        result = true;
-                    }
-                }
-
-                return result;
+                return
+                    implementations.Where(implementation => VerifyGenericImplementationIsCompatible(genericType, implementation))
+                        .ToList()
+                        .Any();
             }
 
             private bool VerifyGenericImplementationIsCompatible(Type genericType, Type implementation)
@@ -109,9 +94,7 @@ namespace GraphClimber
                 Type[] implementationArguments = implementation.GetGenericArguments();
                 Type[] staticArguments = genericType.GetGenericArguments();
 
-                for (int i = 0;
-                    i < implementationArguments.Length;
-                    i++)
+                for (int i = 0; i < implementationArguments.Length; i++)
                 {
                     if (!TryBind(staticArguments[i], implementationArguments[i]))
                     {

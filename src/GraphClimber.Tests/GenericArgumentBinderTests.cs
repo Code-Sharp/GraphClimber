@@ -91,7 +91,7 @@ namespace GraphClimber.Tests
                 where TEnumerable : IEnumerable<int>;
 
 
-            [TestData(typeof(int[]), false)]
+            [TestData(typeof(int[]), true, typeof(object))]
             [TestData(typeof(Stopwatch), true, typeof(Stopwatch))]
             void NewTest<T>(T a)
                 where T : new();

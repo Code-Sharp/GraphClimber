@@ -27,7 +27,7 @@ namespace GraphClimber
             }
         }
 
-        private static IEnumerable<T> Singletone<T>(T element)
+        public static IEnumerable<T> Singletone<T>(T element)
         {
             yield return element;
         }
