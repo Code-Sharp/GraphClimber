@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 
 namespace GraphClimber.Tests
 {
@@ -26,15 +24,15 @@ namespace GraphClimber.Tests
         {
             get
             {
-                foreach (var methodInfo in typeof (ITestData).GetMethods())
+                foreach (var methodInfo in typeof(ITestData).GetMethods())
                 {
                     foreach (var data in methodInfo.GetCustomAttributes<TestDataAttribute>())
                     {
                         yield return new object[]
                         {
                             methodInfo,
-                            new[] {data.RealType},
-                            data.ShouldReturnMethod ? methodInfo.MakeGenericMethod(data.GenericParameterTypes) : null
+                            data.RealType,
+                            data.ShouldReturnMethod ?  methodInfo.MakeGenericMethod(data.GenericParameterTypes) : null
                         };
                     }
                 }
@@ -44,18 +42,25 @@ namespace GraphClimber.Tests
         [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
         private class TestDataAttribute : Attribute
         {
-            private readonly Type _realType;
+            private readonly Type[] _realType;
             private readonly bool _shouldReturnMethod;
             private readonly Type[] _genericParameterTypes;
 
             public TestDataAttribute(Type realType, bool shouldReturnMethod, params Type[] genericParameterTypes)
+            {
+                _realType = new[] { realType };
+                _shouldReturnMethod = shouldReturnMethod;
+                _genericParameterTypes = genericParameterTypes;
+            }
+
+            public TestDataAttribute(Type[] realType, bool shouldReturnMethod, params Type[] genericParameterTypes)
             {
                 _realType = realType;
                 _shouldReturnMethod = shouldReturnMethod;
                 _genericParameterTypes = genericParameterTypes;
             }
 
-            public Type RealType
+            public Type[] RealType
             {
                 get { return _realType; }
             }
@@ -78,6 +83,7 @@ namespace GraphClimber.Tests
             void Simplest<T>(T a);
 
             [TestData(typeof(List<List<int>>), true, typeof(List<int>), typeof(int))]
+            [TestData(typeof(string[][]), true, typeof(string[]), typeof(string))]
             void HardTest<TEnumerable, TKaki>(IEnumerable<TEnumerable> a)
                 where TEnumerable : IEnumerable<TKaki>;
 
@@ -86,12 +92,13 @@ namespace GraphClimber.Tests
             [TestData(typeof(int[,][]), true, typeof(int))]
             void ArrayTest<TArray>(TArray[,][] array);
 
-            [TestData(typeof (int[][]), true, typeof (int[]))]
+            [TestData(typeof(int[][]), true, typeof(int[]))]
+            [TestData(typeof(string[][]), false)]
             void OtherArrayTest<TEnumerable>(TEnumerable[] array)
                 where TEnumerable : IEnumerable<int>;
 
 
-            [TestData(typeof(int[]), true, typeof(object))]
+            [TestData(typeof(int[]), false)]
             [TestData(typeof(Stopwatch), true, typeof(Stopwatch))]
             void NewTest<T>(T a)
                 where T : new();
@@ -101,6 +108,25 @@ namespace GraphClimber.Tests
             [TestData(typeof(OtherStuff), false)]
             void TestAllInterfaceImplementatinos<T>(T obj)
                 where T : IEquatable<int>;
+
+            [TestData(typeof(Shit<object>), true, typeof(Shit<object>))]
+            [TestData(typeof(Shit<ulong>), true, typeof(Shit<ulong>))]
+            [TestData(typeof(object), false)]
+            void RecursiveArgTest<T>(T obj)
+                where T : IEquatable<T>;
+
+            [TestData(typeof(object), false)]
+            [TestData(typeof(int), false)]
+            void MissingArgTest<TMissingArg>();
+
+            [TestData(new[] { typeof(OtherTestClass), typeof(TestClass) }, true, typeof(OtherTestClass))]
+            void HalfGenericMethod<TGeneric>(TGeneric param1, IEquatable<DateTime> equatable)
+                where TGeneric : IEquatable<int>;
+
+            [TestData(new[] { typeof(OtherStuff), typeof(TestClass) }, true, typeof(OtherStuff), typeof(DateTime))]
+            [TestData(new[] { typeof(Shit<int>), typeof(TestClass) }, true, typeof(Shit<int>), typeof(Shit<int>))]
+            void HalfGenericMethodHard<THardGeneric, TGeneric>(THardGeneric param1, IEquatable<DateTime> equatable)
+                where THardGeneric : IEquatable<TGeneric>;
 
         }
 
@@ -134,7 +160,15 @@ namespace GraphClimber.Tests
         {
             public bool Equals(DateTime other)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
+            }
+        }
+
+        class Shit<T> : IEquatable<Shit<T>>
+        {
+            public bool Equals(Shit<T> other)
+            {
+                throw new NotSupportedException();
             }
         }
 
