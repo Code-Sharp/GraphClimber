@@ -84,8 +84,9 @@ namespace GraphClimber
                         (genericType.GetGenericTypeDefinition());
 
                 return
-                    implementations.Any(
-                        implementation => VerifyGenericImplementationIsCompatible(genericType, implementation));
+                    implementations.Where(implementation => VerifyGenericImplementationIsCompatible(genericType, implementation))
+                        .ToList()
+                        .Any();
             }
 
             private bool VerifyGenericImplementationIsCompatible(Type genericType, Type implementation)
