@@ -106,22 +106,20 @@ namespace GraphClimber
 
             private bool VerifyGenericImplementationIsCompatible(Type genericType, Type implementation)
             {
-                bool isMatched = true;
-
                 Type[] implementationArguments = implementation.GetGenericArguments();
                 Type[] staticArguments = genericType.GetGenericArguments();
 
                 for (int i = 0;
-                    i < implementationArguments.Length && isMatched;
+                    i < implementationArguments.Length;
                     i++)
                 {
                     if (!TryBind(staticArguments[i], implementationArguments[i]))
                     {
-                        isMatched = false;
+                        return false;
                     }
                 }
 
-                return isMatched;
+                return true;
             }
 
             /// <summary>
