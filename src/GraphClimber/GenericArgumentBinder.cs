@@ -22,6 +22,19 @@ namespace GraphClimber
                 }
             }
 
+            /// <summary>
+            /// This method tries to find available bindings
+            /// from the given <paramref name="parameterType"/>
+            /// to the given <paramref name="realType"/>.
+            /// </summary>
+            /// <remarks>
+            /// This method mutates the return value of <see cref="GetGenericArgumentsCandidates"/>,
+            /// So we have to get inside all the available paths, That's why return value isn't returned at
+            /// the first place, and only in the end of the method.
+            /// </remarks>
+            /// <param name="parameterType"></param>
+            /// <param name="realType"></param>
+            /// <returns></returns>
             public bool TryBind(Type parameterType, Type realType)
             {
                 if (parameterType.IsAssignableFrom(realType))
@@ -61,6 +74,7 @@ namespace GraphClimber
 
                 return result;
             }
+
 
             /// <summary>
             /// Asserts generic arguments for special attributes : new(), class, struct
@@ -223,7 +237,7 @@ namespace GraphClimber
             {
                 IEnumerable<MethodInfo> filtered =
                     candidates.Where(x => x.GetGenericArguments()
-                        .All(y => y != typeof (object)));
+                        .All(y => y != typeof(object)));
 
                 // Prefer avoiding object as a generic type.
                 if (filtered.Any())
@@ -240,7 +254,7 @@ namespace GraphClimber
                         realTypes,
                         new ParameterModifier[0]);
 
-                bindedMethod = (MethodInfo) result;
+                bindedMethod = (MethodInfo)result;
             }
 
             return anyResults;
