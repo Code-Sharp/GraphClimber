@@ -10,7 +10,17 @@ namespace GraphClimber
     {
         private class ArgumentMapper
         {
+            private enum BindStatus
+            {
+                Visiting,
+                Matched,
+                NotMatched
+            }
+
             private readonly IDictionary<Type, HashSet<Type>> _genericConstraintsToType;
+            
+            private readonly IDictionary<Tuple<Type, Type>, BindStatus> _visitedTypes =
+                new Dictionary<Tuple<Type, Type>, BindStatus>();
 
             public ArgumentMapper(MethodInfo methodInfo)
             {
@@ -27,30 +37,46 @@ namespace GraphClimber
             /// from the given <paramref name="parameterType"/>
             /// to the given <paramref name="realType"/>.
             /// </summary>
-            /// <remarks>
-            /// This method mutates the return value of <see cref="GetGenericArgumentsCandidates"/>,
-            /// So we have to get inside all the available paths, That's why return value isn't returned at
-            /// the first place, and only in the end of the method.
-            /// </remarks>
             /// <param name="parameterType"></param>
             /// <param name="realType"></param>
             /// <returns></returns>
             public bool TryBind(Type parameterType, Type realType)
             {
-                return InnerTryBind(parameterType, realType,
-                    new HashSet<Tuple<Type, Type>>());
-            }
+                // If we already tried this pair, and it is currently visited,
+                // assume it is ok,
+                // it might fail later in TryMakeGenericMethod
+                BindStatus status;
 
-            private bool InnerTryBind(Type parameterType, Type realType, 
-                ISet<Tuple<Type, Type>> visitedTypes)
-            {
-                // If we already tried this pair, assume its ok.
-                // it will fail later in TryMakeGenericMethod
-                if (!visitedTypes.Add(Tuple.Create(parameterType, realType)))
+                Tuple<Type, Type> currentPair = Tuple.Create(parameterType, realType);
+
+                if (_visitedTypes.TryGetValue(currentPair, out status))
                 {
-                    return true;
+                    return (status != BindStatus.NotMatched);
+                }
+                
+                _visitedTypes[currentPair] = BindStatus.Visiting;
+
+                bool result = InnerTryBind(parameterType, realType);
+
+                if (result)
+                {
+                    _visitedTypes[currentPair] = BindStatus.Matched;
+                }
+                else
+                {
+                    _visitedTypes[currentPair] = BindStatus.NotMatched;
                 }
 
+                return result;
+            }
+
+            /// <remarks>
+            /// This method mutates the return value of <see cref="GetGenericArgumentsCandidates"/>,
+            /// So we have to get inside all the available paths, That's why return value isn't returned at
+            /// the first place, and only in the end of the method.
+            /// </remarks>
+            private bool InnerTryBind(Type parameterType, Type realType)
+            {
                 if (parameterType.IsAssignableFrom(realType))
                 {
                     return true;
@@ -59,23 +85,20 @@ namespace GraphClimber
                 bool result = false;
 
                 if (parameterType.IsGenericParameter &&
-                    VerifyGenericConstraints(parameterType, realType,
-                    visitedTypes))
+                    VerifyGenericConstraints(parameterType, realType))
                 {
                     _genericConstraintsToType[parameterType].Add(realType);
                     result = true;
                 }
 
                 if (parameterType.IsGenericType &&
-                    VerifyGenericTypesAreCompatible(parameterType, realType,
-                    visitedTypes))
+                    VerifyGenericTypesAreCompatible(parameterType, realType))
                 {
                     result = true;
                 }
 
                 if (parameterType.IsArray &&
-                    VerifyArrayTypesAreCompatible(parameterType, realType,
-                    visitedTypes))
+                    VerifyArrayTypesAreCompatible(parameterType, realType))
                 {
                     result = true;
                 }
@@ -83,7 +106,7 @@ namespace GraphClimber
                 // Try binding to base types too.
                 foreach (Type intefaceType in realType.GetInterfacesAndBase())
                 {
-                    if (InnerTryBind(parameterType, intefaceType, visitedTypes))
+                    if (TryBind(parameterType, intefaceType))
                     {
                         result = true;
                     }
@@ -98,17 +121,16 @@ namespace GraphClimber
             /// </summary>
             /// <param name="genericParameterType"></param>
             /// <param name="realType"></param>
-            /// <param name="visitedTypes"></param>
             /// <returns></returns>
-            private bool VerifyGenericConstraints(Type genericParameterType, Type realType, ISet<Tuple<Type, Type>> visitedTypes)
+            private bool VerifyGenericConstraints(Type genericParameterType, Type realType)
             {
                 // Bind constraints to real type 
                 // (Some generic parameters appear only as constraints)
                 return genericParameterType.GetGenericParameterConstraints()
-                    .All(constraint => InnerTryBind(constraint, realType, visitedTypes));
+                    .All(constraint => TryBind(constraint, realType));
             }
 
-            private bool VerifyGenericTypesAreCompatible(Type genericType, Type realType, ISet<Tuple<Type, Type>> visitedTypes)
+            private bool VerifyGenericTypesAreCompatible(Type genericType, Type realType)
             {
                 IEnumerable<Type> implementations =
                     realType
@@ -116,19 +138,19 @@ namespace GraphClimber
                         (genericType.GetGenericTypeDefinition());
 
                 return
-                    implementations.Where(implementation => VerifyGenericImplementationIsCompatible(genericType, implementation, visitedTypes))
+                    implementations.Where(implementation => VerifyGenericImplementationIsCompatible(genericType, implementation))
                         .ToList()
                         .Any();
             }
 
-            private bool VerifyGenericImplementationIsCompatible(Type genericType, Type implementation, ISet<Tuple<Type, Type>> visitedTypes)
+            private bool VerifyGenericImplementationIsCompatible(Type genericType, Type implementation)
             {
                 Type[] implementationArguments = implementation.GetGenericArguments();
                 Type[] staticArguments = genericType.GetGenericArguments();
 
                 for (int i = 0; i < implementationArguments.Length; i++)
                 {
-                    if (!InnerTryBind(staticArguments[i], implementationArguments[i], visitedTypes))
+                    if (!TryBind(staticArguments[i], implementationArguments[i]))
                     {
                         return false;
                     }
@@ -144,9 +166,8 @@ namespace GraphClimber
             /// </summary>
             /// <param name="parameterType"></param>
             /// <param name="realType"></param>
-            /// <param name="visitedTypes"></param>
             /// <returns></returns>
-            private bool VerifyArrayTypesAreCompatible(Type parameterType, Type realType, ISet<Tuple<Type, Type>> visitedTypes)
+            private bool VerifyArrayTypesAreCompatible(Type parameterType, Type realType)
             {
                 if (parameterType.IsArray && realType.IsArray)
                 {
@@ -155,7 +176,7 @@ namespace GraphClimber
                         return false;
                     }
 
-                    if (!InnerTryBind(parameterType.GetElementType(), realType.GetElementType(), visitedTypes))
+                    if (!TryBind(parameterType.GetElementType(), realType.GetElementType()))
                     {
                         return false;
                     }
