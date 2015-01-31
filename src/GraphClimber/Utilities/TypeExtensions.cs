@@ -6,19 +6,29 @@ namespace GraphClimber
 {
     internal static class TypeExtensions
     {
-        public static IEnumerable<Type> GetInterfacesAndBase(this Type type)
+        public static IEnumerable<Type> GetBaseTypes(this Type self)
         {
-            Type baseType = type.BaseType;
-
-            if (baseType != null)
-            {
-                yield return baseType;
-            }
-
-            foreach (Type interfaceType in type.GetInterfaces())
+            foreach (var interfaceType in self.GetInterfaces())
             {
                 yield return interfaceType;
             }
+
+            if (self.IsValueType)
+            {
+                yield break;
+            }
+
+            var baseType = self.BaseType;
+            while (baseType != null)
+            {
+                yield return baseType;
+                baseType = baseType.BaseType;
+            }
+        }
+
+        public static IEnumerable<Type> GetTypeWithBaseTypes(this Type self)
+        {
+            return new[] { self }.Concat(self.GetBaseTypes());
         }
 
         public static bool IsNullable(this Type type)

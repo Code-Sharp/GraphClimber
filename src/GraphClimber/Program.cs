@@ -14,8 +14,7 @@ namespace GraphClimber
             MethodInfo method;
             binder.TryBind(typeof (MyClass).GetMethod("MyMethod2"),
                 new Type[] {typeof (MyClass2[])},
-                out methods);
-
+                out method);
             int[] array = {};
             MyStaticClass.NewTest<object>(array);
         } 
