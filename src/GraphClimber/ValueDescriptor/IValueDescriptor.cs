@@ -1,3 +1,5 @@
+using System;
+
 namespace GraphClimber
 {
     /// <summary>
@@ -19,5 +21,8 @@ namespace GraphClimber
         /// Climbs on the (current) value that found in the field by the owner
         /// </summary>
         void Climb();
+
+        // TODO: remove this
+        void Reprocess(Type staticMemberType);
     }
 }

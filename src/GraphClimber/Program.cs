@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace GraphClimber
 {
@@ -12,8 +12,37 @@ namespace GraphClimber
 
         static void Main(string[] args)
         {
-            SlowGraphClimber<XmlWriterProccessor> climber =
-                new SlowGraphClimber<XmlWriterProccessor>
+            var text =
+                @"<Person Type=""GraphClimber.Program+Person, GraphClimber, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"">
+  <Name Type=""System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"">Shani Elharrar</Name>
+  <Age Type=""System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"">24</Age>
+  <Surprise Type=""GraphClimber.Program+Person, GraphClimber, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"">
+    <Name>null</Name>
+    <Age Type=""System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"">23</Age>
+    <Surprise Type=""System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"">4</Surprise>
+  </Surprise>
+</Person>";
+
+
+            // Writer code:
+            SlowGraphClimber<XmlReaderProcessor> climber2 =
+                new SlowGraphClimber<XmlReaderProcessor>
+                    (new ReflectionPropertyStateMemberProvider());
+
+            XElement reader = XElement.Parse(text);
+
+            XmlReaderProcessor processor2 = 
+                new XmlReaderProcessor(reader);
+
+            Person person2 = new Person();
+
+            climber2.Climb(person2,
+                processor2);
+
+
+            // Writer code:
+            SlowGraphClimber<XmlWriterProcessor> climber =
+                new SlowGraphClimber<XmlWriterProcessor>
                     (new ReflectionPropertyStateMemberProvider());
 
             Person person = new Person()
@@ -28,7 +57,7 @@ namespace GraphClimber
                 }
             };
 
-            XmlWriterProccessor processor = new XmlWriterProccessor();
+            XmlWriterProcessor processor = new XmlWriterProcessor();
 
             climber.Climb(person,
                 processor);
@@ -44,52 +73,130 @@ namespace GraphClimber
         }
     }
 
-    
+    internal class XmlReaderProcessor
+    {
+        private XElement _reader;
 
-    public class XmlWriterProccessor : INullProcessor
+        public XmlReaderProcessor(XElement reader)
+        {
+            _reader = reader;
+        }
+
+        [ProcessorMethod]
+        public void ProcessInt32(IWriteExactValueDescriptor<int> descriptor)
+        {
+            XElement element = 
+                _reader.Element(descriptor.StateMember.Name);
+
+            int result = 
+                Convert.ToInt32(element.Value);
+
+            descriptor.Set(result);
+        }
+
+        [ProcessorMethod]
+        public void ProcessString(IWriteExactValueDescriptor<string> descriptor)
+        {
+            XElement element =
+                _reader.Element(descriptor.StateMember.Name);
+
+            string result = element.Value;
+
+            descriptor.Set(result);
+        }
+
+        [ProcessorMethod(Precedence = 102)]
+        public void ProcessGeneric<T>(IWriteValueDescriptor<T> descriptor)
+        {
+            XElement temp = _reader;
+
+            _reader = _reader.Element(descriptor.StateMember.Name);
+
+            descriptor.Climb();
+
+            _reader = temp;
+        }
+
+        [ProcessorMethod]
+        public void ProcessObject(IWriteExactValueDescriptor<object> descriptor)
+        {
+            XElement element = _reader.Element(descriptor.StateMember.Name);
+            
+            XAttribute attribute = element.Attribute("Type");
+
+            if (attribute != null)
+            {
+                var type = attribute.Value;
+
+                Type instanceType = Type.GetType(type);
+
+                object field =
+                    Activator.CreateInstance(instanceType, new object[0]);
+
+                descriptor.Set(field);
+
+                // TODO: this will be the route method..
+                descriptor.Reprocess(instanceType);
+            }
+        }
+    }
+
+
+
+
+    public class XmlWriterProcessor : INullProcessor
     {
         private readonly XmlWriter _writer;
         private StringWriter _stringWriter;
 
-        public XmlWriterProccessor()
+        public XmlWriterProcessor()
         {
             _stringWriter = new StringWriter();
             _writer = new XmlTextWriter(_stringWriter);
         }
 
         [ProcessorMethod]
-        public void Process(IReadOnlyValueDescriptor<string> descriptor)
+        public void ProcessString(IReadOnlyValueDescriptor<string> descriptor)
         {
             WritePropertyName(descriptor);
             _writer.WriteValue(descriptor.Get());
-            EndWritePropertyName<int>();
+            EndWritePropertyName();
         }
 
         [ProcessorMethod]
-        public void Process(IReadOnlyValueDescriptor<int> descriptor)
+        public void ProcessInt32(IReadOnlyValueDescriptor<int> descriptor)
         {
             WritePropertyName(descriptor);
             _writer.WriteValue(descriptor.Get());
-            EndWritePropertyName<int>();
+            EndWritePropertyName();
         }
 
         // "Generic Processor"
-        [ProcessorMethod(Precedence = 102)]
-        public void Process<T>(IReadOnlyValueDescriptor<T> descriptor)
+        [ProcessorMethod(Precedence = 101)]
+        public void ProcessGeneric<T>(IReadOnlyValueDescriptor<T> descriptor)
         {
             WritePropertyName(descriptor);
 
             descriptor.Climb();
 
-            EndWritePropertyName<int>();
+            EndWritePropertyName();
+        }
+
+        private void WritePropertyName<T>(IReadOnlyValueDescriptor<T> descriptor)
+        {
+            Type type = typeof (T);
+
+            WritePropertyName((IValueDescriptor)descriptor);
+            _writer.WriteAttributeString("Type", type.AssemblyQualifiedName);
         }
 
         private void WritePropertyName(IValueDescriptor descriptor)
         {
-            _writer.WriteStartElement(descriptor.StateMember.Name);
+            IStateMember stateMember = descriptor.StateMember;
+            _writer.WriteStartElement(stateMember.Name);
         }
 
-        private void EndWritePropertyName<T>()
+        private void EndWritePropertyName()
         {
             _writer.WriteEndElement();
         }
@@ -98,7 +205,7 @@ namespace GraphClimber
         {
             WritePropertyName(descriptor);
             _writer.WriteValue("null");
-            EndWritePropertyName<int>();
+            EndWritePropertyName();
         }
     }
 

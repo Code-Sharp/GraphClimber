@@ -6,7 +6,7 @@
     /// of that type.
     /// </summary>
     /// <typeparam name="TField"></typeparam>
-    public interface IReadProcessor<in TField>
+    public interface IReadExactProcessor<in TField>
     {
         void ProcessForRead(IReadOnlyValueDescriptor<TField> descriptor);
     }
@@ -21,7 +21,7 @@
     /// assignable from IEnumerable{char} to string.Empty.
     /// This includes object and IEnumerable, IEnumerable{string}.
     /// </remarks>
-    public interface IWriteProcessor<out TField>
+    public interface IWriteProcessor<TField>
     {
         void ProcessForWrite(IWriteValueDescriptor<TField> descriptor);
     }

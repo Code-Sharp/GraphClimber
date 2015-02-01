@@ -27,26 +27,17 @@ namespace GraphClimber
 
         public string Name
         {
-            get
-            {
-                return _property.Name;
-            }
+            get { return _property.Name; }
         }
 
         public Type OwnerType
         {
-            get
-            {
-                return _property.ReflectedType;
-            }
+            get { return _property.ReflectedType; }
         }
 
         public Type MemberType
         {
-            get
-            {
-                return _property.PropertyType;
-            }
+            get { return _property.PropertyType; }
         }
 
         public Expression GetGetExpression(Expression obj)
@@ -77,9 +68,10 @@ namespace GraphClimber
         void SetValue(object owner, object value);
     }
 
-    internal class ReflectionValueDescriptor<TField, TRuntime> : 
+    internal class ReflectionValueDescriptor<TField, TRuntime> :
         IReadWriteValueDescriptor<TField>,
         IReadOnlyValueDescriptor<TRuntime>,
+        IWriteExactValueDescriptor<TField>,
         IReflectionValueDescriptor
     {
         private readonly IStateMemberProvider _stateMemberProvider;
@@ -87,7 +79,8 @@ namespace GraphClimber
         private readonly object _owner;
         private readonly object _processor;
 
-        public ReflectionValueDescriptor(object processor, IStateMemberProvider stateMemberProvider, IReflectionStateMember stateMember, object owner)
+        public ReflectionValueDescriptor(object processor, IStateMemberProvider stateMemberProvider,
+            IReflectionStateMember stateMember, object owner)
         {
             _stateMemberProvider = stateMemberProvider;
             _stateMember = stateMember;
@@ -107,7 +100,7 @@ namespace GraphClimber
 
         TRuntime IReadOnlyValueDescriptor<TRuntime>.Get()
         {
-            return (TRuntime)_stateMember.GetValue(_owner);
+            return (TRuntime) _stateMember.GetValue(_owner);
         }
 
         public void Set(TField value)
@@ -128,7 +121,7 @@ namespace GraphClimber
         public void Climb()
         {
             TField value = Get();
-            
+
             Type runtimeType;
 
             if (value != null)
@@ -140,27 +133,44 @@ namespace GraphClimber
                 throw new NullReferenceException("Can't climb on null, you silly developer!");
             }
 
-            IEnumerable<IStateMember> members = 
+            IEnumerable<IStateMember> members =
                 _stateMemberProvider.Provide(runtimeType);
 
             foreach (IReflectionStateMember member in 
                 members.Cast<IReflectionStateMember>())
             {
-                object memberValue = member.GetValue(value);
-
-                Type memberType = 
-                    memberValue != null ? memberValue.GetType() : member.MemberType;
-
-                Type descriptorType = typeof (ReflectionValueDescriptor<,>)
-                    .MakeGenericType(member.MemberType, memberType);
-
-                IReflectionValueDescriptor descriptor =
-                    (IReflectionValueDescriptor) Activator.CreateInstance
-                        (descriptorType,
-                            _processor, _stateMemberProvider, member, value);
-
-                CallProcess(descriptor);
+                VisitMember(member, value, member.MemberType);
             }
+        }
+
+        private void VisitMember(IReflectionStateMember member, object value, Type staticMemberType)
+        {
+            IReflectionValueDescriptor descriptor = CreateDescriptor(member, value, staticMemberType);
+
+            CallProcess(descriptor);
+        }
+
+        private IReflectionValueDescriptor CreateDescriptor(IReflectionStateMember member, object value,
+            Type staticMemberType)
+        {
+            object memberValue = member.GetValue(value);
+
+            Type memberType =
+                memberValue != null ? memberValue.GetType() : staticMemberType;
+
+            Type descriptorType = typeof (ReflectionValueDescriptor<,>)
+                .MakeGenericType(staticMemberType, memberType);
+
+            IReflectionValueDescriptor descriptor =
+                (IReflectionValueDescriptor) Activator.CreateInstance
+                    (descriptorType,
+                        _processor, _stateMemberProvider, member, value);
+            return descriptor;
+        }
+
+        public void Reprocess(Type staticMemberType)
+        {
+            VisitMember(this._stateMember, _owner, staticMemberType);
         }
 
         private void CallProcess(IReflectionValueDescriptor descriptor)
@@ -245,7 +255,8 @@ namespace GraphClimber
                 }
                 else
                 {
-                    throw new Exception("No method found :(, this might be a bug in your code, or in the GraphClimber. Good luck.");
+                    throw new Exception(
+                        "No method found :(, this might be a bug in your code, or in the GraphClimber. Good luck.");
                 }
             }
         }
@@ -253,7 +264,7 @@ namespace GraphClimber
         private MethodInfo Bind(GenericArgumentBinder binder, MethodInfo method, Type descriptorType)
         {
             MethodInfo bindedMethod;
-            
+
             if (binder.TryBind(method, new[] {descriptorType}, out bindedMethod))
             {
                 return bindedMethod;
@@ -282,15 +293,15 @@ namespace GraphClimber
             var descriptor =
                 new ReflectionValueDescriptor<object, object>(processor,
                     _stateMemberProvider,
-                    new ReflectionPropertyStateMember(typeof(Box).GetProperty("Parent")),
-                    new Box { Parent = parent });
+                    new ReflectionPropertyStateMember(typeof (Box).GetProperty("Parent")),
+                    new Box {Parent = parent});
 
             descriptor.Climb();
         }
 
-        class Box
+        private class Box
         {
-            public object Parent { get; set; } 
+            public object Parent { get; set; }
         }
     }
 }
