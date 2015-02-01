@@ -112,9 +112,28 @@ namespace GraphClimber
 
             _reader = _reader.Element(descriptor.StateMember.Name);
 
+            CreateObject(descriptor);
+
             descriptor.Climb();
 
             _reader = temp;
+        }
+
+        private void CreateObject<T>(IWriteValueDescriptor<T> descriptor) 
+        {
+            XAttribute attribute = _reader.Attribute("Type");
+
+            if (attribute != null)
+            {
+                var type = attribute.Value;
+
+                Type instanceType = Type.GetType(type);
+
+                T field =
+                    (T) Activator.CreateInstance(instanceType);
+
+                descriptor.Set(field);
+            }
         }
 
         [ProcessorMethod]
@@ -129,11 +148,6 @@ namespace GraphClimber
                 var type = attribute.Value;
 
                 Type instanceType = Type.GetType(type);
-
-                object field =
-                    Activator.CreateInstance(instanceType, new object[0]);
-
-                descriptor.Set(field);
 
                 // TODO: this will be the route method..
                 descriptor.Reprocess(instanceType);

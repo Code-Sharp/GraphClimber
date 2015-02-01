@@ -147,7 +147,7 @@ namespace GraphClimber
         {
             IReflectionValueDescriptor descriptor = CreateDescriptor(member, value, staticMemberType);
 
-            CallProcess(descriptor);
+            CallProcess(descriptor, staticMemberType);
         }
 
         private IReflectionValueDescriptor CreateDescriptor(IReflectionStateMember member, object value,
@@ -173,10 +173,8 @@ namespace GraphClimber
             VisitMember(this._stateMember, _owner, staticMemberType);
         }
 
-        private void CallProcess(IReflectionValueDescriptor descriptor)
+        private void CallProcess(IReflectionValueDescriptor descriptor, Type fieldType)
         {
-            Type fieldType = descriptor.StateMember.MemberType;
-
             bool methodCalled = false;
 
             if (!fieldType.IsValueType)
