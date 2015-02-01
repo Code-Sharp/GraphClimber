@@ -14,6 +14,12 @@ namespace GraphClimber
 
             bindedMethod = null;
 
+            if ((genericArguments.Length == 0) && (typeArguments.Length == 0))
+            {
+                bindedMethod = methodInfo;
+                return true;
+            }
+
             if (genericArguments.Length != typeArguments.Length)
             {
                 return false;

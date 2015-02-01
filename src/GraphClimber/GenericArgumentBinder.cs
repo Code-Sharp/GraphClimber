@@ -17,19 +17,17 @@ namespace GraphClimber
                 NotMatched
             }
 
-            private readonly IDictionary<Type, HashSet<Type>> _genericConstraintsToType;
+            private readonly IDictionary<Type, HashSet<Type>> _genericConstraintsToType =
+                new Dictionary<Type, HashSet<Type>>();
             
             private readonly IDictionary<Tuple<Type, Type>, BindStatus> _visitedTypes =
                 new Dictionary<Tuple<Type, Type>, BindStatus>();
 
             public ArgumentMapper(MethodInfo methodInfo)
             {
-                if (methodInfo.ContainsGenericParameters)
-                {
-                    _genericConstraintsToType =
-                        methodInfo.GetGenericArguments()
-                            .ToDictionary(type => type, t => new HashSet<Type>());
-                }
+                _genericConstraintsToType =
+                    methodInfo.GetGenericArguments()
+                        .ToDictionary(type => type, t => new HashSet<Type>());
             }
 
             /// <summary>
@@ -275,14 +273,17 @@ namespace GraphClimber
             }
             else
             {
-                IEnumerable<MethodInfo> filtered =
-                    candidates.Where(x => x.GetGenericArguments()
-                        .All(y => y != typeof(object)));
-
-                // Prefer avoiding object as a generic type.
-                if (filtered.Any())
+                if (methodInfo.ContainsGenericParameters)
                 {
-                    candidates = filtered.ToArray();
+                    IEnumerable<MethodInfo> filtered =
+                        candidates.Where(x => x.GetGenericArguments()
+                            .All(y => y != typeof(object)));
+
+                    // Prefer avoiding object as a generic type.
+                    if (filtered.Any())
+                    {
+                        candidates = filtered.ToArray();
+                    }                    
                 }
 
                 MethodBase result =
