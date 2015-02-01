@@ -8,7 +8,7 @@
     /// <typeparam name="TField"></typeparam>
     public interface IReadProcessor<in TField>
     {
-        void ProcessForRead(IReadValueDescriptor<TField> descriptor);
+        void ProcessForRead(IReadOnlyValueDescriptor<TField> descriptor);
     }
 
     /// <summary>
@@ -24,17 +24,6 @@
     public interface IWriteProcessor<out TField>
     {
         void ProcessForWrite(IWriteValueDescriptor<TField> descriptor);
-    }
-
-    /// <summary>
-    /// Defines an actor that can process values that are 
-    /// of runtime type <typeparamref name="TRuntime"/> and static type <typeparamref name="TField"/>.
-    /// </summary>
-    /// <typeparam name="TField"></typeparam>
-    /// <typeparam name="TRuntime"></typeparam>
-    public interface IReadWriteProcessor<in TField, out TRuntime>
-    {
-        void ProcessForReadWrite(IReadWriteValueDescriptor<TField, TRuntime> descriptor);
     }
 
     /// <summary>

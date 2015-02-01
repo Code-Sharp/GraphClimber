@@ -11,6 +11,6 @@ namespace GraphClimber
         /// </summary>
         /// <typeparam name="TField"></typeparam>
         /// <param name="descriptor"></param>
-        void ProcessRevisited<TField>(IReadValueDescriptor<TField> descriptor);
+        void ProcessRevisited<TField>(IReadOnlyValueDescriptor<TField> descriptor);
     }
 }

@@ -50,12 +50,14 @@
     <Compile Include="GenericArgumentBinder.cs" />
     <Compile Include="IEnumProcessor.cs" />
     <Compile Include="IInheritedProcessor.cs" />
+    <Compile Include="INullProcessor.cs" />
+    <Compile Include="SlowGraphClimber.cs" />
     <Compile Include="IProcessor.cs" />
     <Compile Include="IRevisitedFilter.cs" />
     <Compile Include="IRevisitedProcessor.cs" />
     <Compile Include="IStateMember.cs" />
     <Compile Include="IStateMemberProvider.cs" />
-    <Compile Include="ValueDescriptor\IReadValueDescriptor.cs" />
+    <Compile Include="ValueDescriptor\IReadOnlyValueDescriptor.cs" />
     <Compile Include="ValueDescriptor\IReadWriteValueDescriptor.cs" />
     <Compile Include="ValueDescriptor\IValueDescriptor.cs" />
     <Compile Include="Utilities\Combinatorics.cs" />

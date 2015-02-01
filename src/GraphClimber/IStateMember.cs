@@ -8,7 +8,6 @@ namespace GraphClimber
     /// </summary>
     public interface IStateMember
     {
-
         /// <summary>
         /// Gets the name of the state member
         /// </summary>
@@ -18,6 +17,11 @@ namespace GraphClimber
         /// Gets the type that owns the state member.
         /// </summary>
         Type OwnerType { get; }
+
+        /// <summary>
+        /// Gets the compile-time type of this member.
+        /// </summary>
+        Type MemberType { get; }
 
         /// <summary>
         /// Gets the get expression to the state member
@@ -33,6 +37,5 @@ namespace GraphClimber
         /// <param name="value">The value to be set</param>
         /// <returns></returns>
         Expression GetSetExpression(Expression obj, Expression value);
-
     }
 }

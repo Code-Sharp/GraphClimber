@@ -4,7 +4,7 @@ namespace GraphClimber
     /// Allows processing state member values based on their RuntimeType:
     /// Used mostly for serialization.
     /// </remarks>
-    public interface IReadValueDescriptor<out TRuntime> : IValueDescriptor
+    public interface IReadOnlyValueDescriptor<out TRuntime> : IValueDescriptor
     {
         /// <summary>
         /// Gets the current value of the field
