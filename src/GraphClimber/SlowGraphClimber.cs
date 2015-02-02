@@ -80,15 +80,13 @@ namespace GraphClimber
         private readonly IStateMemberProvider _stateMemberProvider;
         private readonly IReflectionStateMember _stateMember;
         private readonly object _owner;
-        private readonly object _processor;
 
-        public ReflectionValueDescriptor(object processor, IStateMemberProvider stateMemberProvider,
+        public ReflectionValueDescriptor(IStateMemberProvider stateMemberProvider,
             IReflectionStateMember stateMember, object owner)
         {
             _stateMemberProvider = stateMemberProvider;
             _stateMember = stateMember;
             _owner = owner;
-            _processor = processor;
         }
 
         public TField Get()
@@ -127,7 +125,7 @@ namespace GraphClimber
             get { return _owner; }
         }
 
-        public void Climb()
+        public void Climb(object processor)
         {
             TField value = Get();
 
@@ -149,7 +147,7 @@ namespace GraphClimber
                 members.Cast<IReflectionStateMember>())
             {
                 Type runtimeMemberType = GetRuntimeMemberType(member, member.MemberType, value);
-                VisitMember(member, value, runtimeMemberType, false);
+                VisitMember(member, value, runtimeMemberType, false, processor);
             }
         }
 
@@ -164,12 +162,12 @@ namespace GraphClimber
         }
 
         private void VisitMember(IReflectionStateMember member, object owner, Type runtimeMemberType,
-            bool skipSpecialMethod)
+            bool skipSpecialMethod, object processor)
         {
             IReflectionValueDescriptor descriptor =
                 CreateDescriptor(member, owner, runtimeMemberType);
 
-            CallProcess(descriptor, skipSpecialMethod);
+            CallProcess(descriptor, skipSpecialMethod, processor);
         }
 
         private IReflectionValueDescriptor CreateDescriptor(IReflectionStateMember member, object value,
@@ -181,28 +179,28 @@ namespace GraphClimber
             IReflectionValueDescriptor descriptor =
                 (IReflectionValueDescriptor) Activator.CreateInstance
                     (descriptorType,
-                        _processor, _stateMemberProvider, member, value);
+                        _stateMemberProvider, member, value);
 
             return descriptor;
         }
 
-        public void Route(IStateMember stateMember, object owner)
+        public void Route(IStateMember stateMember, object owner, object processor)
         {
             VisitMember((IReflectionStateMember) stateMember,
                 owner,
                 stateMember.MemberType,
-                true);
+                true, processor);
         }
 
-        public void Route(IStateMember stateMember, Type runtimeMemberType, object owner)
+        public void Route(IStateMember stateMember, Type runtimeMemberType, object owner, object processor)
         {
             VisitMember((IReflectionStateMember) stateMember,
                 owner,
                 runtimeMemberType,
-                true);
+                true, processor);
         }
 
-        private void CallProcess(IReflectionValueDescriptor descriptor, bool skipSpecialMethod)
+        private void CallProcess(IReflectionValueDescriptor descriptor, bool skipSpecialMethod, object processor)
         {
             Type fieldType = descriptor.StateMember.MemberType;
 
@@ -210,25 +208,25 @@ namespace GraphClimber
 
             if (!fieldType.IsValueType && !skipSpecialMethod)
             {
-                methodCalled = TryCallSpecialMethod(descriptor, fieldType);
+                methodCalled = TryCallSpecialMethod(descriptor, fieldType, processor);
             }
 
             if (!methodCalled)
             {
-                CallMatchedProcess(descriptor);
+                CallMatchedProcess(descriptor, processor);
             }
         }
 
-        private bool TryCallSpecialMethod(IReflectionValueDescriptor descriptor, Type fieldType)
+        private bool TryCallSpecialMethod(IReflectionValueDescriptor descriptor, Type fieldType, object processor)
         {
             object value = descriptor.Get();
 
-            INullProcessor processor = _processor as INullProcessor;
-            IRevisitedProcessor revisitedProcessor = _processor as IRevisitedProcessor;
+            INullProcessor nullProcessor = processor as INullProcessor;
+            IRevisitedProcessor revisitedProcessor = processor as IRevisitedProcessor;
 
-            if (processor != null && value == null)
+            if (nullProcessor != null && value == null)
             {
-                CallGenericMethod(descriptor, fieldType, "ProcessNull");
+                CallGenericMethod(descriptor, fieldType, "ProcessNull", processor);
                 return true;
             }
             else if ((value != null) &&
@@ -236,28 +234,28 @@ namespace GraphClimber
                      revisitedProcessor.Visited(value))
             {
                 Type runtimeType = value.GetType();
-                CallGenericMethod(descriptor, runtimeType, "ProcessRevisited");
+                CallGenericMethod(descriptor, runtimeType, "ProcessRevisited", processor);
                 return true;
             }
 
             return false;
         }
 
-        private void CallGenericMethod(IReflectionValueDescriptor descriptor, Type genericType, string methodName)
+        private void CallGenericMethod(IReflectionValueDescriptor descriptor, Type genericType, string methodName, object processor)
         {
             MethodInfo methodToCall =
                 typeof (INullProcessor).GetMethod(methodName)
                     .MakeGenericMethod(genericType);
 
-            methodToCall.Invoke(_processor, new object[] {descriptor});
+            methodToCall.Invoke(processor, new object[] {descriptor});
         }
 
-        private void CallMatchedProcess(IReflectionValueDescriptor descriptor)
+        private void CallMatchedProcess(IReflectionValueDescriptor descriptor, object processor)
         {
             GenericArgumentBinder binder = new GenericArgumentBinder();
 
             IEnumerable<MethodInfo> methods =
-                _processor.GetType().GetMethods()
+                processor.GetType().GetMethods()
                     .Where(x => x.IsDefined(typeof (ProcessorMethodAttribute)));
 
             Type descriptorType = descriptor.GetType();
@@ -280,7 +278,7 @@ namespace GraphClimber
 
                 if (method != null)
                 {
-                    method.Invoke(_processor, new object[] {descriptor});
+                    method.Invoke(processor, new object[] {descriptor});
                 }
                 else
                 {
@@ -320,12 +318,11 @@ namespace GraphClimber
         public void Climb(object parent, TProcessor processor)
         {
             var descriptor =
-                new ReflectionValueDescriptor<object, object>(processor,
-                    _stateMemberProvider,
+                new ReflectionValueDescriptor<object, object>(_stateMemberProvider,
                     new ReflectionPropertyStateMember(typeof (Box).GetProperty("Parent")),
                     new Box {Parent = parent});
 
-            descriptor.Climb();
+            descriptor.Climb(processor);
         }
 
         private class Box
