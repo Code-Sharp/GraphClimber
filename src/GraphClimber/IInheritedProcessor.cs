@@ -23,7 +23,7 @@
     /// </remarks>
     public interface IWriteProcessor<TField>
     {
-        void ProcessForWrite(IWriteValueDescriptor<TField> descriptor);
+        void ProcessForWrite(IWriteOnlyValueDescriptor<TField> descriptor);
     }
 
     /// <summary>

@@ -5,7 +5,7 @@ namespace GraphClimber
     /// Used mostly for deserialization.
     /// </remarks>
     /// TODO: Not sure if needed, maybe exact value descriptor is enough?
-    public interface IWriteValueDescriptor<in TField> : IValueDescriptor
+    public interface IWriteOnlyValueDescriptor<in TField> : IValueDescriptor
     {
         /// <summary>
         /// Sets the field to a new value
@@ -18,7 +18,7 @@ namespace GraphClimber
     /// Allows processing state member values based on their static type:
     /// Used mostly for deserialization.
     /// </remarks>
-    public interface IWriteExactValueDescriptor<TExactField> : IValueDescriptor
+    public interface IWriteOnlyExactValueDescriptor<TExactField> : IValueDescriptor
     {
         /// <summary>
         /// Sets the field to a new value

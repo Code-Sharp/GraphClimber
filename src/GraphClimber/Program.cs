@@ -83,7 +83,7 @@ namespace GraphClimber
         }
 
         [ProcessorMethod]
-        public void ProcessInt32(IWriteExactValueDescriptor<int> descriptor)
+        public void ProcessInt32(IWriteOnlyExactValueDescriptor<int> descriptor)
         {
             XElement element = 
                 _reader.Element(descriptor.StateMember.Name);
@@ -95,7 +95,7 @@ namespace GraphClimber
         }
 
         [ProcessorMethod]
-        public void ProcessString(IWriteExactValueDescriptor<string> descriptor)
+        public void ProcessString(IWriteOnlyExactValueDescriptor<string> descriptor)
         {
             XElement element =
                 _reader.Element(descriptor.StateMember.Name);
@@ -106,7 +106,7 @@ namespace GraphClimber
         }
 
         [ProcessorMethod(Precedence = 102)]
-        public void ProcessGeneric<T>(IWriteValueDescriptor<T> descriptor)
+        public void ProcessGeneric<T>(IWriteOnlyValueDescriptor<T> descriptor)
         {
             XElement temp = _reader;
 
@@ -119,7 +119,7 @@ namespace GraphClimber
             _reader = temp;
         }
 
-        private void CreateObject<T>(IWriteValueDescriptor<T> descriptor) 
+        private void CreateObject<T>(IWriteOnlyValueDescriptor<T> descriptor) 
         {
             XAttribute attribute = _reader.Attribute("Type");
 
@@ -137,7 +137,7 @@ namespace GraphClimber
         }
 
         [ProcessorMethod]
-        public void ProcessObject(IWriteExactValueDescriptor<object> descriptor)
+        public void ProcessObject(IWriteOnlyExactValueDescriptor<object> descriptor)
         {
             XElement element = _reader.Element(descriptor.StateMember.Name);
             
@@ -267,7 +267,7 @@ namespace GraphClimber
             _writer.WriteEndElement();
         }
 
-        public void ProcessNull<TField>(IWriteValueDescriptor<TField> descriptor)
+        public void ProcessNull<TField>(IWriteOnlyValueDescriptor<TField> descriptor)
         {
             WritePropertyName(descriptor);
             _writer.WriteValue("null");
@@ -367,7 +367,7 @@ namespace GraphClimber
 
         public class MyInheritedProcessor : IWriteProcessor<IAsyncResult>, IProcessor<int[]>, IRevisitedFilter
         {
-            public void ProcessForWrite(IWriteValueDescriptor<IAsyncResult> descriptor)
+            public void ProcessForWrite(IWriteOnlyValueDescriptor<IAsyncResult> descriptor)
             {
                 // Sets all fields that are assignable from IAsyncResult to null.
                 // (i.e: all fields that have static type object or IAsyncResult)

@@ -69,10 +69,13 @@ namespace GraphClimber
     }
 
     internal class ReflectionValueDescriptor<TField, TRuntime> :
-        IReadWriteValueDescriptor<TField>,
         IReadOnlyValueDescriptor<TRuntime>,
-        IWriteExactValueDescriptor<TField>,
-        IReflectionValueDescriptor
+        IReadOnlyExactValueDescriptor<TRuntime>,
+        IWriteOnlyExactValueDescriptor<TField>,
+        IWriteOnlyValueDescriptor<TField>,
+        IReadWriteValueDescriptor<TField>,
+        IReflectionValueDescriptor where
+            TRuntime : TField
     {
         private readonly IStateMemberProvider _stateMemberProvider;
         private readonly IReflectionStateMember _stateMember;
@@ -100,7 +103,13 @@ namespace GraphClimber
 
         TRuntime IReadOnlyValueDescriptor<TRuntime>.Get()
         {
-            return (TRuntime) _stateMember.GetValue(_owner);
+            return (TRuntime) Get();
+        }
+
+        TRuntime IReadOnlyExactValueDescriptor<TRuntime>.Get()
+        {
+            IReadOnlyValueDescriptor<TRuntime> casted = this;
+            return casted.Get();
         }
 
         public void Set(TField value)
@@ -154,7 +163,8 @@ namespace GraphClimber
             return result;
         }
 
-        private void VisitMember(IReflectionStateMember member, object owner, Type runtimeMemberType, bool skipSpecialMethod)
+        private void VisitMember(IReflectionStateMember member, object owner, Type runtimeMemberType,
+            bool skipSpecialMethod)
         {
             IReflectionValueDescriptor descriptor =
                 CreateDescriptor(member, owner, runtimeMemberType);
@@ -162,7 +172,8 @@ namespace GraphClimber
             CallProcess(descriptor, skipSpecialMethod);
         }
 
-        private IReflectionValueDescriptor CreateDescriptor(IReflectionStateMember member, object value, Type runtimeMemberType)
+        private IReflectionValueDescriptor CreateDescriptor(IReflectionStateMember member, object value,
+            Type runtimeMemberType)
         {
             Type descriptorType = typeof (ReflectionValueDescriptor<,>)
                 .MakeGenericType(member.MemberType, runtimeMemberType);
@@ -177,7 +188,7 @@ namespace GraphClimber
 
         public void Route(IStateMember stateMember, object owner)
         {
-            VisitMember((IReflectionStateMember)stateMember,
+            VisitMember((IReflectionStateMember) stateMember,
                 owner,
                 stateMember.MemberType,
                 true);
