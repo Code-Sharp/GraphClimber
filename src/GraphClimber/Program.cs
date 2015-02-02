@@ -24,7 +24,7 @@ namespace GraphClimber
 </Person>";
 
 
-            // Writer code:
+            // Reader code:
             SlowGraphClimber<XmlReaderProcessor> climber2 =
                 new SlowGraphClimber<XmlReaderProcessor>
                     (new ReflectionPropertyStateMemberProvider());
