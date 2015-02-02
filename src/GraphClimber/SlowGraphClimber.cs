@@ -139,45 +139,65 @@ namespace GraphClimber
             foreach (IReflectionStateMember member in 
                 members.Cast<IReflectionStateMember>())
             {
-                VisitMember(member, value, member.MemberType);
+                Type runtimeMemberType = GetRuntimeMemberType(member, member.MemberType, value);
+                VisitMember(member, value, runtimeMemberType, false);
             }
         }
 
-        private void VisitMember(IReflectionStateMember member, object value, Type staticMemberType)
-        {
-            IReflectionValueDescriptor descriptor = CreateDescriptor(member, value, staticMemberType);
-
-            CallProcess(descriptor, staticMemberType);
-        }
-
-        private IReflectionValueDescriptor CreateDescriptor(IReflectionStateMember member, object value,
-            Type staticMemberType)
+        private Type GetRuntimeMemberType(IReflectionStateMember member, Type memberType, object value)
         {
             object memberValue = member.GetValue(value);
 
-            Type memberType =
-                memberValue != null ? memberValue.GetType() : staticMemberType;
+            var result =
+                memberValue != null ? memberValue.GetType() : memberType;
 
+            return result;
+        }
+
+        private void VisitMember(IReflectionStateMember member, object owner, Type runtimeMemberType, bool skipSpecialMethod)
+        {
+            IReflectionValueDescriptor descriptor =
+                CreateDescriptor(member, owner, runtimeMemberType);
+
+            CallProcess(descriptor, skipSpecialMethod);
+        }
+
+        private IReflectionValueDescriptor CreateDescriptor(IReflectionStateMember member, object value, Type runtimeMemberType)
+        {
             Type descriptorType = typeof (ReflectionValueDescriptor<,>)
-                .MakeGenericType(staticMemberType, memberType);
+                .MakeGenericType(member.MemberType, runtimeMemberType);
 
             IReflectionValueDescriptor descriptor =
                 (IReflectionValueDescriptor) Activator.CreateInstance
                     (descriptorType,
                         _processor, _stateMemberProvider, member, value);
+
             return descriptor;
         }
 
-        public void Reprocess(Type staticMemberType)
+        public void Route(IStateMember stateMember, object owner)
         {
-            VisitMember(this._stateMember, _owner, staticMemberType);
+            VisitMember((IReflectionStateMember)stateMember,
+                owner,
+                stateMember.MemberType,
+                true);
         }
 
-        private void CallProcess(IReflectionValueDescriptor descriptor, Type fieldType)
+        public void Route(IStateMember stateMember, Type runtimeMemberType, object owner)
         {
+            VisitMember((IReflectionStateMember) stateMember,
+                owner,
+                runtimeMemberType,
+                true);
+        }
+
+        private void CallProcess(IReflectionValueDescriptor descriptor, bool skipSpecialMethod)
+        {
+            Type fieldType = descriptor.StateMember.MemberType;
+
             bool methodCalled = false;
 
-            if (!fieldType.IsValueType)
+            if (!fieldType.IsValueType && !skipSpecialMethod)
             {
                 methodCalled = TryCallSpecialMethod(descriptor, fieldType);
             }

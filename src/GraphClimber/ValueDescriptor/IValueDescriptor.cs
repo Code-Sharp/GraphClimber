@@ -22,7 +22,8 @@ namespace GraphClimber
         /// </summary>
         void Climb();
 
-        // TODO: remove this
-        void Reprocess(Type staticMemberType);
+        void Route(IStateMember stateMember, Type runtimeMemberType, object owner);
+
+        void Route(IStateMember stateMember, object owner);
     }
 }
