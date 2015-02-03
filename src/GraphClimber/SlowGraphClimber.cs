@@ -61,7 +61,7 @@ namespace GraphClimber
         }
     }
 
-    internal interface IReflectionStateMember : IStateMember
+    public interface IReflectionStateMember : IStateMember
     {
         object GetValue(object owner);
 

@@ -3,14 +3,34 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Xml;
 using System.Xml.Linq;
 
 namespace GraphClimber
 {
-    class Program
+    public class Program
     {
+        public static void DoSomething<[My] T>(StrongBox<T> hello)
+        {
+            Console.WriteLine(hello);
+        }
+
+
         static void Main(string[] args)
+        {
+            //IStore store = new TrivialStore();
+
+            //store.Set("A", 5);
+            //store.GetInner("A").Set("A", 10);
+
+            //SerializeDeserializeXML();
+
+            SerializeDeserializeStore();
+        }
+
+        private static void SerializeDeserializeXML()
         {
             var text =
                 @"<Person Type=""GraphClimber.Program+Person, GraphClimber, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"">
@@ -31,7 +51,7 @@ namespace GraphClimber
 
             XElement reader = XElement.Parse(text);
 
-            XmlReaderProcessor processor2 = 
+            XmlReaderProcessor processor2 =
                 new XmlReaderProcessor(reader);
 
             Person person2 = new Person();
@@ -71,7 +91,219 @@ namespace GraphClimber
             
             public object Surprise { get; set; }
         }
+
+        public static void SerializeDeserializeStore()
+        {
+            var store = new TrivialStore();
+
+            SlowGraphClimber<StoreWriterProcessor> climber = new SlowGraphClimber<StoreWriterProcessor>(new ReflectionPropertyStateMemberProvider());
+
+            var processor = new StoreWriterProcessor(store);
+            var box = new StrongBox<Person>(new Person()
+            {
+                Age = 26,
+                Name = "Elad Zelinger",
+                Surprise = new Person()
+                {
+                    Age = 21,
+                    Name = "Yosi Attias",
+                    Surprise = 1
+                }
+            });
+
+            climber.Climb(box, processor);
+            
+
+            SlowGraphClimber<StoreReaderProcessor> readerClimber = new SlowGraphClimber<StoreReaderProcessor>(new ReflectionPropertyStateMemberProvider());
+
+            var readerProcessor = new StoreReaderProcessor(store);
+            var readBox = new StrongBox<object>(null);
+            readerClimber.Climb(readBox, readerProcessor);
+
+        }
     }
+
+    public class StoreReaderProcessor
+    {
+        private IStore _store;
+
+        public StoreReaderProcessor(IStore store)
+        {
+            _store = store;
+        }
+
+        [ProcessorMethod(Precedence = 102)]
+        public void Process<T>(IWriteOnlyValueDescriptor<T> descriptor)
+        {
+            string type;
+            if (_store.TryGet("Type", out type))
+            {
+
+                var value = (T)Activator.CreateInstance(Type.GetType(type));
+
+                descriptor.Set(value);
+
+                var temp = _store;
+                _store = _store.GetInner(descriptor.StateMember.Name);
+
+                descriptor.Climb();
+
+                _store = temp;
+            }
+        }
+
+        [ProcessorMethod(Precedence = 99)]
+        public void ProcessPrimitives<[Primitive]T>(IWriteOnlyExactValueDescriptor<T> descriptor)
+        {
+            T value;
+            if (_store.TryGet<T>(descriptor.StateMember.Name, out value))
+            {
+                descriptor.Set(value);
+            }
+            
+        }
+
+        [ProcessorMethod]
+        public void Process(IWriteOnlyValueDescriptor<object> descriptor)
+        {
+            string type;
+
+            if (_store.TryGet("Type", out type))
+            { 
+                descriptor.Route(new MyCustomStateMember((IReflectionStateMember)descriptor.StateMember, Type.GetType(type)), descriptor.Owner);
+            }
+        }
+    }
+
+    public class StoreWriterProcessor 
+    {
+        private IStore _store;
+
+        public StoreWriterProcessor(IStore store)
+        {
+            _store = store;
+        }
+
+        [ProcessorMethod]
+        public void Process<T>(IReadOnlyValueDescriptor<T> descriptor)
+        {
+            var value = descriptor.Get();
+            _store.Set("Type", value.GetType().AssemblyQualifiedName);
+
+            var temp = _store;
+
+            _store = _store.GetInner(descriptor.StateMember.Name);
+
+            descriptor.Climb();
+
+            _store = temp;
+        }
+
+        [ProcessorMethod(Precedence = 99)]
+        public void ProcessPrimitives<[Primitive]T>(IReadOnlyValueDescriptor<T> descriptor)
+        {
+            var value = descriptor.Get();
+            // _store.Set("Type", value.GetType());
+            _store.Set(descriptor.StateMember.Name, value);
+        }
+
+    }
+
+    public interface IGenericParameterFilter
+    {
+
+        bool PassesFilter(Type type);
+
+    }
+
+
+    internal class MyAttribute : Attribute
+    {
+    }
+
+
+    [AttributeUsage(AttributeTargets.GenericParameter)]
+    public class PrimitiveAttribute : Attribute, IGenericParameterFilter
+    {
+        public bool PassesFilter(Type type)
+        {
+            return type.IsPrimitive || type == typeof(string);
+        }
+    }
+
+    public class TrivialStore : IStore
+    {
+        private readonly IDictionary<string, object> _store = new Dictionary<string, object>();
+
+        public IStore GetInner(string path)
+        {
+            return new InnerStore(this, path);
+        }
+
+        public void Set<T>(string path, T value)
+        {
+            _store[path] = value;
+        }
+
+        public bool TryGet<T>(string path, out T value)
+        {
+            object boxedValue;
+            if (_store.TryGetValue(path, out boxedValue))
+            {
+                value = (T) boxedValue;
+                return true;
+            }
+            value = default(T);
+            return false;
+        }
+
+        private class InnerStore : IStore
+        {
+            private readonly IStore _store;
+            private readonly string _path;
+
+            public InnerStore(IStore store, string path)
+            {
+                _store = store;
+                _path = path;
+            }
+
+            public IStore GetInner(string path)
+            {
+                return new InnerStore(_store, GetPath(path));
+            }
+
+            public void Set<T>(string path, T value)
+            {
+                _store.Set(GetPath(path), value);
+            }
+
+            public bool TryGet<T>(string path, out T value)
+            {
+                return _store.TryGet(GetPath(path), out value);
+            }
+
+            private string GetPath(string path)
+            {
+                return _path + "." + path;
+            }
+        }
+
+    }
+
+
+
+    public interface IStore
+    {
+
+        IStore GetInner(string path);
+
+        void Set<T>(string path, T value);
+
+        bool TryGet<T>(string path, out T value);
+
+    }
+
 
     internal class XmlReaderProcessor
     {
@@ -119,7 +351,7 @@ namespace GraphClimber
             _reader = temp;
         }
 
-        private void CreateObject<T>(IWriteOnlyValueDescriptor<T> descriptor) 
+        private void CreateObject<T>(IWriteOnlyValueDescriptor<T> descriptor)
         {
             XAttribute attribute = _reader.Attribute("Type");
 
@@ -156,57 +388,58 @@ namespace GraphClimber
             }
         }
 
-        private class MyCustomStateMember : IReflectionStateMember
-        {
-            private readonly IReflectionStateMember _underlying;
-            private readonly Type _memberType;
-
-            public MyCustomStateMember(IReflectionStateMember underlying, Type memberType)
-            {
-                _underlying = underlying;
-                _memberType = memberType;
-            }
-
-            public string Name
-            {
-                get { return _underlying.Name; }
-            }
-
-            public Type OwnerType
-            {
-                get { return _underlying.OwnerType; }
-            }
-
-            public Type MemberType
-            {
-                get
-                {
-                    return _memberType;
-                }
-            }
-
-            public Expression GetGetExpression(Expression obj)
-            {
-                return _underlying.GetGetExpression(obj);
-            }
-
-            public Expression GetSetExpression(Expression obj, Expression value)
-            {
-                return _underlying.GetSetExpression(obj, value);
-            }
-
-            public object GetValue(object owner)
-            {
-                return _underlying.GetValue(owner);
-            }
-
-            public void SetValue(object owner, object value)
-            {
-                _underlying.SetValue(owner, value);
-            }
-        }
+        
     }
 
+    public class MyCustomStateMember : IReflectionStateMember
+    {
+        private readonly IReflectionStateMember _underlying;
+        private readonly Type _memberType;
+
+        public MyCustomStateMember(IReflectionStateMember underlying, Type memberType)
+        {
+            _underlying = underlying;
+            _memberType = memberType;
+        }
+
+        public string Name
+        {
+            get { return _underlying.Name; }
+        }
+
+        public Type OwnerType
+        {
+            get { return _underlying.OwnerType; }
+        }
+
+        public Type MemberType
+        {
+            get
+            {
+                return _memberType;
+            }
+        }
+
+        public Expression GetGetExpression(Expression obj)
+        {
+            return _underlying.GetGetExpression(obj);
+        }
+
+        public Expression GetSetExpression(Expression obj, Expression value)
+        {
+            return _underlying.GetSetExpression(obj, value);
+        }
+
+        public object GetValue(object owner)
+        {
+            return _underlying.GetValue(owner);
+        }
+
+        public void SetValue(object owner, object value)
+        {
+            _underlying.SetValue(owner, value);
+        }
+    }
 
 
 
