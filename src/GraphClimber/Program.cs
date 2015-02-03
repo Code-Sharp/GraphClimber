@@ -340,15 +340,11 @@ namespace GraphClimber
         [ProcessorMethod(Precedence = 102)]
         public void ProcessGeneric<T>(IWriteOnlyValueDescriptor<T> descriptor)
         {
-            XElement temp = _reader;
-
-            _reader = _reader.Element(descriptor.StateMember.Name);
+            var innerReader = _reader.Element(descriptor.StateMember.Name);
 
             CreateObject(descriptor);
 
-            descriptor.Climb();
-
-            _reader = temp;
+            descriptor.Climb(new XmlReaderProcessor(innerReader));
         }
 
         private void CreateObject<T>(IWriteOnlyValueDescriptor<T> descriptor)
@@ -384,7 +380,7 @@ namespace GraphClimber
                 // TODO: this will be the route method..
                 descriptor.Route
                     (new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember,
-                        instanceType), descriptor.Owner);
+                        instanceType), descriptor.Owner, this);
             }
         }
 
@@ -476,7 +472,7 @@ namespace GraphClimber
         {
             WritePropertyName(descriptor);
 
-            descriptor.Climb();
+            descriptor.Climb(this);
 
             EndWritePropertyName();
         }
