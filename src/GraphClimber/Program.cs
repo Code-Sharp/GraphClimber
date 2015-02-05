@@ -430,6 +430,16 @@ namespace GraphClimber
             return _underlying.GetSetExpression(obj, value);
         }
 
+        public bool IsArrayElement
+        {
+            get { return _underlying.IsArrayElement; }
+        }
+
+        public int[] ElementIndex
+        {
+            get { return _underlying.ElementIndex; }
+        }
+
         public object GetValue(object owner)
         {
             return _underlying.GetValue(owner);

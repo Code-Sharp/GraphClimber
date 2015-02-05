@@ -37,5 +37,15 @@ namespace GraphClimber
         /// <param name="value">The value to be set</param>
         /// <returns></returns>
         Expression GetSetExpression(Expression obj, Expression value);
+
+        /// <summary>
+        /// Gets a value indicating whether this member is an array element.
+        /// </summary>
+        bool IsArrayElement { get; }
+
+        /// <summary>
+        /// Gets the index of this element in the array.
+        /// </summary>
+        int[] ElementIndex { get; }
     }
 }

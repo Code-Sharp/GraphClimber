@@ -50,6 +50,20 @@ namespace GraphClimber
             throw new NotImplementedException();
         }
 
+        public bool IsArrayElement
+        {
+            get { return false; }
+        }
+
+        public int[] ElementIndex
+        {
+            get
+            {
+                // The empty index
+                return new int[0];
+            }
+        }
+
         public object GetValue(object owner)
         {
             return _property.GetValue(owner);
@@ -142,19 +156,52 @@ namespace GraphClimber
                 throw new NullReferenceException("Can't climb on null, you silly developer!");
             }
 
-            IEnumerable<IStateMember> members =
-                _stateMemberProvider.Provide(runtimeType);
-
-            foreach (IReflectionStateMember member in 
-                members.Cast<IReflectionStateMember>())
+            if (runtimeType.IsArray)
             {
-                Type runtimeMemberType = GetRuntimeMemberType(member, member.MemberType, value);
-                VisitMember(member, value, runtimeMemberType, false);
+                ClimbArray((Array) (object) value);
+            }
+            else
+            {
+                IEnumerable<IStateMember> members =
+                    _stateMemberProvider.Provide(runtimeType);
+
+                foreach (IReflectionStateMember member in
+                    members.Cast<IReflectionStateMember>())
+                {
+                    Type runtimeMemberType = GetRuntimeMemberType(member, value);
+                    VisitMember(member, value, runtimeMemberType, false);
+                }                
             }
         }
 
-        private Type GetRuntimeMemberType(IReflectionStateMember member, Type memberType, object value)
+        private void ClimbArray(Array array)
         {
+            int dimension = array.Rank;
+
+            IEnumerable<IEnumerable<int>> indexesSets =
+                Enumerable.Range(0, dimension)
+                .Select(index => Enumerable.Range(array.GetLowerBound(index),
+                    array.GetLength(index)));
+
+            IEnumerable<IEnumerable<int>> allIndexes =
+                Combinatorics.CartesianProduct(indexesSets.Reverse());
+
+            Type arrayElementType = array.GetType().GetElementType();
+
+            foreach (IEnumerable<int> indexSet in allIndexes)
+            {
+                int[] indices = indexSet.Reverse().ToArray();
+
+                var member = new ArrayStateMember(array.GetType(), arrayElementType ,indices);
+                Type runtimeMemberType = GetRuntimeMemberType(member, array);
+                VisitMember(member, array, runtimeMemberType, false);
+            }
+        }
+
+        private Type GetRuntimeMemberType(IReflectionStateMember member, object value)
+        {
+            Type memberType = member.MemberType;
+
             object memberValue = member.GetValue(value);
 
             var result =
@@ -228,7 +275,7 @@ namespace GraphClimber
 
             if (processor != null && value == null)
             {
-                CallGenericMethod(descriptor, fieldType, "ProcessNull");
+                CallGenericMethod(descriptor, typeof (INullProcessor), fieldType, "ProcessNull");
                 return true;
             }
             else if ((value != null) &&
@@ -236,17 +283,17 @@ namespace GraphClimber
                      revisitedProcessor.Visited(value))
             {
                 Type runtimeType = value.GetType();
-                CallGenericMethod(descriptor, runtimeType, "ProcessRevisited");
+                CallGenericMethod(descriptor, typeof (IRevisitedProcessor), runtimeType, "ProcessRevisited");
                 return true;
             }
 
             return false;
         }
 
-        private void CallGenericMethod(IReflectionValueDescriptor descriptor, Type genericType, string methodName)
+        private void CallGenericMethod(IReflectionValueDescriptor descriptor, Type processorType, Type genericType, string methodName)
         {
             MethodInfo methodToCall =
-                typeof (INullProcessor).GetMethod(methodName)
+                processorType.GetMethod(methodName)
                     .MakeGenericMethod(genericType);
 
             methodToCall.Invoke(_processor, new object[] {descriptor});
@@ -300,6 +347,83 @@ namespace GraphClimber
             }
 
             return null;
+        }
+    }
+
+    internal class ArrayStateMember : IReflectionStateMember
+    {
+        private readonly Type _arrayType;
+        private readonly Type _arrayElementType;
+        private readonly int[] _indices;
+
+        public ArrayStateMember(Type arrayType, Type arrayElementType, int[] indices)
+        {
+            _arrayType = arrayType;
+            _arrayElementType = arrayElementType;
+            _indices = indices;
+        }
+
+        public string Name
+        {
+            get
+            {
+                return string.Format("[{0}]",
+                    string.Join(", ", _indices));
+            }
+        }
+
+        public Type OwnerType
+        {
+            get
+            {
+                return _arrayType;
+            }
+        }
+
+        public Type MemberType
+        {
+            get
+            {
+                return _arrayElementType;
+            }
+        }
+
+        public Expression GetGetExpression(Expression obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Expression GetSetExpression(Expression obj, Expression value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsArrayElement
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public int[] ElementIndex
+        {
+            get
+            {
+                return _indices;
+            }
+        }
+
+        public object GetValue(object owner)
+        {
+            Array array = owner as Array;
+            return array.GetValue(_indices);
+        }
+
+        public void SetValue(object owner, object value)
+        {
+            Array array = owner as Array;
+            array.SetValue(value, _indices);
         }
     }
 
