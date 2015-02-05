@@ -65,10 +65,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bulks\IPrimitiveProcessor.cs" />
+    <Compile Include="Examples\BinaryReaderProcessor.cs" />
     <Compile Include="Examples\BinaryWriterProcessor.cs" />
     <Compile Include="Examples\IStore.cs" />
     <Compile Include="Examples\MyCustomStateMember.cs" />
     <Compile Include="Examples\OldGames.cs" />
+    <Compile Include="Examples\PositionRestore.cs" />
     <Compile Include="Examples\StoreReaderProcessor.cs" />
     <Compile Include="Examples\StoreWriterProcessor.cs" />
     <Compile Include="Examples\TrivialStore.cs" />
