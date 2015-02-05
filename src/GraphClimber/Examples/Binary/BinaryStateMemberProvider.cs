@@ -25,9 +25,10 @@ namespace GraphClimber.Examples
     {
         private readonly IReflectionStateMember _stateMember;
         private readonly bool _knownType;
+        private readonly bool _headerWasRead;
 
         public BinaryStateMember(IReflectionStateMember stateMember): 
-            this(stateMember, IsKnownType(stateMember))
+            this(stateMember, IsKnownType(stateMember), false)
         {
         }
 
@@ -38,10 +39,13 @@ namespace GraphClimber.Examples
             return type.IsSealed || type.IsValueType;
         }
 
-        public BinaryStateMember(IReflectionStateMember stateMember, bool knownType)
+        public BinaryStateMember(IReflectionStateMember stateMember, 
+            bool knownType, 
+            bool headerWasRead = false)
         {
             _stateMember = stateMember;
             _knownType = knownType;
+            _headerWasRead = headerWasRead;
         }
 
         public string Name
@@ -82,6 +86,11 @@ namespace GraphClimber.Examples
         public bool KnownType
         {
             get { return _knownType; }
+        }
+
+        public bool HeaderWasRead
+        {
+            get { return _headerWasRead; }
         }
 
         public object GetValue(object owner)

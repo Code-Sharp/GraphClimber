@@ -15,73 +15,95 @@ namespace GraphClimber.Examples
             _reader = reader;
         }
 
-        [ProcessorMethod(Precedence = 102)]
-        public void Process<T>(IWriteOnlyValueDescriptor<T> descriptor)
+        [ProcessorMethod(Precedence = 98)]
+        public void ProcessObject(IWriteOnlyValueDescriptor<object> descriptor)
         {
-            Type type = descriptor.StateMember.MemberType;
+            Type type;
+
+            if (TryReadReferenceType(descriptor, out type))
+            {
+                descriptor.Route(
+                    new BinaryStateMember(
+                        new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, type), 
+                        true, 
+                        true),
+                    descriptor.Owner);
+            }
+        }
+
+        // Won't actually work because of current graph climber implementation details
+        // (parent is always boxed)
+        [ProcessorMethod(Precedence = 102)]
+        public void ProcessStruct<T>(IWriteOnlyValueDescriptor<T> descriptor)
+            where T : struct
+        {
+            T instance = new T();
+            descriptor.Set(instance);
+            descriptor.Climb();
+        }
+
+        [ProcessorMethod(Precedence = 102)]
+        public void ProcessReferenceType<T>(IWriteOnlyValueDescriptor<T> descriptor)
+            where T : class
+        {
+            Type type;
+
+            if (TryReadReferenceType(descriptor, out type))
+            {
+                T instance = (T)Activator.CreateInstance(type);
+                _objects.Add(instance);
+                descriptor.Set(instance);
+                descriptor.Climb();                
+            }
+        }
+
+        private bool TryReadReferenceType<T>(IWriteOnlyValueDescriptor<T> descriptor, out Type type)
+            where T : class
+        {
+            type = descriptor.StateMember.MemberType;
 
             BinaryStateMember member = descriptor.StateMember as BinaryStateMember;
-   
-            if (!member.KnownType)
+
+            if (member.HeaderWasRead)
             {
-                string assemblyQualifiedName = _reader.ReadString();
-                type = Type.GetType(assemblyQualifiedName);
+                return true;
+            }
 
-                if (assemblyQualifiedName == BinaryWriterProcessor.NULL_STRING)
-                {
-                    return;
-                }
+            byte header = _reader.ReadByte();
 
-                if (assemblyQualifiedName == BinaryWriterProcessor.VISITED_STRING)
-                {
-                    HandleVisited(descriptor);
-                    return;
-                }
+            if (header == ReadWriteHeader.Null)
+            {
+                descriptor.Set(null);
+            }
+            else if (header == ReadWriteHeader.Revisited)
+            {
+                HandleVisited(descriptor);
             }
             else
             {
-                using (var restore = PositionRestore(_reader))
+                if (!member.KnownType &&
+                    (header == ReadWriteHeader.UnknownType))
                 {
-                    var stringRead = _reader.ReadString();
-                    var isNull = stringRead == BinaryWriterProcessor.NULL_STRING;
-                    if (isNull)
-                    {
-                        restore.Cancel();
-                        return;
-                    }
+                    string assemblyQualifiedName = _reader.ReadString();
 
-                    var isRevisited = stringRead == BinaryWriterProcessor.VISITED_STRING;
-
-                    if (isRevisited)
-                    {
-                        HandleVisited(descriptor);
-                        restore.Cancel();
-                        return;
-                    }
+                    type = Type.GetType(assemblyQualifiedName);
                 }
+
+                return true;
             }
 
-            if (type.IsValueType)
-            {
-                descriptor.Route(new MyCustomStateMember((IReflectionStateMember)descriptor.StateMember, type), descriptor.Owner);
-            }
-            else
-            {
-                var instance = (T)Activator.CreateInstance(type);
-                _objects.Add(instance);
-                descriptor.Set(instance); 
-                descriptor.Climb();
-            }
+            return false;
+        }
+
+        [ProcessorMethod(Precedence = 102)]
+        public void ProcessReferenceType(IWriteOnlyValueDescriptor<object> descriptor)
+        {            
         }
 
         private void HandleVisited<T>(IWriteOnlyValueDescriptor<T> descriptor)
         {
-            descriptor.Set((T) _objects[_reader.ReadInt32() - 1]);
-        }
-
-        private PositionRestore PositionRestore(BinaryReader reader)
-        {
-            return new PositionRestore(reader.BaseStream);
+            int index = _reader.ReadInt32();
+            descriptor.Set((T) _objects[index - 1]);
         }
 
         [ProcessorMethod]
@@ -153,9 +175,8 @@ namespace GraphClimber.Examples
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<DateTime> descriptor)
         {
-            var ticks = _reader.ReadInt64();
+            long ticks = _reader.ReadInt64();
             descriptor.Set(DateTime.FromBinary(ticks));
         }
-
     }
 }

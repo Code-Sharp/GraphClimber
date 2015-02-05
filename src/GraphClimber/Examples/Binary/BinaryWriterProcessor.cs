@@ -5,6 +5,14 @@ using GraphClimber.Bulks;
 
 namespace GraphClimber.Examples
 {
+    public static class ReadWriteHeader
+    {
+        public const byte Null = 1;
+        public const byte Revisited = 2;
+        public const byte KnownType = 3;
+        public const byte UnknownType = 4;
+    }
+
     class BinaryWriterProcessor : IReadOnlyPrimitiveProcessor, INullProcessor, IRevisitedProcessor
     {
         public const string NULL_STRING = "Yalla<>Balaghan";
@@ -56,14 +64,23 @@ namespace GraphClimber.Examples
             // SlowGraphClimber.
             if (member == null || !member.KnownType)
             {
-                string assemblyQualifiedName = runtimeType.AssemblyQualifiedName;
-
-                if (string.IsNullOrEmpty(assemblyQualifiedName))
+                if ((member != null) &&
+                    (member.MemberType == runtimeType))
                 {
-                    throw new NotSupportedException("Serializing types without assembly qualified name is not supported (yet).");
+                    _writer.Write(ReadWriteHeader.KnownType);
                 }
+                else
+                {
+                    string assemblyQualifiedName = runtimeType.AssemblyQualifiedName;
 
-                _writer.Write(assemblyQualifiedName);
+                    if (string.IsNullOrEmpty(assemblyQualifiedName))
+                    {
+                        throw new NotSupportedException("Serializing types without assembly qualified name is not supported (yet).");
+                    }
+
+                    _writer.Write(ReadWriteHeader.UnknownType);
+                    _writer.Write(assemblyQualifiedName);                    
+                }
             }
         }
 
@@ -141,7 +158,7 @@ namespace GraphClimber.Examples
 
         public void ProcessNull<TField>(IWriteOnlyValueDescriptor<TField> descriptor)
         {
-            _writer.Write(NULL_STRING);
+            _writer.Write((byte) ReadWriteHeader.Null);
         }
 
         public bool Visited(object obj)
@@ -157,7 +174,7 @@ namespace GraphClimber.Examples
 
         public void ProcessRevisited<TField>(IReadOnlyValueDescriptor<TField> descriptor)
         {
-            _writer.Write(VISITED_STRING);
+            _writer.Write((byte) ReadWriteHeader.Revisited);
             _writer.Write(_visitedHash[descriptor.Get()]);
         }
     }
