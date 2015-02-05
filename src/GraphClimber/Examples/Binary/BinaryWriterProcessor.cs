@@ -5,7 +5,7 @@ using GraphClimber.Bulks;
 
 namespace GraphClimber.Examples
 {
-    class BinaryWriterProcessor : IPrimitiveProcessor, INullProcessor, IRevisitedProcessor
+    class BinaryWriterProcessor : IReadOnlyPrimitiveProcessor, INullProcessor, IRevisitedProcessor
     {
         public const string NULL_STRING = "Yalla<>Balaghan";
         public const string VISITED_STRING = "Visitied~";
@@ -24,10 +24,39 @@ namespace GraphClimber.Examples
 
             var runtimeType = objectToSerialize.GetType();
 
-            Type memberType = descriptor.StateMember.MemberType;
-            if (!memberType.IsSealed || !memberType.IsValueType)
+            BinaryStateMember member = descriptor.StateMember as BinaryStateMember;
+            
+            WriteAssemblyQualifiedNameIfNeeded(member, runtimeType);
+
+            descriptor.Climb();
+        }
+
+        [ProcessorMethod(Precedence = 97)]
+        // Processes when the field type is exactly object.
+        public void ProcessObject(IReadWriteValueDescriptor<object> descriptor)
+        {
+            object objectToSerialize = descriptor.Get();
+            
+            BinaryStateMember member = descriptor.StateMember as BinaryStateMember;
+            
+            Type runtimeType = objectToSerialize.GetType();
+            
+            WriteAssemblyQualifiedNameIfNeeded(member, runtimeType);
+
+            descriptor.Route(
+                new BinaryStateMember(
+                    new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, runtimeType),
+                    true),
+                descriptor.Owner);
+        }
+
+        private void WriteAssemblyQualifiedNameIfNeeded(BinaryStateMember member, Type runtimeType)
+        {
+            // If member == null is a patch because the way we implemented route in 
+            // SlowGraphClimber.
+            if (member == null || !member.KnownType)
             {
-                var assemblyQualifiedName = runtimeType.AssemblyQualifiedName;
+                string assemblyQualifiedName = runtimeType.AssemblyQualifiedName;
 
                 if (string.IsNullOrEmpty(assemblyQualifiedName))
                 {
@@ -36,86 +65,76 @@ namespace GraphClimber.Examples
 
                 _writer.Write(assemblyQualifiedName);
             }
-
-            if (runtimeType.IsPrimitive || runtimeType == typeof(string))
-            {
-                descriptor.Route(new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, runtimeType), descriptor.Owner);
-            }
-            else
-            {
-                descriptor.Climb();
-            }
         }
 
-
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<byte> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<byte> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<sbyte> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<sbyte> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<short> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<short> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<ushort> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<ushort> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<int> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<int> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<uint> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<uint> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<long> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<long> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<ulong> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<ulong> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<char> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<char> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<double> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<double> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<string> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<string> descriptor)
         {
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<DateTime> descriptor)
+        public void ProcessForReadOnly(IReadOnlyValueDescriptor<DateTime> descriptor)
         {
             _writer.Write(descriptor.Get().Ticks);
         }

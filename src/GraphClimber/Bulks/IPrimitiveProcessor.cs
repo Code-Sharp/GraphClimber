@@ -15,4 +15,18 @@ namespace GraphClimber.Bulks
     {
 
     }
+
+    /// <summary>
+    /// Defines an actor that processes all the .net primitives.
+    /// </summary>
+    public interface IReadOnlyPrimitiveProcessor :
+        IReadOnlyProcessor<byte>, IReadOnlyProcessor<sbyte>,
+        IReadOnlyProcessor<short>, IReadOnlyProcessor<ushort>,
+        IReadOnlyProcessor<int>, IReadOnlyProcessor<uint>,
+        IReadOnlyProcessor<long>, IReadOnlyProcessor<ulong>,
+        IReadOnlyProcessor<char>, IReadOnlyProcessor<double>,
+        IReadOnlyProcessor<string>, IReadOnlyProcessor<DateTime>
+    {
+
+    }
 }

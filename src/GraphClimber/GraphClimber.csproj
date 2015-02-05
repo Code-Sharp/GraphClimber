@@ -65,18 +65,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bulks\IPrimitiveProcessor.cs" />
-    <Compile Include="Examples\BinaryReaderProcessor.cs" />
-    <Compile Include="Examples\BinaryWriterProcessor.cs" />
-    <Compile Include="Examples\IStore.cs" />
+    <Compile Include="Examples\Binary\BinaryReaderProcessor.cs" />
+    <Compile Include="Examples\Binary\BinaryStateMemberProvider.cs" />
+    <Compile Include="Examples\Binary\BinaryWriterProcessor.cs" />
+    <Compile Include="Examples\Store\IStore.cs" />
     <Compile Include="Examples\MyCustomStateMember.cs" />
     <Compile Include="Examples\OldGames.cs" />
-    <Compile Include="Examples\PositionRestore.cs" />
-    <Compile Include="Examples\StoreReaderProcessor.cs" />
-    <Compile Include="Examples\StoreWriterProcessor.cs" />
-    <Compile Include="Examples\SuperBinaryWriter.cs" />
-    <Compile Include="Examples\TrivialStore.cs" />
-    <Compile Include="Examples\XmlReaderProcessor.cs" />
-    <Compile Include="Examples\XmlWriterProcessor.cs" />
+    <Compile Include="Examples\Binary\PositionRestore.cs" />
+    <Compile Include="Examples\Store\StoreReaderProcessor.cs" />
+    <Compile Include="Examples\Store\StoreWriterProcessor.cs" />
+    <Compile Include="Examples\Store\TrivialStore.cs" />
+    <Compile Include="Examples\Binary\SuperBinaryWriter.cs" />
+    <Compile Include="Examples\Xml\XmlReaderProcessor.cs" />
+    <Compile Include="Examples\Xml\XmlWriterProcessor.cs" />
     <Compile Include="GenericArgumentBinder.cs" />
     <Compile Include="IEnumProcessor.cs" />
     <Compile Include="IGenericParameterFilter.cs" />
