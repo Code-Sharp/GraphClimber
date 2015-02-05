@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using GraphClimber.Examples;
@@ -22,7 +23,30 @@ namespace GraphClimber
 
             //SerializeDeserializeXML();
 
-            SerializeDeserializeStore();
+            // SerializeDeserializeStore();
+
+            SerializeDeserializeBinary();
+        }
+
+        private static void SerializeDeserializeBinary()
+        {
+            var person = GetPerson();
+
+            var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(new ReflectionPropertyStateMemberProvider());
+            var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(new ReflectionPropertyStateMemberProvider());
+
+            var stream = new MemoryStream();
+            var binaryWriterProcessor = new BinaryWriterProcessor(new BinaryWriter(stream));
+
+            writeClimber.Route(person, binaryWriterProcessor);
+
+            stream.Position = 0;
+            var binaryReaderProcessor = new BinaryReaderProcessor(new BinaryReader(stream));
+
+            var strongBox = new StrongBox<object>();
+            readClimber.Climb(strongBox, binaryReaderProcessor);
+
+
         }
 
         private static void SerializeDeserializeXML()
@@ -85,6 +109,8 @@ namespace GraphClimber
             public int Age { get; set; }
             
             public object Surprise { get; set; }
+
+            public Person Father { get; set; }
         }
 
         public static void SerializeDeserializeStore()
@@ -94,17 +120,7 @@ namespace GraphClimber
             SlowGraphClimber<StoreWriterProcessor> climber = new SlowGraphClimber<StoreWriterProcessor>(new ReflectionPropertyStateMemberProvider());
 
             var processor = new StoreWriterProcessor(store);
-            var box = new StrongBox<Person>(new Person()
-            {
-                Age = 26,
-                Name = "Elad Zelinger",
-                Surprise = new Person()
-                {
-                    Age = 21,
-                    Name = "Yosi Attias",
-                    Surprise = 1
-                }
-            });
+            var box = new StrongBox<Person>(GetPerson());
 
             climber.Climb(box, processor);
             
@@ -115,6 +131,24 @@ namespace GraphClimber
             var readBox = new StrongBox<object>(null);
             readerClimber.Climb(readBox, readerProcessor);
 
+        }
+
+        private static Person GetPerson()
+        {
+            var ilan = new Person { Age = 26 + 25, Name = "Ilan Zelingher", Surprise = 1 };
+
+            return new Person()
+            {
+                Age = 26,
+                Name = "Elad Zelinger",
+                Father = ilan,
+                Surprise = new Person()
+                {
+                    Age = 21,
+                    Name = "Yosi Attias",
+                    Surprise = ilan
+                }
+            };
         }
     }
 }

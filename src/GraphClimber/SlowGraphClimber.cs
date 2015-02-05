@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace GraphClimber
 {
@@ -246,7 +247,8 @@ namespace GraphClimber
         private void CallGenericMethod(IReflectionValueDescriptor descriptor, Type genericType, string methodName)
         {
             MethodInfo methodToCall =
-                typeof (INullProcessor).GetMethod(methodName)
+                _processor.GetType()
+                    .GetMethod(methodName)
                     .MakeGenericMethod(genericType);
 
             methodToCall.Invoke(_processor, new object[] {descriptor});
@@ -319,18 +321,119 @@ namespace GraphClimber
 
         public void Climb(object parent, TProcessor processor)
         {
+            var descriptor = GetDescriptor(parent, processor);
+
+            descriptor.Climb();
+        }
+
+        public void Route(object current, TProcessor processor)
+        {
+            var descriptor = GetDescriptor(current, processor);
+
+            descriptor.Route(descriptor.StateMember, current.GetType(), new Box { Parent = current });
+        }
+
+        private ReflectionValueDescriptor<object, object> GetDescriptor(object current, TProcessor processor)
+        {
             var descriptor =
                 new ReflectionValueDescriptor<object, object>(processor,
                     _stateMemberProvider,
                     new ReflectionPropertyStateMember(typeof (Box).GetProperty("Parent")),
-                    new Box {Parent = parent});
-
-            descriptor.Climb();
+                    new Box {Parent = current});
+            return descriptor;
         }
+
 
         private class Box
         {
             public object Parent { get; set; }
         }
     }
+
+    /*
+    public class StaticValueDescriptor : IReadOnlyValueDescriptor<object>,
+        IReadOnlyExactValueDescriptor<object>,
+        IReadWriteValueDescriptor<object>
+    {
+        private readonly object _current;
+        private readonly object _processor;
+
+        public StaticValueDescriptor(object current, object processor)
+        {
+            _current = current;
+            _processor = processor;
+            throw new NotImplementedException();
+        }
+
+        public void Set(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object Get()
+        {
+            return _current;
+        }
+
+        public IStateMember StateMember
+        {
+            get { return StaticStateMember.Empty; }
+        }
+
+        public class StaticStateMember : IStateMember
+        {
+            public static readonly IStateMember Empty = new StaticStateMember();
+
+            private StaticStateMember()
+            {
+                
+            }
+
+
+            public string Name
+            {
+                get { return "InitialValue"; }
+            }
+
+            public Type OwnerType
+            {
+                get { return typeof (object); }
+            }
+
+            public Type MemberType
+            {
+                get { return typeof(object); }
+            }
+
+            public Expression GetGetExpression(Expression obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Expression GetSetExpression(Expression obj, Expression value)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public object Owner
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public void Climb()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Route(IStateMember stateMember, Type runtimeMemberType, object owner)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Route(IStateMember stateMember, object owner)
+        {
+            throw new NotImplementedException();
+        }
+    }*/
 }

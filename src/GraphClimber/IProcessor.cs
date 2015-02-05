@@ -13,6 +13,7 @@ namespace GraphClimber
         /// is found within the graph climbed.
         /// </summary>
         /// <param name="descriptor"></param>
+        [ProcessorMethod]
         void ProcessForReadWrite(IReadWriteValueDescriptor<TField> descriptor);
     }
 }

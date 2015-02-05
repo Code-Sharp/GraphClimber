@@ -3,7 +3,7 @@ namespace GraphClimber
     /// <remarks>
     /// Allows processing state member values based on both static and runtime types.
     /// </remarks>
-    public interface IReadWriteValueDescriptor<TField>
+    public interface IReadWriteValueDescriptor<TField> : IValueDescriptor
     {
         /// <summary>
         /// Sets the field to a new value

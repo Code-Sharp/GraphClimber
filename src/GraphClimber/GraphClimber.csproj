@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bulks\IPrimitiveProcessor.cs" />
+    <Compile Include="Examples\BinaryWriterProcessor.cs" />
     <Compile Include="Examples\IStore.cs" />
     <Compile Include="Examples\MyCustomStateMember.cs" />
     <Compile Include="Examples\OldGames.cs" />
