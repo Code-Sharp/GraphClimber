@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="Bulks\IPrimitiveProcessor.cs" />
     <Compile Include="Examples\Binary\BinaryReaderProcessor.cs" />
+    <Compile Include="Examples\Binary\BinaryStateMemberProvider.cs" />
     <Compile Include="Examples\Binary\BinaryWriterProcessor.cs" />
     <Compile Include="Examples\Binary\IStore.cs" />
     <Compile Include="Examples\MyCustomStateMember.cs" />

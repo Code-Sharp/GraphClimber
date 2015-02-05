@@ -24,10 +24,11 @@ namespace GraphClimber.Examples
         [ProcessorMethod(Precedence = 102)]
         public void Process<T>(IWriteOnlyValueDescriptor<T> descriptor)
         {
-            Type memberType = descriptor.StateMember.MemberType;
             Type type = descriptor.StateMember.MemberType;
-            
-            if (!memberType.IsSealed || !memberType.IsValueType)
+
+            BinaryStateMember member = descriptor.StateMember as BinaryStateMember;
+   
+            if (!member.KnownType)
             {
                 var assemblyQualifiedName = _reader.ReadString();
                 type = Type.GetType(assemblyQualifiedName);
@@ -42,7 +43,6 @@ namespace GraphClimber.Examples
                     HandleVisited(descriptor);
                     return;
                 }
-
             }
             else
             {

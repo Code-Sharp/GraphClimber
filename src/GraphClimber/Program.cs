@@ -32,8 +32,8 @@ namespace GraphClimber
         {
             var person = GetPerson();
 
-            var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(new ReflectionPropertyStateMemberProvider());
-            var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(new ReflectionPropertyStateMemberProvider());
+            var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(new BinaryStateMemberProvider(new ReflectionPropertyStateMemberProvider()));
+            var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(new BinaryStateMemberProvider(new ReflectionPropertyStateMemberProvider()));
 
             var stream = new MemoryStream();
             var binaryWriterProcessor = new BinaryWriterProcessor(new BinaryWriter(stream));
