@@ -36,12 +36,12 @@ namespace GraphClimber
             var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(new ReflectionPropertyStateMemberProvider());
 
             var stream = new MemoryStream();
-            var binaryWriterProcessor = new BinaryWriterProcessor(new BinaryWriter(stream));
+            var binaryWriterProcessor = new BinaryWriterProcessor(new SuperBinaryWriter(stream));
 
             writeClimber.Route(person, binaryWriterProcessor);
 
             stream.Position = 0;
-            var binaryReaderProcessor = new BinaryReaderProcessor(new BinaryReader(stream));
+            var binaryReaderProcessor = new BinaryReaderProcessor(new SuperBinaryReader(stream));
 
             var strongBox = new StrongBox<object>();
             readClimber.Climb(strongBox, binaryReaderProcessor);

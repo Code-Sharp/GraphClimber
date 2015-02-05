@@ -73,6 +73,7 @@
     <Compile Include="Examples\PositionRestore.cs" />
     <Compile Include="Examples\StoreReaderProcessor.cs" />
     <Compile Include="Examples\StoreWriterProcessor.cs" />
+    <Compile Include="Examples\SuperBinaryWriter.cs" />
     <Compile Include="Examples\TrivialStore.cs" />
     <Compile Include="Examples\XmlReaderProcessor.cs" />
     <Compile Include="Examples\XmlWriterProcessor.cs" />
