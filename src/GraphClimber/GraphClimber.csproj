@@ -65,10 +65,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bulks\IPrimitiveProcessor.cs" />
+    <Compile Include="Examples\IStore.cs" />
+    <Compile Include="Examples\MyCustomStateMember.cs" />
+    <Compile Include="Examples\OldGames.cs" />
+    <Compile Include="Examples\StoreReaderProcessor.cs" />
+    <Compile Include="Examples\StoreWriterProcessor.cs" />
+    <Compile Include="Examples\TrivialStore.cs" />
+    <Compile Include="Examples\XmlReaderProcessor.cs" />
+    <Compile Include="Examples\XmlWriterProcessor.cs" />
     <Compile Include="GenericArgumentBinder.cs" />
     <Compile Include="IEnumProcessor.cs" />
+    <Compile Include="IGenericParameterFilter.cs" />
     <Compile Include="IInheritedProcessor.cs" />
     <Compile Include="INullProcessor.cs" />
+    <Compile Include="PrimitiveAttribute.cs" />
     <Compile Include="SlowGraphClimber.cs" />
     <Compile Include="IProcessor.cs" />
     <Compile Include="IRevisitedFilter.cs" />
@@ -101,6 +111,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
