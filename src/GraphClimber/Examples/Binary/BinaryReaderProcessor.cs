@@ -16,12 +16,18 @@ namespace GraphClimber.Examples
         }
 
         [ProcessorMethod(Precedence = 98)]
-        public void ProcessObject(IWriteOnlyValueDescriptor<object> descriptor)
+        public void ProcessObject(IWriteOnlyExactValueDescriptor<object> descriptor)
         {
             Type type;
 
             if (TryReadReferenceType(descriptor, out type))
             {
+                if (type == typeof (object))
+                {
+                    descriptor.Set(new object());
+                    return;
+                }
+
                 descriptor.Route(
                     new BinaryStateMember(
                         new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, type), 
@@ -34,7 +40,7 @@ namespace GraphClimber.Examples
         // Won't actually work because of current graph climber implementation details
         // (parent is always boxed)
         [ProcessorMethod(Precedence = 102)]
-        public void ProcessStruct<T>(IWriteOnlyValueDescriptor<T> descriptor)
+        public void ProcessStruct<T>(IWriteOnlyExactValueDescriptor<T> descriptor)
             where T : struct
         {
             T instance = new T();
@@ -43,7 +49,7 @@ namespace GraphClimber.Examples
         }
 
         [ProcessorMethod(Precedence = 102)]
-        public void ProcessReferenceType<T>(IWriteOnlyValueDescriptor<T> descriptor)
+        public void ProcessReferenceType<T>(IWriteOnlyExactValueDescriptor<T> descriptor)
             where T : class
         {
             Type type;
@@ -57,7 +63,7 @@ namespace GraphClimber.Examples
             }
         }
 
-        private bool TryReadReferenceType<T>(IWriteOnlyValueDescriptor<T> descriptor, out Type type)
+        private bool TryReadReferenceType<T>(IWriteOnlyExactValueDescriptor<T> descriptor, out Type type)
             where T : class
         {
             type = descriptor.StateMember.MemberType;
@@ -100,7 +106,7 @@ namespace GraphClimber.Examples
         {            
         }
 
-        private void HandleVisited<T>(IWriteOnlyValueDescriptor<T> descriptor)
+        private void HandleVisited<T>(IWriteOnlyExactValueDescriptor<T> descriptor)
         {
             int index = _reader.ReadInt32();
             descriptor.Set((T) _objects[index - 1]);
@@ -169,7 +175,13 @@ namespace GraphClimber.Examples
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<string> descriptor)
         {
-            descriptor.Set(_reader.ReadString());
+            Type type;
+
+            // Yeah yeah yeah, string is also a reference type.
+            if (TryReadReferenceType(descriptor, out type))
+            {
+                descriptor.Set(_reader.ReadString());                
+            }
         }
 
         [ProcessorMethod]
