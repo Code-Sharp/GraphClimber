@@ -65,17 +65,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bulks\IPrimitiveProcessor.cs" />
-    <Compile Include="Examples\BinaryReaderProcessor.cs" />
-    <Compile Include="Examples\BinaryWriterProcessor.cs" />
-    <Compile Include="Examples\IStore.cs" />
+    <Compile Include="Examples\Binary\BinaryReaderProcessor.cs" />
+    <Compile Include="Examples\Binary\BinaryWriterProcessor.cs" />
+    <Compile Include="Examples\Binary\IStore.cs" />
     <Compile Include="Examples\MyCustomStateMember.cs" />
     <Compile Include="Examples\OldGames.cs" />
-    <Compile Include="Examples\PositionRestore.cs" />
-    <Compile Include="Examples\StoreReaderProcessor.cs" />
-    <Compile Include="Examples\StoreWriterProcessor.cs" />
-    <Compile Include="Examples\TrivialStore.cs" />
-    <Compile Include="Examples\XmlReaderProcessor.cs" />
-    <Compile Include="Examples\XmlWriterProcessor.cs" />
+    <Compile Include="Examples\Binary\PositionRestore.cs" />
+    <Compile Include="Examples\Binary\StoreReaderProcessor.cs" />
+    <Compile Include="Examples\Binary\StoreWriterProcessor.cs" />
+    <Compile Include="Examples\Binary\TrivialStore.cs" />
+    <Compile Include="Examples\Xml\XmlReaderProcessor.cs" />
+    <Compile Include="Examples\Xml\XmlWriterProcessor.cs" />
     <Compile Include="GenericArgumentBinder.cs" />
     <Compile Include="IEnumProcessor.cs" />
     <Compile Include="IGenericParameterFilter.cs" />
@@ -114,7 +114,9 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Examples\Store\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
