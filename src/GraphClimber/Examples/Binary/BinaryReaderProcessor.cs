@@ -5,7 +5,7 @@ using GraphClimber.Bulks;
 
 namespace GraphClimber.Examples
 {
-    class BinaryReaderProcessor : IPrimitiveProcessor
+    class BinaryReaderProcessor : IWriteOnlyExactPrimitiveProcessor
     {
         private readonly IList<object> _objects = new List<object>();
         private readonly BinaryReader _reader;
@@ -14,12 +14,6 @@ namespace GraphClimber.Examples
         {
             _reader = reader;
         }
-
-        //[ProcessorMethod(Precedence = 101)]
-        //public void ProcessExactAsField<[Super(typeof(object))] T>(IReadWriteValueDescriptor<T> descriptor)
-        //{
-        //    descriptor.Climb();
-        //}
 
         [ProcessorMethod(Precedence = 102)]
         public void Process<T>(IWriteOnlyValueDescriptor<T> descriptor)
@@ -30,7 +24,7 @@ namespace GraphClimber.Examples
    
             if (!member.KnownType)
             {
-                var assemblyQualifiedName = _reader.ReadString();
+                string assemblyQualifiedName = _reader.ReadString();
                 type = Type.GetType(assemblyQualifiedName);
 
                 if (assemblyQualifiedName == BinaryWriterProcessor.NULL_STRING)
@@ -78,8 +72,6 @@ namespace GraphClimber.Examples
                 descriptor.Set(instance); 
                 descriptor.Climb();
             }
-            
-            
         }
 
         private void HandleVisited<T>(IWriteOnlyValueDescriptor<T> descriptor)
@@ -92,75 +84,74 @@ namespace GraphClimber.Examples
             return new PositionRestore(reader.BaseStream);
         }
 
-
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<byte> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<byte> descriptor)
         {
             descriptor.Set(_reader.ReadByte());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<sbyte> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<sbyte> descriptor)
         {
             descriptor.Set(_reader.ReadSByte());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<short> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<short> descriptor)
         {
             descriptor.Set(_reader.ReadInt16());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<ushort> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<ushort> descriptor)
         {
             descriptor.Set(_reader.ReadUInt16());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<int> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<int> descriptor)
         {
             descriptor.Set(_reader.ReadInt32());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<uint> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<uint> descriptor)
         {
             descriptor.Set(_reader.ReadUInt32());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<long> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<long> descriptor)
         {
             descriptor.Set(_reader.ReadInt64());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<ulong> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<ulong> descriptor)
         {
             descriptor.Set(_reader.ReadUInt64());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<char> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<char> descriptor)
         {
             descriptor.Set(_reader.ReadChar());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<double> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<double> descriptor)
         {
             descriptor.Set(_reader.ReadDouble());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<string> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<string> descriptor)
         {
             descriptor.Set(_reader.ReadString());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadWrite(IReadWriteValueDescriptor<DateTime> descriptor)
+        public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<DateTime> descriptor)
         {
             var ticks = _reader.ReadInt64();
             descriptor.Set(DateTime.FromBinary(ticks));
