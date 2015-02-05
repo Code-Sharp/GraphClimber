@@ -107,7 +107,7 @@ namespace GraphClimber
             public string Name { get; set; }
 
             public int Age { get; set; }
-            
+
             public object Surprise { get; set; }
 
             public Person Father { get; set; }
@@ -123,7 +123,7 @@ namespace GraphClimber
             var box = new StrongBox<Person>(GetPerson());
 
             climber.Climb(box, processor);
-            
+
 
             SlowGraphClimber<StoreReaderProcessor> readerClimber = new SlowGraphClimber<StoreReaderProcessor>(new ReflectionPropertyStateMemberProvider());
 

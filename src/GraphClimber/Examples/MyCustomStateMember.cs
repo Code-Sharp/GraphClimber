@@ -14,6 +14,16 @@ namespace GraphClimber.Examples
             _memberType = memberType;
         }
 
+        public int[] ElementIndex
+        {
+            get { return _underlying.ElementIndex; }
+        }
+
+        public bool IsArrayElement
+        {
+            get { return _underlying.IsArrayElement; }
+        }
+
         public string Name
         {
             get { return _underlying.Name; }
