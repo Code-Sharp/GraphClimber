@@ -40,11 +40,12 @@ namespace GraphClimber.Examples
         // Won't actually work because of current graph climber implementation details
         // (parent is always boxed)
         [ProcessorMethod(Precedence = 102)]
-        public void ProcessStruct<T>(IWriteOnlyExactValueDescriptor<T> descriptor)
+        public void ProcessStruct<T>(IReadWriteValueDescriptor<T> descriptor)
             where T : struct
         {
             T instance = new T();
             descriptor.Set(instance);
+            _objects.Add(instance);
             descriptor.Climb();
         }
 
@@ -180,7 +181,9 @@ namespace GraphClimber.Examples
             // Yeah yeah yeah, string is also a reference type.
             if (TryReadReferenceType(descriptor, out type))
             {
-                descriptor.Set(_reader.ReadString());                
+                string value = _reader.ReadString();
+                descriptor.Set(value);                
+                _objects.Add(value);
             }
         }
 

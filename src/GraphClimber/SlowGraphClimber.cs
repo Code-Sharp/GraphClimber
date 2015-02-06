@@ -163,16 +163,23 @@ namespace GraphClimber
             }
             else
             {
-            IEnumerable<IStateMember> members =
-                _stateMemberProvider.Provide(runtimeType);
+                IEnumerable<IStateMember> members =
+                    _stateMemberProvider.Provide(runtimeType);
 
-            foreach (IReflectionStateMember member in 
-                members.Cast<IReflectionStateMember>())
-            {
+                object boxed = value;
+
+                foreach (IReflectionStateMember member in 
+                    members.Cast<IReflectionStateMember>())
+                {
                     Type runtimeMemberType = GetRuntimeMemberType(member, value);
-                VisitMember(member, value, runtimeMemberType, false);
+                    VisitMember(member, boxed, runtimeMemberType, false);
+                }
+
+                if (runtimeType.IsValueType)
+                {
+                    Set((TField) boxed);
+                }
             }
-        }
         }
 
         private void ClimbArray(Array array)

@@ -62,25 +62,24 @@ namespace GraphClimber.Examples
         {
             // If member == null is a patch because the way we implemented route in 
             // SlowGraphClimber.
-            if (member == null || !member.KnownType)
+            if ((member != null) &&
+                ((member.KnownType) ||
+                 (member.MemberType == runtimeType)))
             {
-                if ((member != null) &&
-                    (member.MemberType == runtimeType))
-                {
-                    _writer.Write(ReadWriteHeader.KnownType);
-                }
-                else
-                {
-                    string assemblyQualifiedName = runtimeType.AssemblyQualifiedName;
+                _writer.Write(ReadWriteHeader.KnownType);
+            }
+            else
+            {
+                string assemblyQualifiedName = runtimeType.AssemblyQualifiedName;
 
-                    if (string.IsNullOrEmpty(assemblyQualifiedName))
-                    {
-                        throw new NotSupportedException("Serializing types without assembly qualified name is not supported (yet).");
-                    }
-
-                    _writer.Write(ReadWriteHeader.UnknownType);
-                    _writer.Write(assemblyQualifiedName);                    
+                if (string.IsNullOrEmpty(assemblyQualifiedName))
+                {
+                    throw new NotSupportedException(
+                        "Serializing types without assembly qualified name is not supported (yet).");
                 }
+
+                _writer.Write(ReadWriteHeader.UnknownType);
+                _writer.Write(assemblyQualifiedName);
             }
         }
 
