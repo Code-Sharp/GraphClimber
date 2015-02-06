@@ -65,7 +65,8 @@ namespace GraphClimber.Examples
                 // A patch in order to box structs when they are objects.
                 Type memberType = _stateMember.MemberType;
 
-                if (IsObject && memberType.IsValueType && !memberType.IsPrimitive)
+                if (IsObject && memberType.IsValueType && 
+                    !memberType.IsPrimitive && memberType != typeof(DateTime))
                 {
                     return typeof (ValueType);
                 }

@@ -174,7 +174,9 @@ namespace GraphClimber.Examples
                 return true;
             }
 
-            if (!obj.GetType().IsPrimitive)
+            Type type = obj.GetType();
+
+            if (!type.IsPrimitive && type != typeof(DateTime))
             {
                 _visitedHash[obj] = _visitedHash.Count;                
             }
