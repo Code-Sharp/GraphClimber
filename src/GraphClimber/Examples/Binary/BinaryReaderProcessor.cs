@@ -5,7 +5,7 @@ using GraphClimber.Bulks;
 
 namespace GraphClimber.Examples
 {
-    class BinaryReaderProcessor : IWriteOnlyExactPrimitiveProcessor
+    internal class BinaryReaderProcessor : IWriteOnlyExactPrimitiveProcessor
     {
         private readonly IList<object> _objects = new List<object>();
         private readonly BinaryReader _reader;
@@ -22,7 +22,7 @@ namespace GraphClimber.Examples
 
             if (TryReadReferenceType(descriptor, out type))
             {
-                if (type == typeof (object))
+                if (type == typeof(object))
                 {
                     descriptor.Set(new object());
                     return;
@@ -30,8 +30,8 @@ namespace GraphClimber.Examples
 
                 descriptor.Route(
                     new BinaryStateMember(
-                        new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, type), 
-                        true, 
+                        new MyCustomStateMember((IReflectionStateMember)descriptor.StateMember, type),
+                        true,
                         true),
                     descriptor.Owner);
             }
@@ -44,8 +44,8 @@ namespace GraphClimber.Examples
             where T : struct
         {
             T instance = new T();
-            descriptor.Set(instance);
             _objects.Add(instance);
+            descriptor.Set(instance);
             descriptor.Climb();
         }
 
@@ -60,18 +60,18 @@ namespace GraphClimber.Examples
                 T instance = (T)Activator.CreateInstance(type);
                 _objects.Add(instance);
                 descriptor.Set(instance);
-                descriptor.Climb();                
+                descriptor.Climb();
             }
         }
 
         private bool TryReadReferenceType<T>(IWriteOnlyExactValueDescriptor<T> descriptor, out Type type)
             where T : class
         {
-            type = descriptor.StateMember.MemberType;
-
             BinaryStateMember member = descriptor.StateMember as BinaryStateMember;
 
-            if (member.HeaderWasRead)
+            type = member.RuntimeType;
+
+            if (member.HeaderHandled)
             {
                 return true;
             }
@@ -94,23 +94,26 @@ namespace GraphClimber.Examples
                     string assemblyQualifiedName = _reader.ReadString();
 
                     type = Type.GetType(assemblyQualifiedName);
-                }
 
-                return true;
+                    return true;
+                }
+                else if (header == ReadWriteHeader.KnownType)
+                {
+                    return true;
+                }
+                else
+                {
+                    throw new Exception("Read an unknown header - probably a mismatch between reader and writer - i.e: a bug :(");
+                }
             }
 
             return false;
         }
 
-        [ProcessorMethod(Precedence = 102)]
-        public void ProcessReferenceType(IWriteOnlyValueDescriptor<object> descriptor)
-        {            
-        }
-
         private void HandleVisited<T>(IWriteOnlyExactValueDescriptor<T> descriptor)
         {
             int index = _reader.ReadInt32();
-            descriptor.Set((T) _objects[index - 1]);
+            descriptor.Set((T) _objects[index]);
         }
 
         [ProcessorMethod]
@@ -182,8 +185,8 @@ namespace GraphClimber.Examples
             if (TryReadReferenceType(descriptor, out type))
             {
                 string value = _reader.ReadString();
-                descriptor.Set(value);                
                 _objects.Add(value);
+                descriptor.Set(value);
             }
         }
 

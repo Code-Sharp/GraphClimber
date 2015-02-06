@@ -15,8 +15,6 @@ namespace GraphClimber.Examples
 
     class BinaryWriterProcessor : IReadOnlyPrimitiveProcessor, INullProcessor, IRevisitedProcessor
     {
-        public const string NULL_STRING = "Yalla<>Balaghan";
-        public const string VISITED_STRING = "Visitied~";
         private readonly BinaryWriter _writer;
         private readonly IDictionary<object, int> _visitedHash = new Dictionary<object, int>();
 
@@ -54,12 +52,18 @@ namespace GraphClimber.Examples
             descriptor.Route(
                 new BinaryStateMember(
                     new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, runtimeType),
+                    true,
                     true),
                 descriptor.Owner);
         }
 
         private void WriteAssemblyQualifiedNameIfNeeded(BinaryStateMember member, Type runtimeType)
         {
+            if (member != null && member.HeaderHandled)
+            {
+                return;
+            }
+
             // If member == null is a patch because the way we implemented route in 
             // SlowGraphClimber.
             if ((member != null) &&
@@ -146,6 +150,9 @@ namespace GraphClimber.Examples
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<string> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor.StateMember as BinaryStateMember,
+                typeof (string));
+
             _writer.Write(descriptor.Get());
         }
 
@@ -167,11 +174,15 @@ namespace GraphClimber.Examples
                 return true;
             }
 
-            _visitedHash[obj] = _visitedHash.Count;
+            if (!obj.GetType().IsPrimitive)
+            {
+                _visitedHash[obj] = _visitedHash.Count;                
+            }
+
             return false;
         }
 
-        public void ProcessRevisited<TField>(IReadOnlyValueDescriptor<TField> descriptor)
+        public void ProcessRevisited<TField>(IReadWriteValueDescriptor<TField> descriptor)
         {
             _writer.Write((byte) ReadWriteHeader.Revisited);
             _writer.Write(_visitedHash[descriptor.Get()]);

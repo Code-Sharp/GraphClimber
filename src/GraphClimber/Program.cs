@@ -30,7 +30,7 @@ namespace GraphClimber
 
         private static void SerializeDeserializeBinary()
         {
-            var person = GetPerson();
+            var person = GetPerson2();
 
             var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(new BinaryStateMemberProvider(new ReflectionPropertyStateMemberProvider()));
             var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(new BinaryStateMemberProvider(new ReflectionPropertyStateMemberProvider()));
@@ -38,15 +38,21 @@ namespace GraphClimber
             var stream = new MemoryStream();
             var binaryWriterProcessor = new BinaryWriterProcessor(new SuperBinaryWriter(stream));
 
-            writeClimber.Route(person, binaryWriterProcessor);
+            // Not that good :( : 
+            // I need the field to be "object" and not the struct "Person2"
+            //writeClimber.Route(person, binaryWriterProcessor);
+            StrongBox<object> strongBox2 =
+                new StrongBox<object>()
+                {
+                    Value = person
+                };
+            writeClimber.Climb(strongBox2, binaryWriterProcessor);
 
             stream.Position = 0;
             var binaryReaderProcessor = new BinaryReaderProcessor(new SuperBinaryReader(stream));
 
             var strongBox = new StrongBox<object>();
             readClimber.Climb(strongBox, binaryReaderProcessor);
-
-
         }
 
         private static void SerializeDeserializeXML()
@@ -113,6 +119,18 @@ namespace GraphClimber
             public Person Father { get; set; }
         }
 
+        struct Person2
+        {
+            public string Name { get; set; }
+
+            public int Age { get; set; }
+
+            public object Surprise { get; set; }
+
+            public object Father { get; set; }
+        }
+
+
         public static void SerializeDeserializeStore()
         {
             var store = new TrivialStore();
@@ -136,7 +154,7 @@ namespace GraphClimber
         private static Person GetPerson()
         {
             var ilan = new Person { Age = 26 + 25, Name = "Ilan Zelingher", Surprise = 1 };
-
+            ilan.Surprise = ilan;
             return new Person()
             {
                 Age = 26,
@@ -150,5 +168,25 @@ namespace GraphClimber
                 }
             };
         }
+
+        private static Person2 GetPerson2()
+        {
+            Person2 ilan = new Person2 { Age = 26 + 25, Name = "Ilan Zelingher" };
+
+            ilan.Surprise = ilan;
+
+            return new Person2()
+            {
+                Age = 26,
+                Name = "Elad Zelinger",
+                Father = ilan,
+                Surprise = new Person2()
+                {
+                    Age = 21,
+                    Name = "Yosi Attias",
+                    Surprise = ilan
+                }
+            };
+        }   
     }
 }

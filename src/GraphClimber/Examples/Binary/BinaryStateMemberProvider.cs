@@ -25,7 +25,7 @@ namespace GraphClimber.Examples
     {
         private readonly IReflectionStateMember _stateMember;
         private readonly bool _knownType;
-        private readonly bool _headerWasRead;
+        private readonly bool _headerHandled;
 
         public BinaryStateMember(IReflectionStateMember stateMember): 
             this(stateMember, IsKnownType(stateMember), false)
@@ -41,11 +41,11 @@ namespace GraphClimber.Examples
 
         public BinaryStateMember(IReflectionStateMember stateMember, 
             bool knownType, 
-            bool headerWasRead = false)
+            bool headerHandled = false)
         {
             _stateMember = stateMember;
             _knownType = knownType;
-            _headerWasRead = headerWasRead;
+            _headerHandled = headerHandled;
         }
 
         public string Name
@@ -59,6 +59,22 @@ namespace GraphClimber.Examples
         }
 
         public Type MemberType
+        {
+            get
+            {
+                // A patch in order to box structs when they are objects.
+                Type memberType = _stateMember.MemberType;
+
+                if (IsObject && memberType.IsValueType && !memberType.IsPrimitive)
+                {
+                    return typeof (ValueType);
+                }
+
+                return memberType;
+            }
+        }
+
+        public Type RuntimeType
         {
             get { return _stateMember.MemberType; }
         }
@@ -88,9 +104,14 @@ namespace GraphClimber.Examples
             get { return _knownType; }
         }
 
-        public bool HeaderWasRead
+        public bool IsObject
         {
-            get { return _headerWasRead; }
+            get { return HeaderHandled; }
+        }
+
+        public bool HeaderHandled
+        {
+            get { return _headerHandled; }
         }
 
         public object GetValue(object owner)

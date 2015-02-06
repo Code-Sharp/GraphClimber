@@ -290,8 +290,7 @@ namespace GraphClimber
                      (revisitedProcessor != null) &&
                      revisitedProcessor.Visited(value))
             {
-                Type runtimeType = value.GetType();
-                CallGenericMethod(descriptor, typeof (IRevisitedProcessor), runtimeType, "ProcessRevisited");
+                CallGenericMethod(descriptor, typeof (IRevisitedProcessor), fieldType, "ProcessRevisited");
                 return true;
             }
 
