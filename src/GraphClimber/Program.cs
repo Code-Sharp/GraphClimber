@@ -184,7 +184,13 @@ namespace GraphClimber
                 {
                     Age = 21,
                     Name = "Yosi Attias",
-                    Surprise = new object[] {ilan, ilan, 342, "Hello"}
+                    Surprise =
+                    new object[]
+                    {
+                        ilan, ilan, 342, "Hello",
+                        new int[]{1,1,2,3,5,8},
+                        new int[,]{{1,1},{2,3},{5,8}}
+                    }
                 }
             };
         }   

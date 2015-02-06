@@ -205,7 +205,7 @@ namespace GraphClimber.Examples
             if (TryReadReferenceType(descriptor, out type))
             {
                 int[] lowerIndices = ReadIntArray();
-                int[] upperIndices = ReadIntArray();
+                int[] lengths = ReadIntArray();
                 Type elementType = typeof (TArray).GetElementType();
 
                 TArray value;
@@ -213,7 +213,7 @@ namespace GraphClimber.Examples
                 if (type == elementType.MakeArrayType())
                 {
                     // avoid T[*].
-                    int length = upperIndices[0] + 1;
+                    int length = lengths[0];
 
                     value =
                         (TArray) (object)
@@ -224,8 +224,8 @@ namespace GraphClimber.Examples
                     value =
                         (TArray) (object) Array.CreateInstance
                             (elementType,
-                                lowerIndices,
-                                upperIndices);
+                                lengths,
+                                lowerIndices);
                 }
 
                 _objects.Add(value);

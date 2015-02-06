@@ -119,14 +119,14 @@ namespace GraphClimber.Examples
                     .Select(index => array.GetLowerBound(index))
                     .ToArray();
 
-            int[] upperIndicies =
+            int[] lengths =
                 Enumerable.Range(0, rank)
-                    .Select(index => array.GetUpperBound(index))
+                    .Select(index => array.GetLength(index))
                     .ToArray();
 
             WriteIntArray(lowerIndicies);
             
-            WriteIntArray(upperIndicies);
+            WriteIntArray(lengths);
 
             descriptor.Climb();
         }
