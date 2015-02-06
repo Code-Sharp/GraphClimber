@@ -15,9 +15,9 @@ namespace GraphClimber
                 .Select(x => new ReflectionPropertyStateMember(x));
         }
 
-        public IStateMember DecorateArrayMember(IStateMember member)
+        public IStateMember ProvideArrayMember(Type arrayType, int[] indices)
         {
-            return member;
+            return new ArrayStateMember(arrayType, arrayType.GetElementType(), indices);
         }
     }
 
@@ -198,16 +198,12 @@ namespace GraphClimber
             IEnumerable<IEnumerable<int>> allIndexes =
                 Combinatorics.CartesianProduct(indexesSets.Reverse());
 
-            Type arrayElementType = array.GetType().GetElementType();
-
             foreach (IEnumerable<int> indexSet in allIndexes)
             {
                 int[] indices = indexSet.Reverse().ToArray();
 
-                var member = new ArrayStateMember(array.GetType(), arrayElementType ,indices);
-                
                 IReflectionStateMember decorated = (IReflectionStateMember)
-                    _stateMemberProvider.DecorateArrayMember(member);
+                    _stateMemberProvider.ProvideArrayMember(array.GetType(), indices);
                 
                 Type runtimeMemberType = GetRuntimeMemberType(decorated, array);
                 

@@ -20,9 +20,10 @@ namespace GraphClimber.Examples
                 .Select(x => new BinaryStateMember((IReflectionStateMember)x));
         }
 
-        public IStateMember DecorateArrayMember(IStateMember member)
+        public IStateMember ProvideArrayMember(Type arrayType, int[] indices)
         {
-            return new BinaryStateMember((IReflectionStateMember) member);
+            return new BinaryStateMember((IReflectionStateMember)
+                _underlying.ProvideArrayMember(arrayType, indices));
         }
     }
 
