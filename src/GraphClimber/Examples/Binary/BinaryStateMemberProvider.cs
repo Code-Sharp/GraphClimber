@@ -19,6 +19,11 @@ namespace GraphClimber.Examples
             return _underlying.Provide(type)
                 .Select(x => new BinaryStateMember((IReflectionStateMember)x));
         }
+
+        public IStateMember DecorateArrayMember(IStateMember member)
+        {
+            return new BinaryStateMember((IReflectionStateMember) member);
+        }
     }
 
     public class BinaryStateMember : IReflectionStateMember

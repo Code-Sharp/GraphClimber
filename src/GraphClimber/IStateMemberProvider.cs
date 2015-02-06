@@ -11,7 +11,6 @@ namespace GraphClimber
     /// </summary>
     public interface IStateMemberProvider
     {
-
         /// <summary>
         /// Gets the list of the <see cref="IStateMember"/>s for the given <paramref name="type"/>
         /// </summary>
@@ -19,5 +18,7 @@ namespace GraphClimber
         /// <returns></returns>
         IEnumerable<IStateMember> Provide(Type type);
 
+        // TODO: rethink about this one.
+        IStateMember DecorateArrayMember(IStateMember member);
     }
 }

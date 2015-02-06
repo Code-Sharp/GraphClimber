@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace GraphClimber
 {
@@ -14,6 +13,11 @@ namespace GraphClimber
             return type.GetRuntimeProperties()
                 .Where(x => x.GetIndexParameters().Length == 0)
                 .Select(x => new ReflectionPropertyStateMember(x));
+        }
+
+        public IStateMember DecorateArrayMember(IStateMember member)
+        {
+            return member;
         }
     }
 
@@ -201,8 +205,13 @@ namespace GraphClimber
                 int[] indices = indexSet.Reverse().ToArray();
 
                 var member = new ArrayStateMember(array.GetType(), arrayElementType ,indices);
-                Type runtimeMemberType = GetRuntimeMemberType(member, array);
-                VisitMember(member, array, runtimeMemberType, false);
+                
+                IReflectionStateMember decorated = (IReflectionStateMember)
+                    _stateMemberProvider.DecorateArrayMember(member);
+                
+                Type runtimeMemberType = GetRuntimeMemberType(decorated, array);
+                
+                VisitMember(decorated, array, runtimeMemberType, false);
             }
         }
 

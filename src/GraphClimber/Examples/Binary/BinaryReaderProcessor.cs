@@ -22,7 +22,7 @@ namespace GraphClimber.Examples
 
             if (TryReadReferenceType(descriptor, out type))
             {
-                if (type == typeof(object))
+                if (type == typeof (object))
                 {
                     descriptor.Set(new object());
                     return;
@@ -30,21 +30,18 @@ namespace GraphClimber.Examples
 
                 descriptor.Route(
                     new BinaryStateMember(
-                        new MyCustomStateMember((IReflectionStateMember)descriptor.StateMember, type),
+                        new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, type),
                         true,
                         true),
                     descriptor.Owner);
             }
         }
 
-        // Won't actually work because of current graph climber implementation details
-        // (parent is always boxed)
         [ProcessorMethod(Precedence = 102)]
         public void ProcessStruct<T>(IReadWriteValueDescriptor<T> descriptor)
             where T : struct
         {
             T instance = new T();
-            _objects.Add(instance);
             descriptor.Set(instance);
             descriptor.Climb();
         }
@@ -57,7 +54,7 @@ namespace GraphClimber.Examples
 
             if (TryReadReferenceType(descriptor, out type))
             {
-                T instance = (T)Activator.CreateInstance(type);
+                T instance = (T) Activator.CreateInstance(type);
                 _objects.Add(instance);
                 descriptor.Set(instance);
                 descriptor.Climb();
@@ -103,7 +100,8 @@ namespace GraphClimber.Examples
                 }
                 else
                 {
-                    throw new Exception("Read an unknown header - probably a mismatch between reader and writer - i.e: a bug :(");
+                    throw new Exception(
+                        "Read an unknown header - probably a mismatch between reader and writer - i.e: a bug :(");
                 }
             }
 
@@ -195,6 +193,62 @@ namespace GraphClimber.Examples
         {
             long ticks = _reader.ReadInt64();
             descriptor.Set(DateTime.FromBinary(ticks));
+        }
+
+        [ProcessorMethod]
+        public void ProcessArray<[IsArray] TArray>(IWriteOnlyExactValueDescriptor<TArray> descriptor)
+            where TArray : class
+        {
+            // TODO: a bit too much code duplication here.
+            Type type;
+
+            if (TryReadReferenceType(descriptor, out type))
+            {
+                int[] lowerIndices = ReadIntArray();
+                int[] upperIndices = ReadIntArray();
+                Type elementType = typeof (TArray).GetElementType();
+
+                TArray value;
+
+                if (type == elementType.MakeArrayType())
+                {
+                    // avoid T[*].
+                    int length = upperIndices[0] + 1;
+
+                    value =
+                        (TArray) (object)
+                            Array.CreateInstance(elementType, length);
+                }
+                else
+                {
+                    value =
+                        (TArray) (object) Array.CreateInstance
+                            (elementType,
+                                lowerIndices,
+                                upperIndices);
+                }
+
+                _objects.Add(value);
+
+                descriptor.Set(value);
+
+                descriptor.Climb();
+            }
+        }
+
+        private int[] ReadIntArray()
+        {
+            int length = _reader.ReadInt32();
+
+            int[] result = new int[length];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                int value = _reader.ReadInt32();
+                result[i] = value;
+            }
+
+            return result;
         }
     }
 }

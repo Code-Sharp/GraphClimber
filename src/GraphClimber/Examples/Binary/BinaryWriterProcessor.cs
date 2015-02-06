@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using GraphClimber.Bulks;
 
 namespace GraphClimber.Examples
@@ -87,6 +88,49 @@ namespace GraphClimber.Examples
             }
         }
 
+        private void WriteAssemblyQualifiedNameIfNeeded<T>(IReadOnlyValueDescriptor<T> descriptor)
+        {
+            WriteAssemblyQualifiedNameIfNeeded
+                (descriptor.StateMember as BinaryStateMember,
+                typeof(T));
+        }
+
+        private void WriteIntArray(int[] indices)
+        {
+            _writer.Write(indices.Length);
+
+            for (int i = 0; i < indices.Length; i++)
+            {
+                _writer.Write(indices[i]);
+            }
+        }
+
+        [ProcessorMethod]
+        public void ProcessArray<[IsArray]TArray>(IReadOnlyValueDescriptor<TArray> descriptor)
+        {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
+
+            Array array = descriptor.Get() as Array;
+
+            int rank = array.Rank;
+
+            int[] lowerIndicies =
+                Enumerable.Range(0, rank)
+                    .Select(index => array.GetLowerBound(index))
+                    .ToArray();
+
+            int[] upperIndicies =
+                Enumerable.Range(0, rank)
+                    .Select(index => array.GetUpperBound(index))
+                    .ToArray();
+
+            WriteIntArray(lowerIndicies);
+            
+            WriteIntArray(upperIndicies);
+
+            descriptor.Climb();
+        }
+
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<byte> descriptor)
         {
@@ -150,8 +194,7 @@ namespace GraphClimber.Examples
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<string> descriptor)
         {
-            WriteAssemblyQualifiedNameIfNeeded(descriptor.StateMember as BinaryStateMember,
-                typeof (string));
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
 
             _writer.Write(descriptor.Get());
         }

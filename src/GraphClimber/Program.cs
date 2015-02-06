@@ -184,7 +184,7 @@ namespace GraphClimber
                 {
                     Age = 21,
                     Name = "Yosi Attias",
-                    Surprise = ilan
+                    Surprise = new object[] {ilan, ilan, 342, "Hello"}
                 }
             };
         }   

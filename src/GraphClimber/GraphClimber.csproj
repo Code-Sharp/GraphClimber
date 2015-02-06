@@ -68,6 +68,7 @@
     <Compile Include="Examples\Binary\BinaryReaderProcessor.cs" />
     <Compile Include="Examples\Binary\BinaryStateMemberProvider.cs" />
     <Compile Include="Examples\Binary\BinaryWriterProcessor.cs" />
+    <Compile Include="Examples\Binary\IsArrayAttribute.cs" />
     <Compile Include="Examples\Store\IStore.cs" />
     <Compile Include="Examples\MyCustomStateMember.cs" />
     <Compile Include="Examples\OldGames.cs" />
