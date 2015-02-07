@@ -64,7 +64,7 @@ namespace GraphClimber.Examples
         private bool TryReadReferenceType<T>(IWriteOnlyExactValueDescriptor<T> descriptor, out Type type)
             where T : class
         {
-            BinaryStateMember member = descriptor.StateMember as BinaryStateMember;
+            BinaryStateMember member = (BinaryStateMember) descriptor.StateMember;
 
             type = member.RuntimeType;
 
@@ -94,15 +94,14 @@ namespace GraphClimber.Examples
 
                     return true;
                 }
-                else if (header == ReadWriteHeader.KnownType)
+                
+                if (header == ReadWriteHeader.KnownType)
                 {
                     return true;
                 }
-                else
-                {
-                    throw new Exception(
-                        "Read an unknown header - probably a mismatch between reader and writer - i.e: a bug :(");
-                }
+                
+                throw new Exception(
+                    "Read an unknown header - probably a mismatch between reader and writer - i.e: a bug :(");
             }
 
             return false;

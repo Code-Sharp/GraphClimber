@@ -99,9 +99,9 @@ namespace GraphClimber.Examples
         {
             _writer.Write(indices.Length);
 
-            for (int i = 0; i < indices.Length; i++)
+            foreach (int index in indices)
             {
-                _writer.Write(indices[i]);
+                _writer.Write(index);
             }
         }
 
@@ -116,12 +116,12 @@ namespace GraphClimber.Examples
 
             int[] lowerIndicies =
                 Enumerable.Range(0, rank)
-                    .Select(index => array.GetLowerBound(index))
+                    .Select(array.GetLowerBound)
                     .ToArray();
 
             int[] lengths =
                 Enumerable.Range(0, rank)
-                    .Select(index => array.GetLength(index))
+                    .Select(array.GetLength)
                     .ToArray();
 
             WriteIntArray(lowerIndicies);
@@ -207,7 +207,7 @@ namespace GraphClimber.Examples
 
         public void ProcessNull<TField>(IWriteOnlyValueDescriptor<TField> descriptor)
         {
-            _writer.Write((byte) ReadWriteHeader.Null);
+            _writer.Write(ReadWriteHeader.Null);
         }
 
         public bool Visited(object obj)
@@ -229,7 +229,7 @@ namespace GraphClimber.Examples
 
         public void ProcessRevisited<TField>(IReadWriteValueDescriptor<TField> descriptor)
         {
-            _writer.Write((byte) ReadWriteHeader.Revisited);
+            _writer.Write(ReadWriteHeader.Revisited);
             _writer.Write(_visitedHash[descriptor.Get()]);
         }
     }
