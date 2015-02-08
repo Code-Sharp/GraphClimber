@@ -83,6 +83,7 @@
     <Compile Include="IEnumProcessor.cs" />
     <Compile Include="IGenericParameterFilter.cs" />
     <Compile Include="IInheritedProcessor.cs" />
+    <Compile Include="IMethodSelector.cs" />
     <Compile Include="INullProcessor.cs" />
     <Compile Include="PrimitiveAttribute.cs" />
     <Compile Include="SlowGraphClimber.cs" />
