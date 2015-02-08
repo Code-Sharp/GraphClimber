@@ -92,6 +92,7 @@
     <Compile Include="IRevisitedProcessor.cs" />
     <Compile Include="IStateMember.cs" />
     <Compile Include="IStateMemberProvider.cs" />
+    <Compile Include="ValueDescriptor\DelegateStateMember.cs" />
     <Compile Include="ValueDescriptor\IReadOnlyValueDescriptor.cs" />
     <Compile Include="ValueDescriptor\IReadWriteValueDescriptor.cs" />
     <Compile Include="ValueDescriptor\IValueDescriptor.cs" />
