@@ -313,7 +313,7 @@ namespace GraphClimber
 
         private void CallMatchedProcess(IReflectionValueDescriptor descriptor)
         {
-            GenericArgumentBinder binder = new GenericArgumentBinder();
+            GenericArgumentBinder binder = new GenericArgumentBinder(new FallbackToFirstCandidateMethodSelector(new BinderMethodSelector(Type.DefaultBinder)));
 
             IEnumerable<MethodInfo> methods =
                 _processor.GetType().GetMethods()

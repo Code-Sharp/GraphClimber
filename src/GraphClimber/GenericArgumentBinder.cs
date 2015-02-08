@@ -8,6 +8,8 @@ namespace GraphClimber
 {
     public class GenericArgumentBinder : IGenericArgumentBinder
     {
+        private readonly IMethodSelector _methodSelector;
+
         private class ArgumentMapper
         {
             private enum BindStatus
@@ -253,6 +255,11 @@ namespace GraphClimber
             }
         }
 
+        public GenericArgumentBinder(IMethodSelector methodSelector)
+        {
+            _methodSelector = methodSelector;
+        }
+
         public bool TryBind(MethodInfo methodInfo, Type[] realTypes, out MethodInfo[] bindedMethods)
         {
             IEnumerable<MethodInfo> candidates;
@@ -291,26 +298,7 @@ namespace GraphClimber
                     }                    
                 }
 
-                try
-                {
-                    MethodBase result =
-                        Type.DefaultBinder.SelectMethod(BindingFlags.Instance |
-                                                        BindingFlags.Static |
-                                                        BindingFlags.Public |
-                                                        BindingFlags.NonPublic,
-                            candidates,
-                            realTypes,
-                            new ParameterModifier[0]);
-
-                    bindedMethod = (MethodInfo) result;
-                }
-                catch (AmbiguousMatchException)
-                {
-                    // Take the first on ambiguousMatchException.
-                    // TODO : Extract this to interface, Maybe extract the whole part of method selection.
-                    bindedMethod = candidates[0];
-                }
-                
+                bindedMethod = (MethodInfo) _methodSelector.Select(candidates, realTypes);
             }
 
             return anyResults;
@@ -335,5 +323,59 @@ namespace GraphClimber
         /// <param name="bindedMethod">The specific generic method if exists</param>
         /// <returns>Success / failure due to incompatible arguments</returns>
         bool TryBind(MethodInfo methodInfo, Type[] realTypes, out MethodInfo bindedMethod);
+    }
+
+    public interface IMethodSelector
+    {
+        MethodBase Select(MethodBase[] candidates, Type[] realTypes);
+
+    }
+
+    public class BinderMethodSelector : IMethodSelector
+    {
+        private readonly Binder _binder;
+
+        public BinderMethodSelector(Binder binder)
+        {
+            _binder = binder;
+        }
+
+        public MethodBase Select(MethodBase[] candidates, Type[] realTypes)
+        {
+            MethodBase result =
+                        _binder.SelectMethod(BindingFlags.Instance |
+                                                        BindingFlags.Static |
+                                                        BindingFlags.Public |
+                                                        BindingFlags.NonPublic,
+                            candidates,
+                            realTypes,
+                            new ParameterModifier[0]);
+
+            return result;
+        }
+    }
+
+    public class FallbackToFirstCandidateMethodSelector : IMethodSelector
+    {
+        private readonly IMethodSelector _child;
+
+        public FallbackToFirstCandidateMethodSelector(IMethodSelector child)
+        {
+            _child = child;
+        }
+
+        public MethodBase Select(MethodBase[] candidates, Type[] realTypes)
+        {
+            try
+            {
+                return _child.Select(candidates, realTypes);
+
+            }
+            catch (AmbiguousMatchException)
+            {
+                return candidates[0];
+            }
+            
+        }
     }
 }

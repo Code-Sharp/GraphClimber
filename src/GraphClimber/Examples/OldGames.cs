@@ -8,7 +8,7 @@ namespace GraphClimber.Examples
     {
         public static void Main2(string[] args)
         {
-            GenericArgumentBinder binder = new GenericArgumentBinder();
+            GenericArgumentBinder binder = new GenericArgumentBinder(new FallbackToFirstCandidateMethodSelector(new BinderMethodSelector(Type.DefaultBinder)));
             MethodInfo[] methods;
             MethodInfo method;
             binder.TryBind(typeof(MyClass).GetMethod("MyMethod4"),

@@ -15,9 +15,14 @@ namespace GraphClimber.Tests
         {
             MethodInfo actualMethodInfo;
 
-            Assert.That(new GenericArgumentBinder().TryBind(methodInfo, realTypes, out actualMethodInfo), Is.EqualTo(expectedMethodInfo != null));
+            Assert.That(GetTarget().TryBind(methodInfo, realTypes, out actualMethodInfo), Is.EqualTo(expectedMethodInfo != null));
             Assert.That(expectedMethodInfo, Is.EqualTo(actualMethodInfo));
 
+        }
+
+        private static GenericArgumentBinder GetTarget()
+        {
+            return new GenericArgumentBinder(new FallbackToFirstCandidateMethodSelector(new BinderMethodSelector(Type.DefaultBinder)));
         }
 
         public static IEnumerable<object[]> TestData
