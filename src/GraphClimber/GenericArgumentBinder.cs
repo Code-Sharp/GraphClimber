@@ -291,16 +291,26 @@ namespace GraphClimber
                     }                    
                 }
 
-                MethodBase result =
-                    Type.DefaultBinder.SelectMethod(BindingFlags.Instance |
-                                                    BindingFlags.Static |
-                                                    BindingFlags.Public |
-                                                    BindingFlags.NonPublic,
-                        candidates,
-                        realTypes,
-                        new ParameterModifier[0]);
+                try
+                {
+                    MethodBase result =
+                        Type.DefaultBinder.SelectMethod(BindingFlags.Instance |
+                                                        BindingFlags.Static |
+                                                        BindingFlags.Public |
+                                                        BindingFlags.NonPublic,
+                            candidates,
+                            realTypes,
+                            new ParameterModifier[0]);
 
-                bindedMethod = (MethodInfo)result;
+                    bindedMethod = (MethodInfo) result;
+                }
+                catch (AmbiguousMatchException)
+                {
+                    // Take the first on ambiguousMatchException.
+                    // TODO : Extract this to interface, Maybe extract the whole part of method selection.
+                    bindedMethod = candidates[0];
+                }
+                
             }
 
             return anyResults;
