@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using GraphClimber.Examples;
+using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber
 {
@@ -32,8 +33,10 @@ namespace GraphClimber
         {
             var person = GetPerson2();
 
-            var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(new BinaryStateMemberProvider(new ReflectionPropertyStateMemberProvider()));
-            var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(new BinaryStateMemberProvider(new ReflectionPropertyStateMemberProvider()));
+            var stateMemberProvider = new BinaryStateMemberProvider(new ReflectionPropertyStateMemberProvider());
+
+            var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(stateMemberProvider);
+            var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(stateMemberProvider);
 
             var stream = new MemoryStream();
             var binaryWriterProcessor = new BinaryWriterProcessor(new SuperBinaryWriter(stream));
@@ -46,6 +49,13 @@ namespace GraphClimber
                 {
                     Value = person
                 };
+
+            var stateMember = new StaticStateMember(person);
+            
+
+            // writeClimber.Route(stateMember, binaryWriterProcessor);
+            // new ReflectionValueDescriptor<Person2, Person2>(binaryWriterProcessor, stateMemberProvider, stateMember, null).Route(stateMember, person.GetType(), null);
+
             writeClimber.Climb(strongBox2, binaryWriterProcessor);
 
             stream.Position = 0;

@@ -3,6 +3,61 @@ using System.Linq.Expressions;
 
 namespace GraphClimber.ValueDescriptor
 {
+    public class StaticStateMember : IReflectionStateMember
+    {
+        private readonly object _value;
+
+        public StaticStateMember(object value)
+        {
+            _value = value;
+        }
+
+        public string Name
+        {
+            get { return "Value";  }
+        }
+
+        public Type OwnerType
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public Type MemberType
+        {
+            get { return typeof(object); }
+        }
+
+        public Expression GetGetExpression(Expression obj)
+        {
+            return Expression.Constant(_value);
+        }
+
+        public Expression GetSetExpression(Expression obj, Expression value)
+        {
+            return Expression.Empty();
+        }
+
+        public bool IsArrayElement
+        {
+            get { return false; }
+        }
+
+        public int[] ElementIndex
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public object GetValue(object owner)
+        {
+            return _value;
+        }
+
+        public void SetValue(object owner, object value)
+        {
+            // Does nothing!
+        }
+    }
+
     public class DelegateStateMember : IReflectionStateMember
     {
         private readonly Type _memberType;
