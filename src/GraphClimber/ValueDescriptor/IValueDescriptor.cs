@@ -22,8 +22,8 @@ namespace GraphClimber
         /// </summary>
         void Climb();
 
-        void Route(IStateMember stateMember, Type runtimeMemberType, object owner);
+        void Route(IStateMember stateMember, Type runtimeMemberType, object owner, bool skipSpecialMethod);
 
-        void Route(IStateMember stateMember, object owner);
+        void Route(IStateMember stateMember, object owner, bool skipSpecialMethod);
     }
 }

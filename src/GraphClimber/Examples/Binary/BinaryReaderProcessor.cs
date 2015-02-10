@@ -33,7 +33,8 @@ namespace GraphClimber.Examples
                         new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, type),
                         true,
                         true),
-                    descriptor.Owner);
+                    descriptor.Owner,
+                    true);
             }
         }
 

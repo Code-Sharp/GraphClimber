@@ -55,7 +55,8 @@ namespace GraphClimber.Examples
                     new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, runtimeType),
                     true,
                     true),
-                descriptor.Owner);
+                descriptor.Owner,
+                true);
         }
 
         private void WriteAssemblyQualifiedNameIfNeeded(BinaryStateMember member, Type runtimeType)

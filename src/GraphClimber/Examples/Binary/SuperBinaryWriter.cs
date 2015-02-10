@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace GraphClimber.Examples
 {
+    
     class SuperBinaryWriter : BinaryWriter
     {
         private readonly IDictionary<string, int> _writtenStrings = new Dictionary<string, int>();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber
 {
@@ -246,20 +247,20 @@ namespace GraphClimber
             return descriptor;
         }
 
-        public void Route(IStateMember stateMember, object owner)
+        public void Route(IStateMember stateMember, object owner, bool skipSpecialMethod = true)
         {
             VisitMember((IReflectionStateMember) stateMember,
                 owner,
                 stateMember.MemberType,
-                true);
+                skipSpecialMethod);
         }
 
-        public void Route(IStateMember stateMember, Type runtimeMemberType, object owner)
+        public void Route(IStateMember stateMember, Type runtimeMemberType, object owner, bool skipSpecialMethod = true)
         {
             VisitMember((IReflectionStateMember) stateMember,
                 owner,
                 runtimeMemberType,
-                true);
+                skipSpecialMethod);
         }
 
         private void CallProcess(IReflectionValueDescriptor descriptor, bool skipSpecialMethod)
@@ -444,6 +445,7 @@ namespace GraphClimber
         object Get();
     }
 
+
     public class SlowGraphClimber<TProcessor>
     {
         private readonly IStateMemberProvider _stateMemberProvider;
@@ -460,20 +462,21 @@ namespace GraphClimber
             descriptor.Climb();
         }
 
-        public void Route(object current, TProcessor processor)
+        public void Route(object current, TProcessor processor, bool skipSpecialMethod)
         {
             var descriptor = GetDescriptor(current, processor);
 
-            descriptor.Route(descriptor.StateMember, current.GetType(), new Box { Parent = current });
+            descriptor.Route(descriptor.StateMember, current.GetType(), new Box { Parent = current }, skipSpecialMethod);
         }
+
 
         private ReflectionValueDescriptor<object, object> GetDescriptor(object current, TProcessor processor)
         {
             var descriptor =
                 new ReflectionValueDescriptor<object, object>(processor,
                     _stateMemberProvider,
-                    new ReflectionPropertyStateMember(typeof (Box).GetProperty("Parent")),
-                    new Box {Parent = current});
+                    new StaticStateMember(current), 
+                    null);
             return descriptor;
         }
 

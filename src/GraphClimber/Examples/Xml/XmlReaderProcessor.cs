@@ -82,7 +82,7 @@ namespace GraphClimber.Examples
                 // TODO: this will be the route method..
                 descriptor.Route
                     (new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember,
-                        instanceType), descriptor.Owner);
+                        instanceType), descriptor.Owner, true);
             }
         }
 

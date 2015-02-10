@@ -49,7 +49,7 @@ namespace GraphClimber.Examples
 
             if (_store.TryGet("Type", out type))
             { 
-                descriptor.Route(new MyCustomStateMember((IReflectionStateMember)descriptor.StateMember, Type.GetType(type)), descriptor.Owner);
+                descriptor.Route(new MyCustomStateMember((IReflectionStateMember)descriptor.StateMember, Type.GetType(type)), descriptor.Owner, true);
             }
         }
     }
