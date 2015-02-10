@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
@@ -24,9 +26,9 @@ namespace GraphClimber
 
             //SerializeDeserializeXML();
 
-            // SerializeDeserializeStore();
+            SerializeDeserializeStore();
 
-            SerializeDeserializeBinary();
+            //SerializeDeserializeBinary();
         }
 
         private static void SerializeDeserializeBinary()
@@ -105,6 +107,11 @@ namespace GraphClimber
 
         class Person
         {
+            public Person()
+            {
+                Children = new List<Person>();
+            }
+
             public string Name { get; set; }
 
             public int Age { get; set; }
@@ -112,6 +119,8 @@ namespace GraphClimber
             public object Surprise { get; set; }
 
             public Person Father { get; set; }
+
+            public IList<Person> Children { get; set; }
         }
 
         struct Person2
@@ -155,6 +164,7 @@ namespace GraphClimber
                 Age = 26,
                 Name = "Elad Zelinger",
                 Father = ilan,
+                Children = { new Person() { Name = "Jason"}, new Person() { Name = "Tomerh" }},
                 Surprise = new Person()
                 {
                     Age = 21,
