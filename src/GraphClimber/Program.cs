@@ -7,6 +7,17 @@ using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber
 {
+    enum Days
+    {
+        Sunday,
+        Monday,
+        Tuesday,
+        Wendensday,
+        Thursday,
+        Friday,
+        Saturday
+    }
+
     public class Program
     {
         public static void DoSomething<T>(StrongBox<T> hello)
@@ -123,6 +134,8 @@ namespace GraphClimber
             public object Surprise { get; set; }
 
             public object Father { get; set; }
+
+            public Days Day { get; set; }
         }
 
 
@@ -175,6 +188,7 @@ namespace GraphClimber
                 Age = 26,
                 Name = "Elad Zelinger",
                 Father = ilan,
+                Day = Days.Tuesday,
                 Surprise = new Person2()
                 {
                     Age = 21,
@@ -184,7 +198,8 @@ namespace GraphClimber
                     {
                         ilan, ilan, 342, "Hello",
                         new int[]{1,1,2,3,5,8},
-                        new int[,]{{1,1},{2,3},{5,8}}
+                        new int[,]{{1,1},{2,3},{5,8}},
+                        Days.Saturday
                     }
                 }
             };

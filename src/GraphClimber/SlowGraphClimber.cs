@@ -41,7 +41,7 @@ namespace GraphClimber
             get { return _property.ReflectedType; }
         }
 
-        public Type MemberType
+        public virtual Type MemberType
         {
             get { return _property.PropertyType; }
         }
@@ -60,7 +60,7 @@ namespace GraphClimber
         {
             get { return false; }
         }
-
+        
         public int[] ElementIndex
         {
             get
@@ -236,8 +236,20 @@ namespace GraphClimber
         private IReflectionValueDescriptor CreateDescriptor(IReflectionStateMember member, object value,
             Type runtimeMemberType)
         {
-            Type descriptorType = typeof (ReflectionValueDescriptor<,>)
-                .MakeGenericType(member.MemberType, runtimeMemberType);
+            Type descriptorType;
+
+            Type memberType = member.MemberType;
+            if (memberType.IsEnum)
+            {
+                descriptorType = typeof (ReflectionEnumValueDescriptor<,,>)
+                    .MakeGenericType(memberType, runtimeMemberType,
+                        memberType.GetEnumUnderlyingType());
+            }
+            else
+            {
+                descriptorType = typeof(ReflectionValueDescriptor<,>)
+                    .MakeGenericType(memberType, runtimeMemberType);                
+            }
 
             IReflectionValueDescriptor descriptor =
                 (IReflectionValueDescriptor) Activator.CreateInstance
@@ -360,6 +372,115 @@ namespace GraphClimber
             }
 
             return null;
+        }
+    }
+
+    internal class ReflectionEnumValueDescriptor<TField, TRuntime, TUnderlying> :
+        ReflectionValueDescriptor<TField, TRuntime>,
+        IReadOnlyEnumExactValueDescriptor<TField, TUnderlying>,
+        IWriteOnlyEnumExactValueDescriptor<TField, TUnderlying>
+        where TRuntime : TField
+        where TField : IConvertible
+        where TUnderlying : IConvertible
+    {
+        private readonly IStateMember _underlyingValueStateMember;
+
+        public ReflectionEnumValueDescriptor(object processor, IStateMemberProvider stateMemberProvider, IReflectionStateMember stateMember, object owner) : 
+            base(processor, stateMemberProvider, stateMember, owner)
+        {
+            _underlyingValueStateMember = new EnumUnderlyingValueStateMember(stateMember);
+        }
+
+        public TUnderlying GetUnderlying()
+        {
+            TField result = Get();
+            
+            TUnderlying value = 
+                (TUnderlying) Convert.ChangeType(result, typeof (TUnderlying));
+            
+            return value;
+        }
+
+        public void SetUnderlying(TUnderlying value)
+        {
+            long asLong =
+                (long) Convert.ChangeType(value, typeof (long));
+
+            TField result =
+                (TField) Enum.ToObject(typeof (TField), asLong);
+
+            Set(result);
+        }
+
+        public IStateMember UnderlyingValueStateMember
+        {
+            get
+            {
+                return _underlyingValueStateMember;
+            }
+        }
+    }
+
+    internal class EnumUnderlyingValueStateMember : IReflectionStateMember
+    {
+        private readonly IReflectionStateMember _stateMember;
+        private readonly Type _enumType;
+        private readonly Type _underlyingType;
+
+        public EnumUnderlyingValueStateMember(IReflectionStateMember stateMember)
+        {
+            _stateMember = stateMember;
+            _enumType = _stateMember.MemberType;
+            _underlyingType = _enumType.GetEnumUnderlyingType();
+        }
+
+        public string Name
+        {
+            get { return _stateMember.Name; }
+        }
+
+        public Type OwnerType
+        {
+            get { return _stateMember.OwnerType; }
+        }
+
+        public Type MemberType
+        {
+            get { return _underlyingType; }
+        }
+
+        public Expression GetGetExpression(Expression obj)
+        {
+            return _stateMember.GetGetExpression(obj);
+        }
+
+        public Expression GetSetExpression(Expression obj, Expression value)
+        {
+            return _stateMember.GetSetExpression(obj, value);
+        }
+
+        public bool IsArrayElement
+        {
+            get { return _stateMember.IsArrayElement; }
+        }
+
+        public int[] ElementIndex
+        {
+            get { return _stateMember.ElementIndex; }
+        }
+
+        public object GetValue(object owner)
+        {
+            return Convert.ChangeType(_stateMember.GetValue(owner), _underlyingType);
+        }
+
+        public void SetValue(object owner, object value)
+        {
+            // Thats how they do it :(
+            object casted =
+                Enum.ToObject(_enumType, Convert.ToInt64(value));
+
+            _stateMember.SetValue(owner, casted);
         }
     }
 
