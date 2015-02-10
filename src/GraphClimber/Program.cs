@@ -52,11 +52,8 @@ namespace GraphClimber
 
             var stateMember = new StaticStateMember(person);
             
-
-            // writeClimber.Route(stateMember, binaryWriterProcessor);
-            // new ReflectionValueDescriptor<Person2, Person2>(binaryWriterProcessor, stateMemberProvider, stateMember, null).Route(stateMember, person.GetType(), null);
-
-            writeClimber.Climb(strongBox2, binaryWriterProcessor);
+            writeClimber.Route(person, binaryWriterProcessor, false);
+            //new ReflectionValueDescriptor<Person2, Person2>(binaryWriterProcessor, stateMemberProvider, stateMember, null).Route(stateMember, person.GetType(), null);
 
             stream.Position = 0;
             var binaryReaderProcessor = new BinaryReaderProcessor(new SuperBinaryReader(stream));
