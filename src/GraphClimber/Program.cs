@@ -41,20 +41,8 @@ namespace GraphClimber
             var stream = new MemoryStream();
             var binaryWriterProcessor = new BinaryWriterProcessor(new SuperBinaryWriter(stream));
 
-            // Not that good :( : 
-            // I need the field to be "object" and not the struct "Person2"
-            //writeClimber.Route(person, binaryWriterProcessor);
-            StrongBox<object> strongBox2 =
-                new StrongBox<object>()
-                {
-                    Value = person
-                };
-
-            var stateMember = new StaticStateMember(person);
-            
             writeClimber.Route(person, binaryWriterProcessor, false);
-            //new ReflectionValueDescriptor<Person2, Person2>(binaryWriterProcessor, stateMemberProvider, stateMember, null).Route(stateMember, person.GetType(), null);
-
+            
             stream.Position = 0;
             var binaryReaderProcessor = new BinaryReaderProcessor(new SuperBinaryReader(stream));
 
