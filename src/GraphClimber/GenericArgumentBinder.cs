@@ -25,11 +25,19 @@ namespace GraphClimber
             private readonly IDictionary<Tuple<Type, Type>, BindStatus> _visitedTypes =
                 new Dictionary<Tuple<Type, Type>, BindStatus>();
 
+            private readonly IDictionary<Type, Type> _typeGenericArguments =
+                new Dictionary<Type, Type>();
+
             public ArgumentMapper(MethodInfo methodInfo)
             {
                 _genericConstraintsToType =
                     methodInfo.GetGenericArguments()
                         .ToDictionary(type => type, t => new HashSet<Type>());
+
+                Type declaringType = methodInfo.DeclaringType;
+
+                _typeGenericArguments = 
+                    TypeExtensions.GetTypeGenericArgumentsMap(declaringType);
             }
 
             /// <summary>
@@ -84,11 +92,23 @@ namespace GraphClimber
 
                 bool result = false;
 
-                if (parameterType.IsGenericParameter &&
-                    VerifyGenericConstraints(parameterType, realType))
+                if (parameterType.IsGenericParameter)
                 {
-                    _genericConstraintsToType[parameterType].Add(realType);
-                    result = true;
+                    Type resolvedType;
+
+                    // Some generic type arguments belong to the Type and not to the method
+                    if (_typeGenericArguments.TryGetValue(parameterType, out resolvedType))
+                    {
+                        if (TryBind(resolvedType, realType))
+                        {
+                            result = true;                            
+                        }
+                    }
+                    else if (VerifyGenericConstraints(parameterType, realType))
+                    {
+                        _genericConstraintsToType[parameterType].Add(realType);
+                        result = true;
+                    }
                 }
 
                 if (parameterType.IsGenericType &&
