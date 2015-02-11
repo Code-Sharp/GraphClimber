@@ -30,9 +30,14 @@ You write a `Processor`, a `Processor` is an object that has a lot of `ProcessMe
     public void ProcessReferenceType<T>(IWriteOnlyExactValueDescriptor<T> descriptor)
         where T : class
 
-And then you need to choose between the simple state member providers, This class identifies all the "State Members" that lies inside a given type. The graph climber climbs only on state members, Those can be fields, properties and even pair of get/set methods. 
+There are many `Descriptors` to choose from, and you can _really_ go crazy with generic arguments. You can even implement `IGenericParameterFilter` in an Attribute and decorate your generic parameter with it, Like this method here which accepts only primitive values :
 
-__Note__ : A state member can be "read"/"write" only, but that's good as long as you want only read/write only access, When you'll try to read/write to those state members, no exception will be thrown from the GraphClimber. You may throw it from the `StateMember` (if you created it).
+    [ProcessorMethod(Precedence = 99)]
+    public void ProcessPrimitives<[Primitive]T>(IReadOnlyValueDescriptor<T> descriptor)
+
+Then you need to choose between the simple state member providers (or to create one of your own). The objective of the `IStateMemberProvider` is to identify all the "State Members" that lies inside a given type. The graph climber climbs only on state members, Those can be fields, properties and even pair of get/set methods. 
+
+__Note__ : A state member can be "read"/"write" only, but that's good as long as you want only read/write only access, When you'll try to read/write to those state members, no exception will be thrown from the default implementations of the `StateMemberProviders`. You may throw it from the `StateMember` (if you created it).
 
     var stateMemberProvider = new CachingStateMemberProvider(new PropertiesStateMemberProvider());
     var gc = new GraphClimber<MyProcessor>(stateMemberProvider);
@@ -53,27 +58,22 @@ What's the graph climber is going to do now?
 ## FAQ
 
 __Q__ : How can I help?
-
 __A__ : You can help us by starting issues, writing code, documenting code, writing tests, and so. [Pull Requests are awesome](https://help.github.com/articles/creating-a-pull-request/).
 
 
 __Q__ : Is this going to be better documented?
-
 __A__ : Yeah, I Promise.
 
 
 __Q__ : How can I climb recursively?
-
 __A__ : Call climb() on the given descriptors, they will continue to climb on the current object that found on the state member, And remember, don't climb on nulls!
 
 
 __Q__ : Can I climb on arrays?
-
 __A__ : Sure you can, In that case the name of the statemember is going to be formatted with the array indices
 
 
 __Q__ : Can I climb on enums?
-
 __A__ : Hell yeah, Get `IReadOnlyEnumExactValueDescriptor` as an argument in your processor method
 
 ## Development stages
