@@ -73,10 +73,9 @@ namespace GraphClimber.Examples
 
             for (int i = 0; i < count; i++)
             {
-                _store = temp.GetInner("Item_" + i);
                 var strongBox = new StrongBox<T>(default(T));
 
-                descriptor.Route(new DelegateStateMember(typeof(T), () => strongBox.Value, t => strongBox.Value = (T)t), 
+                descriptor.Route(new StrongBoxStateMember<T>(strongBox, "Item_" + i),
                     typeof(T), strongBox, false);
 
                 collection.Add(strongBox.Value);

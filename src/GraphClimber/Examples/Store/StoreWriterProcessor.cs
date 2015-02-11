@@ -49,8 +49,8 @@ namespace GraphClimber.Examples
             var temp = _store;
             foreach (var item in collection)
             {
-                _store = temp.GetInner("Item_" + i);
-                descriptor.Route(new StaticStateMember(item), null, false);
+                //_store = temp.GetInner("Item_" + i);
+                descriptor.Route(new StaticStateMember(item, "Item_" + i), null, false);
 
                 i++;
             }
