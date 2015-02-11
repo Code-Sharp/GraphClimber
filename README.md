@@ -55,6 +55,8 @@ What's the graph climber is going to do now?
 2. Tell the state member provider to give all the state members that the given type has
 3. Look for the most appropriate method (If exists) inside "MyProcessor" to call for every state member and call it.
 
+Actually, It's not going to do steps 2 and 3 all the times, only in the first time it encounters a new type of object, Because it generates an implementation of a method that climbs on that type runtime and than it caches it. Basicly that means "One time reflection", It's _fast_!
+
 ## FAQ
 
 __Q__ : How can I help?
