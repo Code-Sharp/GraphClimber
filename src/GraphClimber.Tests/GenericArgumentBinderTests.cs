@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 
@@ -29,17 +30,48 @@ namespace GraphClimber.Tests
         {
             get
             {
-                foreach (var methodInfo in typeof(ITestData).GetMethods())
+                IEnumerable<object[]> testData = GetTestData();
+                IEnumerable<object[]> genericTestData = GetGenericTestData();
+
+                return testData.Concat(genericTestData);
+            }
+        }
+
+        private static IEnumerable<object[]> GetTestData()
+        {
+            foreach (var methodInfo in typeof (ITestData).GetMethods())
+            {
+                foreach (var data in methodInfo.GetCustomAttributes<TestDataAttribute>())
                 {
-                    foreach (var data in methodInfo.GetCustomAttributes<TestDataAttribute>())
+                    yield return new object[]
                     {
-                        yield return new object[]
+                        methodInfo,
+                        data.RealType,
+                        data.ShouldReturnMethod ? methodInfo.MakeGenericMethod(data.GenericParameterTypes) : null
+                    };
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> GetGenericTestData()
+        {
+            foreach (MethodInfo method in typeof (IGenericTestData<>).GetMethods())
+            {
+                foreach (GenericTestDataAttribute attribute in method.GetCustomAttributes<GenericTestDataAttribute>())
+                {
+                    Type genericType =
+                        typeof (IGenericTestData<>).MakeGenericType(attribute.GenericArgument);
+
+                    MethodInfo resolvedMethod = genericType.GetMethods().
+                        FirstOrDefault(x => x.Name == method.Name);
+
+                    yield return new object[]
                         {
-                            methodInfo,
-                            data.RealType,
-                            data.ShouldReturnMethod ?  methodInfo.MakeGenericMethod(data.GenericParameterTypes) : null
+                            resolvedMethod,
+                            attribute.RealType,
+                            attribute.ShouldReturnMethod ?  resolvedMethod.MakeGenericMethod(attribute.GenericParameterTypes) : null
                         };
-                    }
+
                 }
             }
         }
@@ -79,6 +111,46 @@ namespace GraphClimber.Tests
             {
                 get { return _genericParameterTypes; }
             }
+        }
+
+        private class GenericTestDataAttribute : TestDataAttribute
+        {
+            private readonly Type _genericArgument;
+
+            public GenericTestDataAttribute(Type genericArgument, Type realType, bool shouldReturnMethod, params Type[] genericParameterTypes) : this(genericArgument, new Type[] {realType}, shouldReturnMethod, genericParameterTypes)
+            {
+            }
+
+            public GenericTestDataAttribute(Type genericArgument, Type[] realType, bool shouldReturnMethod, params Type[] genericParameterTypes) : base(realType, shouldReturnMethod, genericParameterTypes)
+            {
+                _genericArgument = genericArgument;
+            }
+
+            public Type GenericArgument
+            {
+                get { return _genericArgument; }
+            }
+        }
+
+
+        private interface IGenericTestData<T>
+        {
+            // NOTE: Methods here are resolved by name (in unit tests only)
+            // So please ensure method name is unique. Thanks!
+
+            [GenericTestData(typeof(int), typeof(List<string>), false)]
+            [GenericTestData(typeof(int), typeof(int[]), true, typeof(int[]))]
+            [GenericTestData(typeof(IEnumerable<char>), typeof(List<string>), true, typeof(List<string>))]
+            [GenericTestData(typeof(string), typeof(List<string>), true, typeof(List<string>))]
+            [GenericTestData(typeof(IComparable), typeof(List<int>), false)] // Since List<int> : IEnumerable<IComparable> isn't true.
+            void EasyTest<TEnumerable>(TEnumerable a)
+                where TEnumerable : IEnumerable<T>;
+
+            [GenericTestData(typeof(ICloneable), typeof(List<int>), false)]
+            [GenericTestData(typeof(IComparable), typeof(List<int>), true, typeof(List<int>), typeof(int))]
+            void ModerateTest<TEnumerable, S>(TEnumerable a)
+                where TEnumerable : IEnumerable<S>
+                where S : T;
         }
 
         private interface ITestData
