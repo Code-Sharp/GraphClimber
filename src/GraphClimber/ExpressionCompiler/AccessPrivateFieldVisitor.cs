@@ -6,6 +6,14 @@ using System.Reflection;
 
 namespace GraphClimber.ExpressionCompiler
 {
+    /// <summary>
+    /// An <see cref="ExpressionVisitor"/>
+    /// that mutates expressions that calls non public members (Fields, Properties or Methods)
+    /// to use "reflection" accessors.
+    /// 
+    /// This is usually used on expressions that compiled to dynamic assemblies, Because
+    /// in this type of compilation, They cannot access non public members.
+    /// </summary>
     public class AccessPrivateFieldVisitor : ExpressionVisitor
     {
         public static readonly ExpressionVisitor Empty = new AccessPrivateFieldVisitor();
