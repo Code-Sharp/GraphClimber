@@ -79,7 +79,14 @@
     <Compile Include="Examples\Binary\SuperBinaryWriter.cs" />
     <Compile Include="Examples\Xml\XmlReaderProcessor.cs" />
     <Compile Include="Examples\Xml\XmlWriterProcessor.cs" />
+    <Compile Include="ExpressionCompiler\AccessPrivateFieldVisitor.cs" />
+    <Compile Include="ExpressionCompiler\DebugExpressionCompiler.cs" />
+    <Compile Include="ExpressionCompiler\DebugExpressionVistor.cs" />
+    <Compile Include="ExpressionCompiler\DebugViewExpressionDescriber.cs" />
     <Compile Include="ExpressionCompiler\IExpressionCompiler.cs" />
+    <Compile Include="ExpressionCompiler\IExpressionDescriber.cs" />
+    <Compile Include="ExpressionCompiler\StringExtensions.cs" />
+    <Compile Include="ExpressionCompiler\TrivialExpressionCompiler.cs" />
     <Compile Include="GenericArgumentBinder.cs" />
     <Compile Include="IEnumProcessor.cs" />
     <Compile Include="IGenericParameterFilter.cs" />
