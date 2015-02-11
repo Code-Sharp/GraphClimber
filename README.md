@@ -75,7 +75,7 @@ __Q__ : Can I climb on arrays?
 __A__ : Sure you can, In that case the name of the statemember is going to be formatted with the array indices
 
 
-__Q__ : Can I climb on enums?
+__Q__ : Can I visit Enums?
 __A__ : Hell yeah, Get `IReadOnlyEnumExactValueDescriptor` as an argument in your processor method
 
 ## Development stages
