@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -53,12 +54,8 @@ namespace GraphClimber.ExpressionCompiler
         private Expression<TDelegate> MutateLambdaExpression<TDelegate>(Expression<TDelegate> expression,
             SymbolDocumentInfo symbolDocument)
         {
-            Expression returnValue = expression;
-
-            foreach (var visitor in GetVisitors(expression, symbolDocument))
-            {
-                returnValue = visitor.Visit(returnValue);
-            }
+            Expression returnValue = GetVisitors(expression, symbolDocument)
+                .Aggregate<ExpressionVisitor, Expression>(expression, (current, visitor) => visitor.Visit(current));
 
             return (Expression<TDelegate>)returnValue;
         }
