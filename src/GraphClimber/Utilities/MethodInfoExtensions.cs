@@ -30,7 +30,7 @@ namespace GraphClimber
                 return false;
             }
 
-            if (!IsGenericArgumentsSubstitutionCompatible(genericArguments, typeArguments))
+            if (!IsGenericArgumentsSubstitutionCompatible(methodInfo.DeclaringType, genericArguments, typeArguments))
             {
                 return false;
             }
@@ -39,12 +39,19 @@ namespace GraphClimber
             return true;
         }
 
-        private static bool IsGenericArgumentsSubstitutionCompatible(Type[] genericArguments, Type[] substitution)
+        private static bool IsGenericArgumentsSubstitutionCompatible(Type declaringType, Type[] genericArguments, Type[] substitution)
         {
-            Dictionary<Type, Type> currentMap =
+            Dictionary<Type, Type> methodMap =
                 genericArguments.Zip(substitution,
                     Tuple.Create)
                     .ToDictionary(x => x.Item1, x => x.Item2);
+
+            IDictionary<Type, Type> declaringTypeMap =
+                TypeExtensions.GetTypeGenericArgumentsMap(declaringType);
+
+            IDictionary<Type, Type> currentMap =
+                methodMap.Concat(declaringTypeMap)
+                .ToDictionary(x => x.Key, x => x.Value);
 
             ArgumentSubstituter substituter = new ArgumentSubstituter(currentMap);
 
