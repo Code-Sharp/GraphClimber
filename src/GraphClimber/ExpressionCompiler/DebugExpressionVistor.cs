@@ -7,8 +7,9 @@ namespace GraphClimber.ExpressionCompiler
 {
     public class DebugExpressionVistor : ExpressionVisitor
     {
-        private static readonly ICollection<Type> _untouchedExpressionTypes = new HashSet<Type> { typeof(ParameterExpression), typeof(ConstantExpression) };
-        private static readonly ICollection<Type> _unmodifiedExpressionTypes = new HashSet<Type> { typeof(BlockExpression), typeof(LambdaExpression), typeof(LoopExpression) };
+        private static readonly ICollection<Type> _untouchedExpressionTypes  = new[] { typeof(ParameterExpression), typeof(ConstantExpression) };
+        private static readonly ICollection<Type> _unsymboledExpressionTypes = new[] { typeof(BlockExpression), typeof(LambdaExpression), typeof(LoopExpression) };
+
         private static readonly string[] _newLineSeperator = { Environment.NewLine };
 
         private readonly SymbolDocumentInfo _symbolDocumentInfo;
@@ -24,8 +25,10 @@ namespace GraphClimber.ExpressionCompiler
             _initialDebugView = _expressionDescriber.Describe(initialExpression);
         }
 
-        private bool ContainsType(IEnumerable<Type> types, Type type)
+        private bool ContainsType(IEnumerable<Type> types, object instance)
         {
+            var type = instance.GetType();
+
             return types.Any(currentType => currentType.IsAssignableFrom(type));
         }
 
@@ -36,23 +39,30 @@ namespace GraphClimber.ExpressionCompiler
                 return null;
             }
 
-            if (ContainsType(_untouchedExpressionTypes, node.GetType()))
+            // Untouched remains as they are
+            if (ContainsType(_untouchedExpressionTypes, node))
             {
                 return node;
             }
 
-            if (ContainsType(_unmodifiedExpressionTypes, node.GetType()))
+            Expression innerExpression = base.Visit(node);
+            
+            // Unsymboled is not symboled, the node children are.
+            if (ContainsType(_unsymboledExpressionTypes, node))
             {
-                return base.Visit(node);
+                return innerExpression;
             }
 
             Range<Position> range = GetCurrentExpressionRange(node);
 
-            Expression innerExpression = base.Visit(node);
-            Expression debugInfoExpression = Expression.DebugInfo(_symbolDocumentInfo, range.Start.Line + 1, range.Start.Column + 1, range.End.Line + 1, range.End.Column + 1);
+            // Still not sure why I have so many plus one.
+            Expression debugInfoExpression = Expression.DebugInfo(_symbolDocumentInfo, 
+                range.Start.Line + 1, 
+                range.Start.Column + 1, 
+                range.End.Line + 1, 
+                range.End.Column + 1);
 
             return Expression.Block(debugInfoExpression, innerExpression);
-
         }
 
         private Range<Position> GetCurrentExpressionRange(Expression node)
@@ -64,7 +74,9 @@ namespace GraphClimber.ExpressionCompiler
             _currentIndex = _initialDebugView.IndexOf(firstDebugViewLine, _currentIndex, StringComparison.Ordinal);
 
             Position start = _initialDebugView.GetPosition(_currentIndex);
-            Position end = _initialDebugView.GetPosition(_currentIndex + debugView.Length + (debugViewLines.Length - 1) * _initialDebugView.Split(_newLineSeperator, StringSplitOptions.RemoveEmptyEntries)[start.Line].IndexOfNot(' '));
+            int spacing = _initialDebugView.Split(_newLineSeperator, StringSplitOptions.RemoveEmptyEntries)[start.Line].IndexOfNot(' ');
+
+            Position end = _initialDebugView.GetPosition(_currentIndex + debugView.Length + (debugViewLines.Length - 1) * spacing);
 
             return new Range<Position>(start, end);
         }
