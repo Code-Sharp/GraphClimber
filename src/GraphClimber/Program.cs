@@ -11,6 +11,8 @@ namespace GraphClimber
 {
     public class Program
     {
+        private static readonly IStateMemberProvider _stateMemberProvider = new CachingStateMemberProvider(new ReflectionPropertyStateMemberProvider());
+
         public static void DoSomething<T>(StrongBox<T> hello)
         {
             Console.WriteLine(hello);
@@ -35,7 +37,7 @@ namespace GraphClimber
         {
             var person = GetPerson2();
 
-            var stateMemberProvider = new BinaryStateMemberProvider(new ReflectionPropertyStateMemberProvider());
+            var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
 
             var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(stateMemberProvider);
             var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(stateMemberProvider);
@@ -69,7 +71,7 @@ namespace GraphClimber
             // Reader code:
             SlowGraphClimber<XmlReaderProcessor> climber2 =
                 new SlowGraphClimber<XmlReaderProcessor>
-                    (new ReflectionPropertyStateMemberProvider());
+                    (_stateMemberProvider);
 
             XElement reader = XElement.Parse(text);
 
@@ -85,7 +87,7 @@ namespace GraphClimber
             // Writer code:
             SlowGraphClimber<XmlWriterProcessor> climber =
                 new SlowGraphClimber<XmlWriterProcessor>
-                    (new ReflectionPropertyStateMemberProvider());
+                    (_stateMemberProvider);
 
             Person person = new Person()
             {
@@ -139,7 +141,7 @@ namespace GraphClimber
         {
             var store = new TrivialStore();
 
-            SlowGraphClimber<StoreWriterProcessor> climber = new SlowGraphClimber<StoreWriterProcessor>(new ReflectionPropertyStateMemberProvider());
+            SlowGraphClimber<StoreWriterProcessor> climber = new SlowGraphClimber<StoreWriterProcessor>(_stateMemberProvider);
 
             var processor = new StoreWriterProcessor(store);
             var box = new StrongBox<Person>(GetPerson());
@@ -147,7 +149,7 @@ namespace GraphClimber
             climber.Climb(box, processor);
 
 
-            SlowGraphClimber<StoreReaderProcessor> readerClimber = new SlowGraphClimber<StoreReaderProcessor>(new ReflectionPropertyStateMemberProvider());
+            SlowGraphClimber<StoreReaderProcessor> readerClimber = new SlowGraphClimber<StoreReaderProcessor>(_stateMemberProvider);
 
             var readerProcessor = new StoreReaderProcessor(store);
             var readBox = new StrongBox<object>(null);
