@@ -5,6 +5,12 @@ namespace GraphClimber.ExpressionCompiler
     public static class StringExtensions
     {
 
+        /// <summary>
+        /// Gets the cursor position (Column, Line) of the given index in the given string.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public static Position GetPosition(this string str, int index)
         {
             var column = index;
@@ -18,23 +24,45 @@ namespace GraphClimber.ExpressionCompiler
                 newLineIndex = str.IndexOf(Environment.NewLine, newLineIndex + 1, StringComparison.Ordinal);
             }
 
-
-            return new Position { Line = newLines, Column = column };
+            return new Position(newLines, column);
         }
 
+        /// <summary>
+        /// Represents a position inside a string
+        /// </summary>
         public struct Position
         {
+            private readonly int _line;
+            private readonly int _column;
+
             public Position(int line, int column)
-                : this()
             {
-                Line = line;
-                Column = column;
+                _line = line;
+                _column = column;
             }
 
-            public int Line { get; set; }
+            /// <summary>
+            /// Gets the line of the position
+            /// </summary>
+            public int Line
+            {
+                get
+                {
+                    return _line;
+                }
+            }
 
-            public int Column { get; set; }
+            /// <summary>
+            /// Gets the column of the position
+            /// </summary>
+            public int Column
+            {
+                get
+                {
+                    return _column;
+                }
+            }
 
         }
-    }
+    };
 }
