@@ -36,13 +36,8 @@ namespace GraphClimber
 
                 Type declaringType = methodInfo.DeclaringType;
 
-                if (declaringType.IsGenericType)
-                {
-                    IDictionary<Type, Type> typeGenericArguments = 
-                        TypeExtensions.GetTypeGenericArgumentsMap(declaringType);
-                    
-                    _typeGenericArguments = typeGenericArguments;
-                }
+                _typeGenericArguments = 
+                    TypeExtensions.GetTypeGenericArgumentsMap(declaringType);
             }
 
             /// <summary>

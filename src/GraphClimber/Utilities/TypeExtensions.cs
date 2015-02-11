@@ -66,17 +66,22 @@ namespace GraphClimber
 
         public static IDictionary<Type, Type> GetTypeGenericArgumentsMap(Type declaringType)
         {
-            Type genericTypeDefinition =
-                declaringType.GetGenericTypeDefinition();
+            if (declaringType.IsGenericType)
+            {
+                Type genericTypeDefinition =
+                    declaringType.GetGenericTypeDefinition();
 
-            IDictionary<Type, Type> typeGenericArguments =
-                genericTypeDefinition.GetGenericArguments()
-                    .Zip(declaringType.GetGenericArguments(),
-                        Tuple.Create)
-                    .ToDictionary(x => x.Item1,
-                        x => x.Item2);
+                IDictionary<Type, Type> typeGenericArguments =
+                    genericTypeDefinition.GetGenericArguments()
+                        .Zip(declaringType.GetGenericArguments(),
+                            Tuple.Create)
+                        .ToDictionary(x => x.Item1,
+                            x => x.Item2);
 
-            return typeGenericArguments;
+                return typeGenericArguments;
+            }
+
+            return new Dictionary<Type, Type>();
         }
     }
 }
