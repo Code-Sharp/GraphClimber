@@ -7,6 +7,13 @@ using System.Runtime.CompilerServices;
 
 namespace GraphClimber.ExpressionCompiler
 {
+    /// <summary>
+    /// An <see cref="IExpressionCompiler"/>
+    /// That compiles methods into dynamic assemblies.
+    /// 
+    /// Also it, Writes the expression description to temporary file and allows
+    /// debugging with normal IDE (e.g Visual Studio).
+    /// </summary>
     public class DebugExpressionCompiler : IExpressionCompiler
     {
         private readonly IExpressionDescriber _expressionDescriber;
