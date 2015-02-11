@@ -60,50 +60,58 @@ namespace GraphClimber.ExpressionCompiler
             var fieldInfo = node.Member as FieldInfo;
             if (fieldInfo != null)
             {
-                FieldAttributes fieldAttributes = fieldInfo.Attributes;
-
-                bool isPrivateField = fieldAttributes.HasFlag(FieldAttributes.Private) ||
-                                      fieldAttributes.HasFlag(FieldAttributes.PrivateScope);
-
-                if (isPrivateField)
-                {
-                    var argument = node.Expression ?? Expression.Constant(null);
-
-                    return Expression.Convert(Expression.Call(null, typeof(AccessPrivateFieldVisitor).GetMethod("GetFieldValue"), Expression.Constant(fieldInfo.DeclaringType.AssemblyQualifiedName), Expression.Constant(fieldInfo.Name), argument), node.Type);
-                }
+                return VisitFieldMemberExpression(node, fieldInfo);
             }
 
             var propertyInfo = node.Member as PropertyInfo;
             if (propertyInfo != null)
             {
-                bool isPrivate = false;
-
-                if (propertyInfo.CanRead)
-                {
-                    var getMethodAttributes = propertyInfo.GetGetMethod(true).Attributes;
-
-                    isPrivate |= getMethodAttributes.HasFlag(MethodAttributes.Private) ||
-                                 getMethodAttributes.HasFlag(MethodAttributes.PrivateScope);
-                }
-
-                if (propertyInfo.CanWrite)
-                {
-                    var setMethodAttributes = propertyInfo.GetSetMethod(true).Attributes;
-
-                    isPrivate |= setMethodAttributes.HasFlag(MethodAttributes.Private) ||
-                                 setMethodAttributes.HasFlag(MethodAttributes.PrivateScope);
-                }
-
-                if (isPrivate)
-                {
-                    var argument = node.Expression ?? Expression.Constant(null);
-
-                    return Expression.Convert(Expression.Call(null, typeof(AccessPrivateFieldVisitor).GetMethod("GetPropertyValue"), Expression.Constant(propertyInfo.DeclaringType.AssemblyQualifiedName), Expression.Constant(propertyInfo.Name), argument), node.Type);
-                }
+                return VisitPropertyMemberExpression(node, propertyInfo);
             }
 
 
             return base.VisitMember(node);
         }
+
+        private static Expression VisitPropertyMemberExpression(MemberExpression node, PropertyInfo propertyInfo)
+        {
+            bool isPrivate =
+                new[] {propertyInfo.GetGetMethod(true), propertyInfo.GetSetMethod(true)}.Where(m => m != null)
+                    .Select(m => m.Attributes)
+                    .Any(m => m.HasFlag(MethodAttributes.Private) || m.HasFlag(MethodAttributes.PrivateScope));
+
+            if (isPrivate)
+            {
+                var argument = node.Expression ?? Expression.Constant(null);
+
+                return Expression.Convert(Expression.Call(null,
+                    typeof (AccessPrivateFieldVisitor).GetMethod("GetPropertyValue"),
+                    Expression.Constant(propertyInfo.DeclaringType.AssemblyQualifiedName),
+                    Expression.Constant(propertyInfo.Name), argument), node.Type);
+            }
+            
+            return node;
+        }
+
+        private static Expression VisitFieldMemberExpression(MemberExpression node, FieldInfo fieldInfo)
+        {
+            FieldAttributes fieldAttributes = fieldInfo.Attributes;
+
+            bool isPrivateField = fieldAttributes.HasFlag(FieldAttributes.Private) ||
+                                  fieldAttributes.HasFlag(FieldAttributes.PrivateScope);
+
+            if (isPrivateField)
+            {
+                var argument = node.Expression ?? Expression.Constant(null);
+
+                return Expression.Convert(Expression.Call(null,
+                    typeof (AccessPrivateFieldVisitor).GetMethod("GetFieldValue"),
+                    Expression.Constant(fieldInfo.DeclaringType.AssemblyQualifiedName),
+                    Expression.Constant(fieldInfo.Name), argument), node.Type);
+            }
+
+            return node;
+        }
+
     }
 }
