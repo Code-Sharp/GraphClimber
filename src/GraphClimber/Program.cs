@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using GraphClimber.Examples;
 using GraphClimber.ExpressionCompiler;
 using GraphClimber.ValueDescriptor;
+using Mono.Linq.Expressions;
 
 namespace GraphClimber
 {
@@ -57,11 +58,11 @@ namespace GraphClimber
             var variable = Expression.Variable(typeof(int), "myInt");
             var @break = Expression.Label();
             Expression exp = Expression.Assign(variable, Expression.Divide(propertyOrField, Expression.Subtract(property, method)));
-            exp = Expression.Block(new[] { variable }, exp, Expression.Add(Expression.Constant(2), Expression.Constant(5)), Expression.Call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }), Expression.Constant("Hello Worlda")),
-                Expression.Goto(@break));
+            exp = Expression.Block(new[] { variable }, exp, Expression.Add(Expression.Constant(2), Expression.Constant(5)), Expression.Call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }), Expression.Constant("Hello Worlda")));
 
 
-            exp = Expression.Loop(exp, @break);
+            var iVariable = Expression.Variable(typeof(int), "i");
+            exp = CustomExpression.For(iVariable, 0.Constant(), Expression.LessThan(iVariable, 5.Constant()), Expression.PostIncrementAssign(iVariable), exp);
             exp = Expression.Block(exp,
                 Expression.Call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }),
                     Expression.Constant("Goodbye")));
@@ -69,7 +70,7 @@ namespace GraphClimber
             var lambda = Expression.Lambda<Action<int>>(exp, "Hello_World",
                 new[] { parameter });
 
-            var expression = new DebugExpressionCompiler(DebugViewExpressionDescriber.Empty).Compile(lambda);
+            var expression = new DebugExpressionCompiler(CSharpExpressionDescriber.Empty).Compile(lambda);
 
             expression(56);
         }
@@ -88,7 +89,7 @@ namespace GraphClimber
 
         static void Main(string[] args)
         {
-            // ExpressionDebugGames.Play();
+            ExpressionDebugGames.Play();
             //IStore store = new TrivialStore();
 
             //store.Set("A", 5);

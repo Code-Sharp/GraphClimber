@@ -55,6 +55,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Linq.Expressions">
+      <HintPath>..\packages\Mono.Linq.Expressions.1.2.0.0\lib\Mono.Linq.Expressions.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -82,6 +85,7 @@
     <Compile Include="Examples\Xml\XmlReaderProcessor.cs" />
     <Compile Include="Examples\Xml\XmlWriterProcessor.cs" />
     <Compile Include="ExpressionCompiler\AccessPrivateFieldVisitor.cs" />
+    <Compile Include="ExpressionCompiler\CSharpExpressionDescriber.cs" />
     <Compile Include="ExpressionCompiler\DebugExpressionCompiler.cs" />
     <Compile Include="ExpressionCompiler\DebugExpressionVistor.cs" />
     <Compile Include="ExpressionCompiler\DebugViewExpressionDescriber.cs" />
@@ -117,6 +121,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
