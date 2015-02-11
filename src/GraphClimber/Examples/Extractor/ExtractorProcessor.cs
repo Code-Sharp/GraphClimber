@@ -1,17 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GraphClimber.Examples
 {
     internal class ExtractorProcessor<T> : INullProcessor
     {
-        private readonly List<T> _gathered = new List<T>();
+        private readonly Action<T> _callback;
 
-        public IEnumerable<T> Result
+        public ExtractorProcessor(Action<T> callback)
         {
-            get
-            {
-                return _gathered;
-            }
+            _callback = callback;
         }
 
         [ProcessorMethod(Precedence = 1)]
@@ -20,7 +18,7 @@ namespace GraphClimber.Examples
             where TRuntime : T
         {
             T runtime = descriptor.Get();
-            _gathered.Add(runtime);
+            _callback(runtime);
         }
 
         [ProcessorMethod(Precedence = 2)]

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace GraphClimber.Examples
 {
@@ -12,13 +12,11 @@ namespace GraphClimber.Examples
                 new SlowGraphClimber<ExtractorProcessor<T>>(new ReflectionPropertyStateMemberProvider());
         }
 
-        public IEnumerable<T> Extract(object value)
+        public void Extract(object value, Action<T> callback)
         {
-            ExtractorProcessor<T> processor = new ExtractorProcessor<T>();
+            ExtractorProcessor<T> processor = new ExtractorProcessor<T>(callback);
 
             _climber.Route(value, processor, false);
-
-            return processor.Result;
         }
     }
 }
