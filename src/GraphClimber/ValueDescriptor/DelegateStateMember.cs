@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace GraphClimber.ValueDescriptor
 {
     public class StaticStateMember : IReflectionStateMember
     {
         private readonly object _value;
+        private readonly string _name;
 
-        public StaticStateMember(object value)
+        public StaticStateMember(object value, string name = "Value")
         {
             _value = value;
+            _name = name;
         }
 
         public string Name
         {
-            get { return "Value";  }
+            get { return _name; }
         }
 
         public Type OwnerType
@@ -55,6 +58,63 @@ namespace GraphClimber.ValueDescriptor
         public void SetValue(object owner, object value)
         {
             // Does nothing!
+        }
+    }
+
+    public class StrongBoxStateMember<T> : IReflectionStateMember
+    {
+        private readonly StrongBox<T> _strongBox;
+        private readonly string _name;
+
+        public StrongBoxStateMember(StrongBox<T> strongBox, string name = "Value")
+        {
+            _strongBox = strongBox;
+            _name = name;
+        }
+
+        public string Name
+        {
+            get { return _name; }
+        }
+
+        public Type OwnerType
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public Type MemberType
+        {
+            get { return typeof (T); }
+        }
+
+        public Expression GetGetExpression(Expression obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Expression GetSetExpression(Expression obj, Expression value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsArrayElement
+        {
+            get { return false; }
+        }
+
+        public int[] ElementIndex
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public object GetValue(object owner)
+        {
+            return _strongBox.Value;
+        }
+
+        public void SetValue(object owner, object value)
+        {
+            _strongBox.Value = (T) value;
         }
     }
 
