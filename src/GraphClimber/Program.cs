@@ -2,9 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using GraphClimber.Examples;
+using GraphClimber.ExpressionCompiler;
 using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber
@@ -20,6 +23,59 @@ namespace GraphClimber
         Saturday
     }
 
+    public class ExpressionDebugGames
+    {
+        private static int PrivateField = 2;
+
+        private static int PrivateProperty
+        {
+            get { return 5; }
+        }
+
+        private static int PrivateMethod<T>()
+        {
+            return 3;
+        }
+
+        private static int GenericMethod<TEnum, TUnderlying>(TEnum value) where TEnum : IConvertible
+        {
+            return 2;
+        }
+
+        public static void Play()
+        {
+
+            Expression<Func<Type>> hi = () => typeof(int);
+
+            MemberExpression propertyOrField = Expression.Field(null, typeof(ExpressionDebugGames).GetField("PrivateField", BindingFlags.Static | BindingFlags.NonPublic));
+            MemberExpression property = Expression.Property(null, typeof(ExpressionDebugGames), "PrivateProperty");
+            MethodCallExpression method = Expression.Call(null,
+                typeof(ExpressionDebugGames).GetMethod("PrivateMethod", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(typeof(object)));
+
+            var parameter = Expression.Parameter(typeof(int), "someNumberArgument");
+
+            var variable = Expression.Variable(typeof(int), "myInt");
+            var @break = Expression.Label();
+            Expression exp = Expression.Assign(variable, Expression.Divide(propertyOrField, Expression.Subtract(property, method)));
+            exp = Expression.Block(new[] { variable }, exp, Expression.Add(Expression.Constant(2), Expression.Constant(5)), Expression.Call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }), Expression.Constant("Hello Worlda")),
+                Expression.Goto(@break));
+
+
+            exp = Expression.Loop(exp, @break);
+            exp = Expression.Block(exp,
+                Expression.Call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }),
+                    Expression.Constant("Goodbye")));
+
+            var lambda = Expression.Lambda<Action<int>>(exp, "Hello_World",
+                new[] { parameter });
+
+            var expression = new DebugExpressionCompiler(DebugViewExpressionDescriber.Empty).Compile(lambda);
+
+            expression(56);
+        }
+        
+    }
+
     public class Program
     {
         private static readonly IStateMemberProvider _stateMemberProvider = new CachingStateMemberProvider(new ReflectionPropertyStateMemberProvider());
@@ -32,6 +88,7 @@ namespace GraphClimber
 
         static void Main(string[] args)
         {
+            // ExpressionDebugGames.Play();
             //IStore store = new TrivialStore();
 
             //store.Set("A", 5);
