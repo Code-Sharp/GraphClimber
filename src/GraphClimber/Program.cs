@@ -1,277 +1,108 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using GraphClimber.Examples;
-using GraphClimber.ExpressionCompiler;
-using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber
 {
-    enum Days
+    class Program
     {
-        Sunday,
-        Monday,
-        Tuesday,
-        Wendensday,
-        Thursday,
-        Friday,
-        Saturday
-    }
-
-    public class ExpressionDebugGames
-    {
-        private static int PrivateField = 2;
-
-        private static int PrivateProperty
-        {
-            get { return 5; }
-        }
-
-        private static int PrivateMethod<T>()
-        {
-            return 3;
-        }
-
-        private static int GenericMethod<TEnum, TUnderlying>(TEnum value) where TEnum : IConvertible
-        {
-            return 2;
-        }
-
-        public static void Play()
-        {
-
-            Expression<Func<Type>> hi = () => typeof(int);
-
-            MemberExpression propertyOrField = Expression.Field(null, typeof(ExpressionDebugGames).GetField("PrivateField", BindingFlags.Static | BindingFlags.NonPublic));
-            MemberExpression property = Expression.Property(null, typeof(ExpressionDebugGames), "PrivateProperty");
-            MethodCallExpression method = Expression.Call(null,
-                typeof(ExpressionDebugGames).GetMethod("PrivateMethod", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(typeof(object)));
-
-            var parameter = Expression.Parameter(typeof(int), "someNumberArgument");
-
-            var variable = Expression.Variable(typeof(int), "myInt");
-            var @break = Expression.Label();
-            Expression exp = Expression.Assign(variable, Expression.Divide(propertyOrField, Expression.Subtract(property, method)));
-            exp = Expression.Block(new[] { variable }, exp, Expression.Add(Expression.Constant(2), Expression.Constant(5)), Expression.Call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }), Expression.Constant("Hello Worlda")),
-                Expression.Goto(@break));
-
-
-            exp = Expression.Loop(exp, @break);
-            exp = Expression.Block(exp,
-                Expression.Call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }),
-                    Expression.Constant("Goodbye")));
-
-            var lambda = Expression.Lambda<Action<int>>(exp, "Hello_World",
-                new[] { parameter });
-
-            var expression = new DebugExpressionCompiler(DebugViewExpressionDescriber.Empty).Compile(lambda);
-
-            expression(56);
-        }
-        
-    }
-
-    public class Program
-    {
-        private static readonly IStateMemberProvider _stateMemberProvider = new CachingStateMemberProvider(new ReflectionPropertyStateMemberProvider());
-
-        public static void DoSomething<T>(StrongBox<T> hello)
-        {
-            Console.WriteLine(hello);
-        }
-
-
         static void Main(string[] args)
         {
-            // ExpressionDebugGames.Play();
-            //IStore store = new TrivialStore();
-
-            //store.Set("A", 5);
-            //store.GetInner("A").Set("A", 10);
-
-            //SerializeDeserializeXML();
-
-            SerializeDeserializeStore();
-
-            //SerializeDeserializeBinary();
-        }
-
-        private static void SerializeDeserializeBinary()
-        {
-            var person = GetPerson2();
-
-            var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
-
-            var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(stateMemberProvider);
-            var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(stateMemberProvider);
-
-            var stream = new MemoryStream();
-            var binaryWriterProcessor = new BinaryWriterProcessor(new SuperBinaryWriter(stream));
-
-            writeClimber.Route(person, binaryWriterProcessor, false);
-            
-            stream.Position = 0;
-            var binaryReaderProcessor = new BinaryReaderProcessor(new SuperBinaryReader(stream));
-
-            var strongBox = new StrongBox<object>();
-            readClimber.Climb(strongBox, binaryReaderProcessor);
-        }
-
-        private static void SerializeDeserializeXML()
-        {
-            var text =
-                @"<Person Type=""GraphClimber.Program+Person, GraphClimber, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"">
-  <Name Type=""System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"">Shani Elharrar</Name>
-  <Age Type=""System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"">24</Age>
-  <Surprise Type=""GraphClimber.Program+Person, GraphClimber, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"">
-    <Name>null</Name>
-    <Age Type=""System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"">23</Age>
-    <Surprise Type=""System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"">4</Surprise>
-  </Surprise>
-</Person>";
-
-
-            // Reader code:
-            SlowGraphClimber<XmlReaderProcessor> climber2 =
-                new SlowGraphClimber<XmlReaderProcessor>
-                    (_stateMemberProvider);
-
-            XElement reader = XElement.Parse(text);
-
-            XmlReaderProcessor processor2 =
-                new XmlReaderProcessor(reader);
-
-            Person person2 = new Person();
-
-            climber2.Climb(person2,
-                processor2);
-
-
-            // Writer code:
-            SlowGraphClimber<XmlWriterProcessor> climber =
-                new SlowGraphClimber<XmlWriterProcessor>
-                    (_stateMemberProvider);
-
             Person person = new Person()
             {
-                Age = 24,
-                Name = "Shani Elharrar",
-                Surprise = new Person()
-                {
-                    Age = 23,
-                    Name = null,
-                    Surprise = 4
-                }
-            };
-
-            XmlWriterProcessor processor = new XmlWriterProcessor();
-
-            climber.Climb(person,
-                processor);
-        }
-
-        class Person
-        {
-            public Person()
-            {
-                Children = new List<Person>();
-            }
-
-            public string Name { get; set; }
-
-            public int Age { get; set; }
-
-            public object Surprise { get; set; }
-
-            public Person Father { get; set; }
-
-            public IList<Person> Children { get; set; }
-        }
-
-        struct Person2
-        {
-            public string Name { get; set; }
-
-            public int Age { get; set; }
-
-            public object Surprise { get; set; }
-
-            public object Father { get; set; }
-
-            public Days Day { get; set; }
-        }
-
-
-        public static void SerializeDeserializeStore()
-        {
-            var store = new TrivialStore();
-
-            SlowGraphClimber<StoreWriterProcessor> climber = new SlowGraphClimber<StoreWriterProcessor>(_stateMemberProvider);
-
-            var processor = new StoreWriterProcessor(store);
-            var box = new StrongBox<Person>(GetPerson());
-
-            climber.Climb(box, processor);
-
-
-            SlowGraphClimber<StoreReaderProcessor> readerClimber = new SlowGraphClimber<StoreReaderProcessor>(_stateMemberProvider);
-
-            var readerProcessor = new StoreReaderProcessor(store);
-            var readBox = new StrongBox<object>(null);
-            readerClimber.Climb(readBox, readerProcessor);
-
-        }
-
-        private static Person GetPerson()
-        {
-            var ilan = new Person { Age = 26 + 25, Name = "Ilan Zelingher", Surprise = 1 };
-            ilan.Surprise = ilan;
-            return new Person()
-            {
                 Age = 26,
-                Name = "Elad Zelinger",
-                Father = ilan,
-                Children = { new Person() { Name = "Jason"}, new Person() { Name = "Tomerh" }},
-                Surprise = new Person()
+                Name = "Or Bar Yosef",
+                Parent = new Person()
                 {
-                    Age = 21,
-                    Name = "Yosi Attias",
-                    Surprise = ilan
-                }
-            };
-        }
-
-        private static Person2 GetPerson2()
-        {
-            Person2 ilan = new Person2 { Age = 26 + 25, Name = "Ilan Zelingher" };
-
-            ilan.Surprise = ilan;
-
-            return new Person2()
-            {
-                Age = 26,
-                Name = "Elad Zelinger",
-                Father = ilan,
-                Day = Days.Tuesday,
-                Surprise = new Person2()
-                {
-                    Age = 21,
-                    Name = "Yosi Attias",
-                    Surprise =
-                    new object[]
+                    Name = "Avi",
+                    Age = 27,
+                    Surprise = new object[]
                     {
-                        ilan, ilan, 342, "Hello",
-                        new int[]{1,1,2,3,5,8},
-                        new int[,]{{1,1},{2,3},{5,8}},
-                        Days.Saturday
+                        213,
+                        "Shalom",
+                        new Person()
+                        {
+                            Name = "sad"
+                        },
+                        new int[,]{{1,1,2},{3,5,8}}
                     }
                 }
             };
-        }   
+
+            Extractor<IComparable> myExtractor = new Extractor<IComparable>();
+
+            IEnumerable<IComparable> comparables = myExtractor.Extract(person);
+
+            foreach (IComparable comparable in comparables)
+            {
+                Console.WriteLine(comparable);
+            }
+
+        } 
+    }
+
+    public class Extractor<T>
+    {
+        private readonly SlowGraphClimber<ExtractorProcessor<T>> _climber;
+
+        public Extractor()
+        {
+            _climber =
+                new SlowGraphClimber<ExtractorProcessor<T>>(new ReflectionPropertyStateMemberProvider());
+        }
+
+        public IEnumerable<T> Extract(object value)
+        {
+            ExtractorProcessor<T> processor = new ExtractorProcessor<T>();
+
+            _climber.Route(value, processor, false);
+
+            return processor.Result;
+        }
+    }
+
+    internal class ExtractorProcessor<T> : INullProcessor
+    {
+        private readonly List<T> _gathered = new List<T>();
+
+        public IEnumerable<T> Result
+        {
+            get
+            {
+                return _gathered;
+            }
+        }
+
+        [ProcessorMethod(Precedence = 1)]
+        public virtual void Process<TRuntime>(IReadOnlyValueDescriptor<TRuntime> descriptor)
+            where TRuntime : T
+        {
+            T runtime = descriptor.Get();
+            _gathered.Add(runtime);
+        }
+
+        [ProcessorMethod(Precedence = 2)]
+        public void ProcessGeneric<TRuntime>
+            (IReadOnlyValueDescriptor<TRuntime> descriptor)
+        {
+            descriptor.Climb();
+        }
+
+        public void ProcessNull<TField>(IWriteOnlyValueDescriptor<TField> descriptor)
+        {
+            // Don't climb
+        }
+    }
+
+    public class Person
+    {
+        public string Name { get; set; }
+        
+        public int Age { get; set; }
+
+        public object Surprise { get; set; }
+
+        public Person Parent { get; set; }
+        
+        public Person[] Children { get; set; }
     }
 }
