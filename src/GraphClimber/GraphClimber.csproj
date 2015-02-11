@@ -79,6 +79,7 @@
     <Compile Include="Examples\Binary\SuperBinaryWriter.cs" />
     <Compile Include="Examples\Xml\XmlReaderProcessor.cs" />
     <Compile Include="Examples\Xml\XmlWriterProcessor.cs" />
+    <Compile Include="ExpressionCompiler\IExpressionCompiler.cs" />
     <Compile Include="GenericArgumentBinder.cs" />
     <Compile Include="IEnumProcessor.cs" />
     <Compile Include="IGenericParameterFilter.cs" />
