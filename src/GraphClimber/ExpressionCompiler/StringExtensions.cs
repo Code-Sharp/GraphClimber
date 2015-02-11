@@ -27,42 +27,56 @@ namespace GraphClimber.ExpressionCompiler
             return new Position(newLines, column);
         }
 
-        /// <summary>
-        /// Represents a position inside a string
-        /// </summary>
-        public struct Position
+        public static int IndexOfNot(this string str, char chr)
         {
-            private readonly int _line;
-            private readonly int _column;
-
-            public Position(int line, int column)
+            for (int i = 0; i < str.Length; i++)
             {
-                _line = line;
-                _column = column;
-            }
-
-            /// <summary>
-            /// Gets the line of the position
-            /// </summary>
-            public int Line
-            {
-                get
+                if (str[i] != chr)
                 {
-                    return _line;
+                    return i;
                 }
             }
 
-            /// <summary>
-            /// Gets the column of the position
-            /// </summary>
-            public int Column
-            {
-                get
-                {
-                    return _column;
-                }
-            }
-
+            return -1;
         }
-    };
+
+    }
+
+    /// <summary>
+    /// Represents a position inside a string
+    /// </summary>
+    public struct Position
+    {
+        private readonly int _line;
+        private readonly int _column;
+
+        public Position(int line, int column)
+        {
+            _line = line;
+            _column = column;
+        }
+
+        /// <summary>
+        /// Gets the line of the position
+        /// </summary>
+        public int Line
+        {
+            get
+            {
+                return _line;
+            }
+        }
+
+        /// <summary>
+        /// Gets the column of the position
+        /// </summary>
+        public int Column
+        {
+            get
+            {
+                return _column;
+            }
+        }
+
+    }
 }

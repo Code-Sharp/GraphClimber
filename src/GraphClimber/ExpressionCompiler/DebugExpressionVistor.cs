@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -6,6 +7,10 @@ namespace GraphClimber.ExpressionCompiler
 {
     public class DebugExpressionVistor : ExpressionVisitor
     {
+        private static readonly ICollection<Type> _untouchedExpressionTypes = new HashSet<Type> { typeof(ParameterExpression), typeof(ConstantExpression) };
+        private static readonly ICollection<Type> _unmodifiedExpressionTypes = new HashSet<Type> { typeof(BlockExpression), typeof(LambdaExpression), typeof(LoopExpression) };
+        private static readonly string[] _newLineSeperator = { Environment.NewLine };
+
         private readonly SymbolDocumentInfo _symbolDocumentInfo;
         private readonly IExpressionDescriber _expressionDescriber;
         private readonly string _initialDebugView;
@@ -19,6 +24,10 @@ namespace GraphClimber.ExpressionCompiler
             _initialDebugView = _expressionDescriber.Describe(initialExpression);
         }
 
+        private bool ContainsType(IEnumerable<Type> types, Type type)
+        {
+            return types.Any(currentType => currentType.IsAssignableFrom(type));
+        }
 
         public override Expression Visit(Expression node)
         {
@@ -27,34 +36,59 @@ namespace GraphClimber.ExpressionCompiler
                 return null;
             }
 
-            // Don't modify constant expressions (Also ParameterExpressions and more should be added later)
-            if (node is ConstantExpression || node is ParameterExpression)
+            if (ContainsType(_untouchedExpressionTypes, node.GetType()))
             {
                 return node;
             }
 
-            if (node is BlockExpression || node is LambdaExpression || node is LoopExpression)
+            if (ContainsType(_unmodifiedExpressionTypes, node.GetType()))
             {
                 return base.Visit(node);
             }
 
+            Range<Position> range = GetCurrentExpressionRange(node);
 
-            string debugView = _expressionDescriber.Describe(node);
-            var debugViewLines = debugView.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-            var firstDebugViewLine = debugViewLines.First();
-
-            _currentIndex = _initialDebugView.IndexOf(firstDebugViewLine, _currentIndex, StringComparison.Ordinal);
-
-            var start = _initialDebugView.GetPosition(_currentIndex);
-            var end = _initialDebugView.GetPosition(_currentIndex + debugView.Length + (debugViewLines.Length - 1) * start.Column);
-
-
-            var innerExpression = base.Visit(node);
-
-            Expression debugInfoExpression = Expression.DebugInfo(_symbolDocumentInfo, start.Line + 1, start.Column + 1, end.Line + 1, end.Column + 1);
+            Expression innerExpression = base.Visit(node);
+            Expression debugInfoExpression = Expression.DebugInfo(_symbolDocumentInfo, range.Start.Line + 1, range.Start.Column + 1, range.End.Line + 1, range.End.Column + 1);
 
             return Expression.Block(debugInfoExpression, innerExpression);
 
+        }
+
+        private Range<Position> GetCurrentExpressionRange(Expression node)
+        {
+            string debugView = _expressionDescriber.Describe(node);
+            string[] debugViewLines = debugView.Split(_newLineSeperator, StringSplitOptions.RemoveEmptyEntries);
+            string firstDebugViewLine = debugViewLines.First();
+
+            _currentIndex = _initialDebugView.IndexOf(firstDebugViewLine, _currentIndex, StringComparison.Ordinal);
+
+            Position start = _initialDebugView.GetPosition(_currentIndex);
+            Position end = _initialDebugView.GetPosition(_currentIndex + debugView.Length + (debugViewLines.Length - 1) * _initialDebugView.Split(_newLineSeperator, StringSplitOptions.RemoveEmptyEntries)[start.Line].IndexOfNot(' '));
+
+            return new Range<Position>(start, end);
+        }
+
+        public struct Range<T>
+        {
+            private readonly T _start;
+            private readonly T _end;
+
+            public Range(T start, T end)
+            {
+                _start = start;
+                _end = end;
+            }
+
+            public T Start
+            {
+                get { return _start; }
+            }
+
+            public T End
+            {
+                get { return _end; }
+            }
         }
     }
 }
