@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using GraphClimber.Bulks;
+using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber.Examples
 {
@@ -130,6 +132,20 @@ namespace GraphClimber.Examples
             WriteIntArray(lengths);
 
             descriptor.Climb();
+        }
+
+        [ProcessorMethod]
+        public void ProcessEnumForReadOnly<[IsEnum]TEnum, TUnderlying>
+            (IReadOnlyEnumExactValueDescriptor<TEnum, TUnderlying> descriptor)
+            where TUnderlying : IConvertible
+            where TEnum : IConvertible
+        {
+            IStateMember underlying = descriptor.UnderlyingValueStateMember;
+
+            descriptor.Route(new BinaryStateMember
+                ((IReflectionStateMember) underlying),
+                descriptor.Owner,
+                true);
         }
 
         [ProcessorMethod]

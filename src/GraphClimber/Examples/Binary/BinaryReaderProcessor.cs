@@ -250,5 +250,19 @@ namespace GraphClimber.Examples
 
             return result;
         }
+
+        [ProcessorMethod]
+        public void ProcessEnumForWriteOnly<[IsEnum]TEnum, TUnderlying>
+            (IWriteOnlyEnumExactValueDescriptor<TEnum, TUnderlying> descriptor)
+            where TUnderlying : IConvertible
+            where TEnum : IConvertible
+        {
+            IStateMember underlying = descriptor.UnderlyingValueStateMember;
+
+            descriptor.Route(new BinaryStateMember
+                ((IReflectionStateMember)underlying),
+                descriptor.Owner,
+                true);
+        }
     }
 }
