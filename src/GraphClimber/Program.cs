@@ -8,8 +8,8 @@ using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using GraphClimber.Examples;
 using GraphClimber.ExpressionCompiler;
+using GraphClimber.ExpressionCompiler.Extensions;
 using GraphClimber.ValueDescriptor;
-using Mono.Linq.Expressions;
 
 namespace GraphClimber
 {
@@ -62,7 +62,8 @@ namespace GraphClimber
 
 
             var iVariable = Expression.Variable(typeof(int), "i");
-            exp = CustomExpression.For(iVariable, 0.Constant(), Expression.LessThan(iVariable, 5.Constant()), Expression.PostIncrementAssign(iVariable), exp);
+            // exp = CustomExpression.For(iVariable, 0.Constant(), Expression.LessThan(iVariable, 5.Constant()), Expression.PostIncrementAssign(iVariable), exp);
+
             exp = Expression.Block(exp,
                 Expression.Call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }),
                     Expression.Constant("Goodbye")));
@@ -70,7 +71,7 @@ namespace GraphClimber
             var lambda = Expression.Lambda<Action<int>>(exp, "Hello_World",
                 new[] { parameter });
 
-            var expression = new DebugExpressionCompiler(CSharpExpressionDescriber.Empty).Compile(lambda);
+            var expression = new DebugExpressionCompiler(DebugViewExpressionDescriber.Empty).Compile(lambda);
 
             expression(56);
         }

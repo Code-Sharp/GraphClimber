@@ -1,8 +1,9 @@
 using System.IO;
 using System.Linq.Expressions;
+using GraphClimber.ExpressionCompiler;
 using Mono.Linq.Expressions;
 
-namespace GraphClimber.ExpressionCompiler
+namespace GraphClimber.Debug.ExpressionCompiler
 {
     public class CSharpExpressionDescriber : IExpressionDescriber
     {
