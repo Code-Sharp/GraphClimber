@@ -7,7 +7,7 @@ namespace GraphClimber.ExpressionCompiler.Extensions
     /// Provides extension methods to create
     /// expressions easier.
     /// </summary>
-    public static class ExpressionExtensions
+    internal static class ExpressionExtensions
     {
 
         /// <summary>
