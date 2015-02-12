@@ -45,12 +45,10 @@ namespace GraphClimber.ExpressionCompiler
                 return node;
             }
 
-            Expression innerExpression = base.Visit(node);
-            
             // Unsymboled is not symboled, the node children are.
             if (ContainsType(_unsymboledExpressionTypes, node))
             {
-                return innerExpression;
+                return base.Visit(node);
             }
 
             Range<Position> range = GetCurrentExpressionRange(node);
@@ -61,6 +59,8 @@ namespace GraphClimber.ExpressionCompiler
                 range.Start.Column + 1, 
                 range.End.Line + 1, 
                 range.End.Column + 1);
+
+            Expression innerExpression = base.Visit(node);
 
             return Expression.Block(debugInfoExpression, innerExpression);
         }
