@@ -45,12 +45,11 @@ namespace GraphClimber.ExpressionCompiler
                 return node;
             }
 
-            Expression innerExpression = base.Visit(node);
             
             // Unsymboled is not symboled, the node children are.
             if (ContainsType(_unsymboledExpressionTypes, node))
             {
-                return innerExpression;
+                return base.Visit(node);
             }
 
             Range<Position> range = GetCurrentExpressionRange(node);
@@ -62,6 +61,8 @@ namespace GraphClimber.ExpressionCompiler
                 range.End.Line + 1, 
                 range.End.Column + 1);
 
+            Expression innerExpression = base.Visit(node);
+
             return Expression.Block(debugInfoExpression, innerExpression);
         }
 
@@ -71,7 +72,8 @@ namespace GraphClimber.ExpressionCompiler
             string[] debugViewLines = debugView.Split(_newLineSeperator, StringSplitOptions.RemoveEmptyEntries);
             string firstDebugViewLine = debugViewLines.First();
 
-            _currentIndex = _initialDebugView.IndexOf(firstDebugViewLine, _currentIndex, StringComparison.Ordinal);
+            var newIndex  = _initialDebugView.IndexOf(firstDebugViewLine, _currentIndex, StringComparison.Ordinal);
+            _currentIndex = newIndex;
 
             Position start = _initialDebugView.GetPosition(_currentIndex);
             int spacing = _initialDebugView.Split(_newLineSeperator, StringSplitOptions.RemoveEmptyEntries)[start.Line].IndexOfNot(' ');
