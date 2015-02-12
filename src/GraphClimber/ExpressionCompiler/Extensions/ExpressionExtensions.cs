@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Linq.Expressions;
 
 namespace GraphClimber.ExpressionCompiler.Extensions
 {
@@ -8,6 +9,11 @@ namespace GraphClimber.ExpressionCompiler.Extensions
     /// </summary>
     public static class ExpressionExtensions
     {
+
+        /// <summary>
+        /// Expression of Null.
+        /// </summary>
+        public static readonly ConstantExpression Null = Expression.Constant(null);
 
         /// <summary>
         /// Creates an <see cref="ConstantExpression"/>
@@ -28,9 +34,21 @@ namespace GraphClimber.ExpressionCompiler.Extensions
         /// <typeparam name="T"></typeparam>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public static Expression Convert<T>(Expression expression)
+        public static Expression Convert<T>(this Expression expression)
         {
-            return Expression.Convert(expression, typeof (T));
+            return expression.Convert(typeof (T));
+        }
+
+        /// <summary>
+        /// Converts the expression value to the given
+        /// <param name="newType"></param>
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <param name="newType"></param>
+        /// <returns></returns>
+        public static Expression Convert(this Expression expression, Type newType)
+        {
+            return Expression.Convert(expression, newType);
         }
 
     }

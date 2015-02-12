@@ -58,7 +58,7 @@ namespace GraphClimber
             var variable = Expression.Variable(typeof(int), "myInt");
             var @break = Expression.Label();
             Expression exp = Expression.Assign(variable, Expression.Divide(propertyOrField, Expression.Subtract(property, method)));
-            exp = Expression.Block(new[] { variable }, exp, Expression.Add(Expression.Constant(2), Expression.Constant(5)), Expression.Call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }), Expression.Constant("Hello Worlda")));
+            exp = Expression.Block(new[] { variable }, exp, Expression.Add(2.Constant(), 5.Constant()), Expression.Call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }), Expression.Constant("Hello Worlda")));
 
 
             var iVariable = Expression.Variable(typeof(int), "i");
