@@ -82,7 +82,7 @@ namespace GraphClimber.ExpressionCompiler
             return new Range<Position>(start, end);
         }
 
-        public struct Range<T>
+        private struct Range<T>
         {
             private readonly T _start;
             private readonly T _end;
