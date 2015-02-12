@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber.ValueDescriptor
 {
@@ -32,7 +33,7 @@ namespace GraphClimber.ValueDescriptor
 
         public Expression GetGetExpression(Expression obj)
         {
-            return Expression.Constant(_value);
+            return _value.Constant();
         }
 
         public Expression GetSetExpression(Expression obj, Expression value)
@@ -149,12 +150,12 @@ namespace GraphClimber.ValueDescriptor
 
         public Expression GetGetExpression(Expression obj)
         {
-            return Expression.Invoke(Expression.Constant(_getValue));
+            return Expression.Invoke(_getValue.Constant());
         }
 
         public Expression GetSetExpression(Expression obj, Expression value)
         {
-            return Expression.Invoke(Expression.Constant(_setValue), value);
+            return Expression.Invoke(_setValue.Constant(), value);
         }
 
         public bool IsArrayElement
@@ -216,12 +217,12 @@ namespace GraphClimber.ValueDescriptor
 
         public Expression GetGetExpression(Expression obj)
         {
-            return Expression.Invoke(Expression.Constant(_getValue));
+            return Expression.Invoke(_getValue.Constant());
         }
 
         public Expression GetSetExpression(Expression obj, Expression value)
         {
-            return Expression.Invoke(Expression.Constant(_setValue), value);
+            return Expression.Invoke(_setValue.Constant(), value);
         }
 
         public bool IsArrayElement

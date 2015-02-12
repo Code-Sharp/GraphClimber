@@ -85,6 +85,7 @@
     <Compile Include="ExpressionCompiler\DebugExpressionCompiler.cs" />
     <Compile Include="ExpressionCompiler\DebugExpressionVistor.cs" />
     <Compile Include="ExpressionCompiler\DebugViewExpressionDescriber.cs" />
+    <Compile Include="ExpressionCompiler\Extensions\ExpressionExtensions.cs" />
     <Compile Include="ExpressionCompiler\IExpressionCompiler.cs" />
     <Compile Include="ExpressionCompiler\IExpressionDescriber.cs" />
     <Compile Include="ExpressionCompiler\StringExtensions.cs" />

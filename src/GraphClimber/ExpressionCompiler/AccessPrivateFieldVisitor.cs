@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber.ExpressionCompiler
 {
@@ -93,21 +94,21 @@ namespace GraphClimber.ExpressionCompiler
             if (!node.Method.IsPublic)
             {
                 // In case of static methods, instance should be null.
-                var reflectionInstance = node.Object ?? Expression.Constant(null);
+                var reflectionInstance = node.Object ?? ExpressionExtensions.Null;
 
                 // In case of generic method, 
                 // we create an array of the assembly qualified names of the generic arguments.
                 var genericArgumentTypes = node.Method.IsGenericMethod 
-                    ? (Expression)Expression.NewArrayInit(typeof(string), node.Method.GetGenericArguments().Select(t => Expression.Constant(t.AssemblyQualifiedName))) 
-                    : Expression.Constant(null);
+                    ? (Expression)Expression.NewArrayInit(typeof(string), node.Method.GetGenericArguments().Select(t => t.AssemblyQualifiedName.Constant()))
+                    : ExpressionExtensions.Null;
 
                 return
-                    Expression.Convert(Expression.Call(null, typeof(AccessPrivateFieldVisitor).GetMethod("CallMethod"),
-                        Expression.Constant(node.Method.DeclaringType.AssemblyQualifiedName),
-                        Expression.Constant(node.Method.Name),
+                    Expression.Call(null, typeof(AccessPrivateFieldVisitor).GetMethod("CallMethod"),
+                        node.Method.DeclaringType.AssemblyQualifiedName.Constant(),
+                        node.Method.Name.Constant(),
                         genericArgumentTypes,
                         reflectionInstance,
-                        Expression.NewArrayInit(typeof(object), node.Arguments)), node.Type);
+                        Expression.NewArrayInit(typeof(object), node.Arguments)).Convert(node.Type);
             }
 
             return base.VisitMethodCall(node);
@@ -140,12 +141,13 @@ namespace GraphClimber.ExpressionCompiler
 
             if (isPrivateField)
             {
-                var argument = node.Expression ?? Expression.Constant(null);
+                var argument = node.Expression ?? ExpressionExtensions.Null;
 
-                return Expression.Convert(Expression.Call(null,
+                return Expression.Call(null,
                     typeof (AccessPrivateFieldVisitor).GetMethod("GetFieldValue"),
-                    Expression.Constant(fieldInfo.DeclaringType.AssemblyQualifiedName),
-                    Expression.Constant(fieldInfo.Name), argument), node.Type);
+                    fieldInfo.DeclaringType.AssemblyQualifiedName.Constant(),
+                    fieldInfo.Name.Constant(), 
+                    argument).Convert(node.Type);
             }
 
             return node;
@@ -160,12 +162,13 @@ namespace GraphClimber.ExpressionCompiler
 
             if (isPrivate)
             {
-                var argument = node.Expression ?? Expression.Constant(null);
+                var argument = node.Expression ?? ExpressionExtensions.Null;
 
-                return Expression.Convert(Expression.Call(null,
+                return Expression.Call(null,
                     typeof (AccessPrivateFieldVisitor).GetMethod("GetPropertyValue"),
-                    Expression.Constant(propertyInfo.DeclaringType.AssemblyQualifiedName),
-                    Expression.Constant(propertyInfo.Name), argument), node.Type);
+                    propertyInfo.DeclaringType.AssemblyQualifiedName.Constant(),
+                    propertyInfo.Name.Constant(),
+                    argument).Convert(node.Type);
             }
             
             return node;

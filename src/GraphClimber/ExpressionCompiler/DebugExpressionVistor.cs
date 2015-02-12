@@ -71,7 +71,8 @@ namespace GraphClimber.ExpressionCompiler
             string[] debugViewLines = debugView.Split(_newLineSeperator, StringSplitOptions.RemoveEmptyEntries);
             string firstDebugViewLine = debugViewLines.First();
 
-            _currentIndex = _initialDebugView.IndexOf(firstDebugViewLine, _currentIndex, StringComparison.Ordinal);
+            var newIndex  = _initialDebugView.IndexOf(firstDebugViewLine, _currentIndex, StringComparison.Ordinal);
+            _currentIndex = newIndex;
 
             Position start = _initialDebugView.GetPosition(_currentIndex);
             int spacing = _initialDebugView.Split(_newLineSeperator, StringSplitOptions.RemoveEmptyEntries)[start.Line].IndexOfNot(' ');
