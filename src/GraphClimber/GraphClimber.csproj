@@ -93,6 +93,7 @@
     <Compile Include="GenericArgumentBinder.cs" />
     <Compile Include="IEnumProcessor.cs" />
     <Compile Include="IGenericParameterFilter.cs" />
+    <Compile Include="IGraphClimber.cs" />
     <Compile Include="IInheritedProcessor.cs" />
     <Compile Include="IMethodSelector.cs" />
     <Compile Include="INullProcessor.cs" />

@@ -606,7 +606,7 @@ namespace GraphClimber
     }
 
 
-    public class SlowGraphClimber<TProcessor>
+    public class SlowGraphClimber<TProcessor> : IGraphClimber<TProcessor>
     {
         private readonly IStateMemberProvider _stateMemberProvider;
 
