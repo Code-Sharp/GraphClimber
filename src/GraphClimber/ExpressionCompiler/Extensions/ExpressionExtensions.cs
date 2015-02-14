@@ -14,6 +14,11 @@ namespace GraphClimber.ExpressionCompiler.Extensions
         /// Expression of Null.
         /// </summary>
         public static readonly ConstantExpression Null = Expression.Constant(null);
+        
+        /// <summary>
+        /// Empty Expression.
+        /// </summary>
+        public static readonly DefaultExpression Empty = Expression.Empty();
 
         /// <summary>
         /// Creates an <see cref="ConstantExpression"/>
