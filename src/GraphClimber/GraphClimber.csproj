@@ -94,8 +94,11 @@
     <Compile Include="ExpressionImplementation\ClimbDelegate.cs" />
     <Compile Include="ExpressionImplementation\AccessorFactory.cs" />
     <Compile Include="ExpressionImplementation\ClimbStore.cs" />
+    <Compile Include="ExpressionImplementation\DelegateCache\AccessorDelegateCache.cs" />
     <Compile Include="ExpressionImplementation\DelegateCache\ClimbDelegateCache.cs" />
+    <Compile Include="ExpressionImplementation\DelegateCache\DelegateCache.cs" />
     <Compile Include="ExpressionImplementation\DescriptorExtensions.cs" />
+    <Compile Include="ExpressionImplementation\DescriptorVariable.cs" />
     <Compile Include="ExpressionImplementation\DescriptorWriter.cs" />
     <Compile Include="ExpressionImplementation\IAccessorFactory.cs" />
     <Compile Include="ExpressionImplementation\IClimbStore.cs" />
