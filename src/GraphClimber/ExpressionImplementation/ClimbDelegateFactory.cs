@@ -13,6 +13,7 @@ namespace GraphClimber
         private readonly IMethodMapper _methodMapper;
         private readonly ClimbStore _climbStore;
         private readonly IExpressionCompiler _compiler;
+        private CallProcessMutator _mutator;
 
         public ClimbDelegateFactory(Type processorType, IStateMemberProvider stateMemberProvider, IMethodMapper methodMapper, ClimbStore climbStore, IExpressionCompiler compiler)
         {
@@ -21,6 +22,7 @@ namespace GraphClimber
             _methodMapper = methodMapper;
             _climbStore = climbStore;
             _compiler = compiler;
+            _mutator = new CallProcessMutator(_processorType, _methodMapper);
         }
 
         public ClimbDelegate<T> CreateDelegate<T>(Type runtimeType)
@@ -41,36 +43,31 @@ namespace GraphClimber
             var value = Expression.Parameter(typeof (T), "value");
 
             Expression castedProcessor = Expression.Convert(processor, _processorType);
-            Expression castedValue = Expression.Convert(value, runtimeType);
+            Expression owner = Expression.Convert(value, runtimeType);
 
             IEnumerable<IStateMember> members =
                 _stateMemberProvider.Provide(runtimeType);
 
             List<Expression> expressions = new List<Expression>();
+            List<ParameterExpression> descriptorVariables = new List<ParameterExpression>();
 
             foreach (IStateMember member in members)
             {
                 DescriptorWriter writer = new DescriptorWriter(_climbStore);
 
-                MethodInfo methodToCall =
-                    _methodMapper.GetMethod(_processorType, member, member.MemberType);
+                DescriptorVariable descriptor =
+                    writer.GetDescriptor(castedProcessor, owner, member, member.MemberType);
 
-                Expression descriptorDeclaration =
-                    writer.WriteDescriptorDeclaration(castedProcessor, castedValue, member, member.MemberType);
+                Expression callProcessor =
+                    _mutator.GetExpression(castedProcessor, owner, member, descriptor.Reference);
 
-                MethodCallExpression callProcessor =
-                    Expression.Call(castedProcessor, methodToCall, writer.DescriptorReference);
-
-                Expression expression = 
-                    Expression.Block(new[] {writer.DescriptorReference},
-                    descriptorDeclaration,
-                    callProcessor);
-
-                expressions.Add(expression);
-                // Start without all special methods. We add them later.
+                descriptorVariables.Add(descriptor.Reference);
+                expressions.Add(descriptor.Declaration);
+                expressions.Add(callProcessor);
             }
 
-            BlockExpression climbBody = Expression.Block(expressions);
+            BlockExpression climbBody = 
+                Expression.Block(descriptorVariables, expressions);
 
             Expression<ClimbDelegate<T>> lambda =
                 Expression.Lambda<ClimbDelegate<T>>(climbBody,

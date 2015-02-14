@@ -11,12 +11,14 @@ namespace GraphClimber
         private readonly IClimbStore _climbStore;
         private readonly IExpressionCompiler _compiler;
         private readonly Type _processorType;
+        private readonly SpecialMethodMutator _specialMutator;
 
         public RouteDelegateFactory(Type processorType, IMethodMapper methodMapper, IClimbStore climbStore, IExpressionCompiler compiler)
         {
             _processorType = processorType;
             _methodMapper = methodMapper;
             _climbStore = climbStore;
+            _specialMutator = new SpecialMethodMutator(processorType);
             _compiler = compiler;
         }
 
@@ -34,24 +36,27 @@ namespace GraphClimber
 
             DescriptorWriter descriptorWriter = new DescriptorWriter(_climbStore);
 
-            Expression descriptorDeclaration = 
-                descriptorWriter.WriteDescriptorDeclaration(processor, owner, member, runtimeMemberType);
+            DescriptorVariable descriptor = 
+                descriptorWriter.GetDescriptor(processor, owner, member, runtimeMemberType);
 
-            MethodCallExpression processCall =
+            MethodCallExpression callProcess =
                 Expression.Call(castedProcessor,
                     methodToCall,
-                    descriptorWriter.DescriptorReference);
+                    descriptor.Reference);
 
-            BlockExpression callProcess =
-                Expression.Block(new[] {descriptorWriter.DescriptorReference},
-                    descriptorDeclaration,
-                    processCall);
+            Expression callProcessWithSpecialMethods =
+                _specialMutator.Mutate(callProcess,
+                    castedProcessor,
+                    owner,
+                    member,
+                    descriptor.Reference);
 
-            // TODO: call special methods (dough!)
-            ConditionalExpression body =
-                Expression.Condition(skipSpecialMethods,
-                    callProcess,
-                    Expression.Empty());
+            BlockExpression body =
+                Expression.Block(new[] {descriptor.Reference},
+                    descriptor.Declaration,
+                    Expression.Condition(skipSpecialMethods,
+                        callProcess,
+                        callProcessWithSpecialMethods));
 
             Expression<RouteDelegate> lambda =
                 Expression.Lambda<RouteDelegate>(body,

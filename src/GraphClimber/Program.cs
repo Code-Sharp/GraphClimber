@@ -110,13 +110,24 @@ namespace GraphClimber
 
             var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
 
-            var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(stateMemberProvider);
+            //var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(stateMemberProvider);
             //var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(stateMemberProvider);
 
             var stream = new MemoryStream();
             var binaryWriterProcessor = new BinaryWriterProcessor(new SuperBinaryWriter(stream));
+            
+            ClimbStore store2 = new ClimbStore(binaryWriterProcessor.GetType(),
+                new BinaryStateMemberProvider(new PropertyStateMemberProvider()),
+                new MethodMapper(),
+                new TrivialExpressionCompiler());
 
-            writeClimber.Route(person, binaryWriterProcessor, false);
+            ClimbDelegate<StrongBox<object>> climb2 = 
+                store2.GetClimb<StrongBox<object>>(typeof(StrongBox<object>));
+
+            climb2(binaryWriterProcessor,
+                new StrongBox<object>(person));
+
+            //writeClimber.Route(person, binaryWriterProcessor, false);
             
             stream.Position = 0;
             var binaryReaderProcessor = new BinaryReaderProcessor(new SuperBinaryReader(stream));

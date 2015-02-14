@@ -3,8 +3,12 @@ using System.Linq.Expressions;
 
 namespace GraphClimber
 {
-    interface IDescriptorWriter
+    internal interface IDescriptorWriter
     {
-        Expression WriteDescriptorDeclaration(Expression processor, Expression owner, IStateMember member, Type runtimeType);
+        DescriptorVariable GetDescriptor
+            (Expression processor,
+                Expression owner,
+                IStateMember member,
+                Type runtimeType);
     }
 }

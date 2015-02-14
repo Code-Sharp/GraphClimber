@@ -1,6 +1,6 @@
 namespace GraphClimber
 {
-    internal class ReadWriteDescriptor<TRuntime, TField> :
+    internal class ReadWriteDescriptor<TField, TRuntime> :
         ValueDescriptor<TField, TRuntime>,
         IReadWriteValueDescriptor<TField>,
         IReadOnlyValueDescriptor<TRuntime>,

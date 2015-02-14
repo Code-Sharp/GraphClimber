@@ -5,6 +5,51 @@ using System.Reflection;
 
 namespace GraphClimber
 {
+    internal class DescriptorVariable
+    {
+        private readonly ParameterExpression _reference;
+        private readonly BinaryExpression _descriptorDeclaration;
+
+        public DescriptorVariable(IClimbStore store, Expression processor, Expression owner, IStateMember member, Type runtimeType)
+        {
+            Type descriptorType =
+                DescriptorExtensions.GetDescriptorType(member, runtimeType);
+
+            Type memberLocalType =
+                typeof(MemberLocal<,>).MakeGenericType(member.MemberType, runtimeType);
+
+            _reference = Expression.Variable(descriptorType, "descriptor");
+
+            object memberLocal = Activator.CreateInstance(memberLocalType, store, member);
+
+            ConstructorInfo constructor = descriptorType.GetConstructors().FirstOrDefault();
+
+            NewExpression creation =
+                Expression.New(constructor,
+                    processor,
+                    owner,
+                    Expression.Constant(memberLocal),
+                    Expression.Constant(store));
+
+            BinaryExpression assign = Expression.Assign(_reference, creation);
+
+            _descriptorDeclaration = assign;
+        }
+
+        public ParameterExpression Reference
+        {
+            get
+            {
+                return _reference;
+            }
+        }
+
+        public Expression Declaration
+        {
+            get { return _descriptorDeclaration; }
+        }
+    }
+
     internal class DescriptorWriter : IDescriptorWriter
     {
         private readonly IClimbStore _store;
@@ -15,38 +60,9 @@ namespace GraphClimber
             _store = store;
         }
 
-        public ParameterExpression DescriptorReference
+        public DescriptorVariable GetDescriptor(Expression processor, Expression owner, IStateMember member, Type runtimeType)
         {
-            get
-            {
-                return _descriptorReference;
-            }
-        }
-
-        public Expression WriteDescriptorDeclaration(Expression processor, Expression owner, IStateMember member, Type runtimeType)
-        {
-            Type descriptorType =
-                DescriptorExtensions.GetDescriptorType(member, runtimeType);
-
-            Type memberLocalType = 
-                typeof (MemberLocal<,>).MakeGenericType(member.MemberType, runtimeType);
-
-            _descriptorReference = Expression.Variable(descriptorType, "descriptor");
-
-            object memberLocal = Activator.CreateInstance(memberLocalType, _store, member);
-
-            ConstructorInfo constructor = descriptorType.GetConstructors().FirstOrDefault();
-
-            NewExpression creation =
-                Expression.New(constructor,
-                    processor,
-                    owner,
-                    Expression.Constant(memberLocal),
-                    Expression.Constant(_store));
-
-            BinaryExpression assign = Expression.Assign(_descriptorReference, creation);
-
-            return assign;
+            return new DescriptorVariable(_store, processor, owner, member, runtimeType);
         }
     }
 }
