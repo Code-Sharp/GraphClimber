@@ -108,7 +108,7 @@
     <Compile Include="ExpressionImplementation\Mutators\IMethodMutator.cs" />
     <Compile Include="ExpressionImplementation\Mutators\MethodCallMutator.cs" />
     <Compile Include="ExpressionImplementation\Mutators\NullProcessorMutator.cs" />
-    <Compile Include="ExpressionImplementation\Mutators\PolymorphicMutator.cs" />
+    <Compile Include="ExpressionImplementation\Mutators\PolymorphismMutator.cs" />
     <Compile Include="ExpressionImplementation\Mutators\RevisitedMutator.cs" />
     <Compile Include="ExpressionImplementation\Mutators\SpecialMethodMutator.cs" />
     <Compile Include="ExpressionImplementation\PropertyStateMember.cs" />

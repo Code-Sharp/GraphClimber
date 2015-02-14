@@ -6,7 +6,7 @@ using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
-    internal class PolymorphicMutator : IMethodMutator
+    internal class PolymorphismMutator : IMethodMutator
     {
         private static readonly MethodInfo _routeMethod = typeof (IValueDescriptor)
             .GetMethods()

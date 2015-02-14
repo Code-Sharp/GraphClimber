@@ -12,7 +12,7 @@ namespace GraphClimber
             _mutator = new CompositeMutator(new IMethodMutator[]
             {
                 new MethodCallMutator(processorType, mapper),
-                new PolymorphicMutator(),
+                new PolymorphismMutator(),
                 new RevisitedMutator(processorType),
                 new NullProcessorMutator(processorType)
             });
