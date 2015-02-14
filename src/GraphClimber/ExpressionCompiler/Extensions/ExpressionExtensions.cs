@@ -29,7 +29,7 @@ namespace GraphClimber.ExpressionCompiler.Extensions
         /// <returns></returns>
         public static Expression Constant<T>(this T value)
         {
-            return Expression.Constant(value, typeof (T));
+            return Expression.Constant(value);
         }
 
         /// <summary>
@@ -53,6 +53,12 @@ namespace GraphClimber.ExpressionCompiler.Extensions
         /// <returns></returns>
         public static Expression Convert(this Expression expression, Type newType)
         {
+            // Avoid redundent converts
+            if (expression.Type == newType)
+            {
+                return expression;
+            }
+
             return Expression.Convert(expression, newType);
         }
 
