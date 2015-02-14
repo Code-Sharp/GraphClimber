@@ -62,7 +62,7 @@ namespace GraphClimber.ExpressionCompiler
 
         private static TypeBuilder GetDynamicTypeBuilder()
         {
-            var dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("DynamicAssembly"),
+            var dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("GraphClimber.RuntimeGenerated"),
                 AssemblyBuilderAccess.RunAndSave);
             var dynamicModule = dynamicAssembly.DefineDynamicModule("DynamicModule", true);
             var dynamicType = dynamicModule.DefineType("GeneratedType", TypeAttributes.Public);
@@ -71,7 +71,7 @@ namespace GraphClimber.ExpressionCompiler
 
         private ExpressionVisitor[] GetVisitors(Expression expression, SymbolDocumentInfo symbolDocument)
         {
-            return new[] { new DebugExpressionVistor(symbolDocument, expression, _expressionDescriber), AccessPrivateFieldVisitor.Empty };
+            return new[] { new DebugExpressionVistor(symbolDocument, expression, _expressionDescriber), NonTrivialConstantVisitor.Empty, AccessPrivateFieldVisitor.Empty };
         }
     }
 }

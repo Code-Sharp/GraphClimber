@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
@@ -27,9 +28,9 @@ namespace GraphClimber
             NewExpression creation =
                 Expression.New(constructor,
                     processor,
-                    owner,
-                    Expression.Constant(memberLocal),
-                    Expression.Constant(store));
+                    owner.Convert<object>(),
+                    memberLocal.Constant(),
+                    store.Constant());
 
             BinaryExpression assign = Expression.Assign(_reference, creation);
 

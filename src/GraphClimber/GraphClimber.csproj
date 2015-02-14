@@ -35,7 +35,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -88,6 +88,7 @@
     <Compile Include="ExpressionCompiler\Extensions\ExpressionExtensions.cs" />
     <Compile Include="ExpressionCompiler\IExpressionCompiler.cs" />
     <Compile Include="ExpressionCompiler\IExpressionDescriber.cs" />
+    <Compile Include="ExpressionCompiler\NonTrivialConstantVisitor.cs" />
     <Compile Include="ExpressionCompiler\StringExtensions.cs" />
     <Compile Include="ExpressionCompiler\TrivialExpressionCompiler.cs" />
     <Compile Include="ExpressionImplementation\ClimbDelegateFactory.cs" />

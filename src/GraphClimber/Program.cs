@@ -91,7 +91,7 @@ namespace GraphClimber
 
         static void Main(string[] args)
         {
-            ExpressionDebugGames.Play();
+            //ExpressionDebugGames.Play();
             //IStore store = new TrivialStore();
 
             //store.Set("A", 5);
@@ -99,14 +99,14 @@ namespace GraphClimber
 
             //SerializeDeserializeXML();
 
-            SerializeDeserializeStore();
+            //SerializeDeserializeStore();
 
             SerializeDeserializeBinary();
         }
 
         private static void SerializeDeserializeBinary()
         {
-            var person = GetPerson();
+            var person = GetPerson2();
 
             var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
 
@@ -115,11 +115,11 @@ namespace GraphClimber
 
             var stream = new MemoryStream();
             var binaryWriterProcessor = new BinaryWriterProcessor(new SuperBinaryWriter(stream));
-            
+
             ClimbStore store2 = new ClimbStore(binaryWriterProcessor.GetType(),
                 new BinaryStateMemberProvider(new PropertyStateMemberProvider()),
                 new MethodMapper(),
-                new TrivialExpressionCompiler());
+                new DebugExpressionCompiler((IExpressionDescriber)Type.GetType("GraphClimber.Debug.ExpressionCompiler.CSharpExpressionDescriber, GraphClimber.Debug, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null").GetField("Empty").GetValue(null)));
 
             ClimbDelegate<StrongBox<object>> climb2 = 
                 store2.GetClimb<StrongBox<object>>(typeof(StrongBox<object>));
@@ -215,7 +215,7 @@ namespace GraphClimber
             //public IList<Person> Children { get; set; }
         }
 
-        struct Person2
+        internal struct Person2
         {
             public string Name { get; set; }
 
