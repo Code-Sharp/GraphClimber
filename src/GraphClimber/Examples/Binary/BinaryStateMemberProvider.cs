@@ -81,6 +81,16 @@ namespace GraphClimber.Examples
             }
         }
 
+        public bool CanRead
+        {
+            get { return _stateMember.CanRead; }
+        }
+
+        public bool CanWrite
+        {
+            get { return _stateMember.CanWrite; }
+        }
+
         public Type RuntimeType
         {
             get { return _stateMember.MemberType; }
@@ -129,6 +139,27 @@ namespace GraphClimber.Examples
         public void SetValue(object owner, object value)
         {
             _stateMember.SetValue(owner, value);
+        }
+
+        protected bool Equals(BinaryStateMember other)
+        {
+            return Equals(_stateMember, other._stateMember) && _knownType.Equals(other._knownType);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((BinaryStateMember) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((_stateMember != null ? _stateMember.GetHashCode() : 0)*397) ^ _knownType.GetHashCode();
+            }
         }
     }
 }

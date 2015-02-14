@@ -31,6 +31,16 @@ namespace GraphClimber.ValueDescriptor
             get { return typeof(object); }
         }
 
+        public bool CanRead
+        {
+            get { return true; }
+        }
+
+        public bool CanWrite
+        {
+            get { return false; }
+        }
+
         public Expression GetGetExpression(Expression obj)
         {
             return _value.Constant();
@@ -86,6 +96,16 @@ namespace GraphClimber.ValueDescriptor
         public Type MemberType
         {
             get { return typeof (T); }
+        }
+
+        public bool CanRead
+        {
+            get { return true; }
+        }
+
+        public bool CanWrite
+        {
+            get { return true; }
         }
 
         public Expression GetGetExpression(Expression obj)
@@ -146,6 +166,16 @@ namespace GraphClimber.ValueDescriptor
         public Type MemberType
         {
             get { return _memberType; }
+        }
+
+        public bool CanRead
+        {
+            get { return true; }
+        }
+
+        public bool CanWrite
+        {
+            get { return true; }
         }
 
         public Expression GetGetExpression(Expression obj)
@@ -213,6 +243,16 @@ namespace GraphClimber.ValueDescriptor
         public Type MemberType
         {
             get { return typeof (T); }
+        }
+
+        public bool CanRead
+        {
+            get { return true; }
+        }
+
+        public bool CanWrite
+        {
+            get { return true; }
         }
 
         public Expression GetGetExpression(Expression obj)

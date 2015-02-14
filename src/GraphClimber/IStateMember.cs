@@ -24,6 +24,16 @@ namespace GraphClimber
         Type MemberType { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this state member can be read.
+        /// </summary>
+        bool CanRead { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this state member can be written.
+        /// </summary>
+        bool CanWrite { get; }
+
+        /// <summary>
         /// Gets the get expression to the state member
         /// </summary>
         /// <param name="obj">An expression of the object that owns the field</param>

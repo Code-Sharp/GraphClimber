@@ -61,6 +61,8 @@ namespace GraphClimber
         }
     }
 
+
+
     internal class ReflectionPropertyStateMember : IReflectionStateMember
     {
         private readonly PropertyInfo _property;
@@ -83,6 +85,16 @@ namespace GraphClimber
         public virtual Type MemberType
         {
             get { return _property.PropertyType; }
+        }
+
+        public bool CanRead
+        {
+            get { return _property.CanRead; }
+        }
+
+        public bool CanWrite
+        {
+            get { return _property.CanWrite; }
         }
 
         public Expression GetGetExpression(Expression obj)
@@ -488,6 +500,16 @@ namespace GraphClimber
             get { return _underlyingType; }
         }
 
+        public bool CanRead
+        {
+            get { return _stateMember.CanRead; }
+        }
+
+        public bool CanWrite
+        {
+            get { return _stateMember.CanWrite; }
+        }
+
         public Expression GetGetExpression(Expression obj)
         {
             return _stateMember.GetGetExpression(obj);
@@ -559,6 +581,16 @@ namespace GraphClimber
             {
                 return _arrayElementType;
             }
+        }
+
+        public bool CanRead
+        {
+            get { return true; }
+        }
+
+        public bool CanWrite
+        {
+            get { return true; }
         }
 
         public Expression GetGetExpression(Expression obj)

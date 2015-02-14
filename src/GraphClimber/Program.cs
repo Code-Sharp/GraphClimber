@@ -13,6 +13,7 @@ using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber
 {
+
     enum Days
     {
         Sunday,
@@ -100,17 +101,17 @@ namespace GraphClimber
 
             SerializeDeserializeStore();
 
-            //SerializeDeserializeBinary();
+            SerializeDeserializeBinary();
         }
 
         private static void SerializeDeserializeBinary()
         {
-            var person = GetPerson2();
+            var person = GetPerson();
 
             var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
 
             var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(stateMemberProvider);
-            var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(stateMemberProvider);
+            //var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(stateMemberProvider);
 
             var stream = new MemoryStream();
             var binaryWriterProcessor = new BinaryWriterProcessor(new SuperBinaryWriter(stream));
@@ -121,7 +122,15 @@ namespace GraphClimber
             var binaryReaderProcessor = new BinaryReaderProcessor(new SuperBinaryReader(stream));
 
             var strongBox = new StrongBox<object>();
-            readClimber.Climb(strongBox, binaryReaderProcessor);
+
+            ClimbStore store = new ClimbStore(binaryReaderProcessor.GetType(),
+                new BinaryStateMemberProvider(new PropertyStateMemberProvider()), 
+                new MethodMapper(),
+                new TrivialExpressionCompiler());
+
+            ClimbDelegate<StrongBox<object>> climb = store.GetClimb<StrongBox<object>>(typeof (StrongBox<object>));
+
+            climb(binaryReaderProcessor, strongBox);
         }
 
         private static void SerializeDeserializeXML()
@@ -181,7 +190,7 @@ namespace GraphClimber
         {
             public Person()
             {
-                Children = new List<Person>();
+                //Children = new List<Person>();
             }
 
             public string Name { get; set; }
@@ -192,7 +201,7 @@ namespace GraphClimber
 
             public Person Father { get; set; }
 
-            public IList<Person> Children { get; set; }
+            //public IList<Person> Children { get; set; }
         }
 
         struct Person2
@@ -238,7 +247,7 @@ namespace GraphClimber
                 Age = 26,
                 Name = "Elad Zelinger",
                 Father = ilan,
-                Children = { new Person() { Name = "Jason"}, new Person() { Name = "Tomerh" }},
+                //Children = { new Person() { Name = "Jason"}, new Person() { Name = "Tomerh" }},
                 Surprise = new Person()
                 {
                     Age = 21,
