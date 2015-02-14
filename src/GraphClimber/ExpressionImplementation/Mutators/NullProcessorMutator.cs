@@ -7,19 +7,19 @@ namespace GraphClimber
 {
     internal class NullProcessorMutator : IMethodMutator
     {
-        private readonly Type _processorType;
+        private static readonly MethodInfo _processNull = typeof (INullProcessor).GetMethod("ProcessNull");
 
-        private readonly MethodInfo _processNull = typeof (INullProcessor).GetMethod("ProcessNull");
+        private readonly bool _nullProcessorImplemented;
 
         public NullProcessorMutator(Type processorType)
         {
-            _processorType = processorType;
+            _nullProcessorImplemented = typeof(INullProcessor).IsAssignableFrom(processorType);
         }
 
         public Expression Mutate(Expression oldValue, Expression processor, Expression owner, IStateMember member,
             Expression descriptor)
         {
-            if (!typeof(INullProcessor).IsAssignableFrom(_processorType))
+            if (!_nullProcessorImplemented)
             {
                 return oldValue;
             }
