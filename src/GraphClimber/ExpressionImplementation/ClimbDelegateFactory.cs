@@ -81,7 +81,7 @@ namespace GraphClimber
 
         private ClimbDelegate<T> CreateArrayDelegate<T>(Type runtimeType)
         {
-            return null;
+            throw new NotImplementedException("CreateArrayDelegate is not implemented");
         }
     }
 }
