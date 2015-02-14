@@ -6,10 +6,10 @@ namespace GraphClimber
 {
     internal class RevisitedMutator : IMethodMutator
     {
-        private readonly MethodInfo _visitedMethod =
+        private static readonly MethodInfo _visitedMethod =
             typeof (IRevisitedFilter).GetMethod("Visited");
 
-        private readonly MethodInfo _processRevisitedMethod =
+        private static readonly MethodInfo _processRevisitedMethod =
             typeof (IRevisitedProcessor).GetMethod("ProcessRevisited");
 
         private readonly Type _processorType;
@@ -40,6 +40,8 @@ namespace GraphClimber
             MethodInfo processRevisited =
                 _processRevisitedMethod.MakeGenericMethod(memberType);
 
+            // Generated code should look like this : 
+
             // if (processor.Visited(value)
             // {
             //      processor.ProcessRevisited(descriptor);
@@ -48,6 +50,7 @@ namespace GraphClimber
             // {
             //      oldValue();
             // }
+
             Expression body =
                 Expression.Condition(Expression.Call(processor, _visitedMethod, value),
                     Expression.Call(processor, processRevisited, descriptor),
