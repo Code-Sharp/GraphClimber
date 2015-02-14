@@ -28,7 +28,7 @@ namespace GraphClimber.ExpressionCompiler
             return _objects[number];
         }
 
-        public static int Add<T>(T value)
+        public static int Add(object value)
         {
             lock (_syncRoot)
             {
@@ -47,6 +47,7 @@ namespace GraphClimber.ExpressionCompiler
                 return base.VisitConstant(node);
             }
 
+            // RuntimeType is internal, using Type instead.
             if (node.Type.FullName == "System.RuntimeType")
             {
                 return Expression.Constant(node.Value, typeof (Type));
