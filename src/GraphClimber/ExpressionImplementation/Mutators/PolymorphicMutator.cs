@@ -8,17 +8,11 @@ namespace GraphClimber
 {
     internal class PolymorphicMutator : IMethodMutator
     {
-        private readonly MethodInfo _routeMethod;
-        private readonly MethodInfo _getTypeMethod;
+        private static readonly MethodInfo _routeMethod = typeof (IValueDescriptor)
+            .GetMethods()
+            .FirstOrDefault(x => x.Name == "Route" && x.GetParameters().Length == 4);
 
-        public PolymorphicMutator()
-        {
-            _getTypeMethod = typeof(object).GetMethod("GetType");
-
-            _routeMethod = typeof(IValueDescriptor).GetMethods().
-                FirstOrDefault(x => x.Name == "Route"
-                                    && x.GetParameters().Length == 4);
-        }
+        private static readonly MethodInfo _getTypeMethod = typeof(object).GetMethod("GetType");
 
         public Expression Mutate(Expression oldValue, Expression processor, Expression owner, IStateMember member,
             Expression descriptor)
@@ -39,7 +33,7 @@ namespace GraphClimber
             
             Expression value = member.GetGetExpression(owner);
 
-            var memberTypeConstant = Expression.Constant(memberType);
+            var memberTypeConstant = memberType.Constant();
 
             var runtimeTypeAssign = 
                 Expression.Condition(Expression.Equal(value, ExpressionExtensions.Null),
@@ -66,6 +60,8 @@ namespace GraphClimber
             }
             else
             {
+                // The code that should be generated is this :
+
                 // Type runtimeType;
                 // if (value != null)
                 // {
@@ -90,7 +86,7 @@ namespace GraphClimber
                     Expression.Block(new[] {runtimeType},
                         runtimeTypeAssign,
                         Expression.Condition
-                            (Expression.Equal(runtimeType, Expression.Constant(member.MemberType)),
+                            (Expression.Equal(runtimeType, member.MemberType.Constant()),
                                 oldValue,
                                 routeCall));
 
