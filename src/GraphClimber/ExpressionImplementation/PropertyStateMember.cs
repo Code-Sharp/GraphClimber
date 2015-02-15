@@ -1,6 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
@@ -44,7 +45,7 @@ namespace GraphClimber
         {
             return
                 Expression.Property
-                    (Expression.Convert(obj, _property.DeclaringType),
+                    (obj.Convert(_property.DeclaringType),
                         _property);
         }
 
@@ -52,7 +53,7 @@ namespace GraphClimber
         {
             return
                 Expression.Assign(Expression.Property
-                    (Expression.Convert(obj, _property.DeclaringType),
+                    (obj.Convert(_property.DeclaringType),
                         _property),
                     value);
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using GraphClimber.ExpressionCompiler;
+using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
@@ -33,8 +34,9 @@ namespace GraphClimber
 
             Expression<Func<object, T>> lambda =
                 Expression.Lambda<Func<object, T>>
-                    (// We need to convert to the type, since sometimes we fake the member type.
-                    Expression.Convert(member.GetGetExpression(instance), typeof (T)),
+                    (
+                        // We need to convert to the type, since sometimes we fake the member type.
+                        member.GetGetExpression(instance).Convert(typeof (T)),
                         "Getter_" + member.Name,
                         new[] {instance});
 

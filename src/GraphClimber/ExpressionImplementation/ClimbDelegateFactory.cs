@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using GraphClimber.ExpressionCompiler;
+using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
@@ -42,8 +43,8 @@ namespace GraphClimber
             var processor = Expression.Parameter(typeof(object), "processor");
             var value = Expression.Parameter(typeof (T), "value");
 
-            Expression castedProcessor = Expression.Convert(processor, _processorType);
-            Expression owner = Expression.Convert(value, runtimeType);
+            Expression castedProcessor = processor.Convert(_processorType);
+            Expression owner = value.Convert(runtimeType);
 
             IEnumerable<IStateMember> members =
                 _stateMemberProvider.Provide(runtimeType);
