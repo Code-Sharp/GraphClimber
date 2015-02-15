@@ -7,18 +7,18 @@ namespace GraphClimber
 {
     internal class RouteDelegateFactory
     {
-        private readonly IMethodMapper _methodMapper;
         private readonly IClimbStore _climbStore;
         private readonly IExpressionCompiler _compiler;
         private readonly Type _processorType;
         private readonly SpecialMethodMutator _specialMutator;
+        private readonly MethodCallMutator _methodCallMutator;
 
         public RouteDelegateFactory(Type processorType, IMethodMapper methodMapper, IClimbStore climbStore, IExpressionCompiler compiler)
         {
             _processorType = processorType;
-            _methodMapper = methodMapper;
             _climbStore = climbStore;
             _specialMutator = new SpecialMethodMutator(processorType);
+            _methodCallMutator = new MethodCallMutator(processorType, methodMapper, true);
             _compiler = compiler;
         }
 
@@ -31,18 +31,13 @@ namespace GraphClimber
             UnaryExpression castedProcessor = 
                 Expression.Convert(processor, _processorType);
 
-            MethodInfo methodToCall =
-                _methodMapper.GetMethod(_processorType, member, runtimeMemberType);
-
             DescriptorWriter descriptorWriter = new DescriptorWriter(_climbStore);
 
-            DescriptorVariable descriptor = 
+            DescriptorVariable descriptor =
                 descriptorWriter.GetDescriptor(processor, owner, member, runtimeMemberType);
 
-            MethodCallExpression callProcess =
-                Expression.Call(castedProcessor,
-                    methodToCall,
-                    descriptor.Reference);
+            Expression callProcess = 
+                _methodCallMutator.Mutate(Expression.Empty(), castedProcessor, owner, member, descriptor.Reference);
 
             Expression callProcessWithSpecialMethods =
                 _specialMutator.Mutate(callProcess,

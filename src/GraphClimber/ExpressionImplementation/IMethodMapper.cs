@@ -5,6 +5,6 @@ namespace GraphClimber
 {
     internal interface IMethodMapper
     {
-        MethodInfo GetMethod(Type processorType, IStateMember member, Type runtimeType);
+        MethodInfo GetMethod(Type processorType, IStateMember member, Type runtimeType, bool routed);
     }
 }

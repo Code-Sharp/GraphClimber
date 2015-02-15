@@ -7,7 +7,7 @@ namespace GraphClimber
 {
     internal class MethodMapper : IMethodMapper
     {
-        public MethodInfo GetMethod(Type processorType, IStateMember member, Type runtimeType)
+        public MethodInfo GetMethod(Type processorType, IStateMember member, Type runtimeType, bool routed)
         {
             Type descriptorType = DescriptorExtensions.GetDescriptorType(member, runtimeType);
 
@@ -23,7 +23,9 @@ namespace GraphClimber
 
             IEnumerable<MethodInfo> methods =
                 typesToSearch.SelectMany(x => x.GetMethods())
-                    .Where(x => x.IsDefined(typeof (ProcessorMethodAttribute)));
+                    .Where(x => x.IsDefined(typeof (ProcessorMethodAttribute)))
+                    .Where(x => !x.GetCustomAttribute<ProcessorMethodAttribute>().OnlyOnRoute ||
+                                routed);
 
             IEnumerable<IGrouping<int, MethodInfo>> candidates =
                 methods.Select(method => Bind(binder, method, descriptorType))

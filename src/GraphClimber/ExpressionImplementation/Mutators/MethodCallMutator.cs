@@ -7,11 +7,13 @@ namespace GraphClimber
     internal class MethodCallMutator : IMethodMutator
     {
         private readonly IMethodMapper _methodMapper;
+        private readonly bool _routed;
         private readonly Type _processorType;
 
-        public MethodCallMutator(Type processorType, IMethodMapper methodMapper)
+        public MethodCallMutator(Type processorType, IMethodMapper methodMapper, bool routed)
         {
             _methodMapper = methodMapper;
+            _routed = routed;
             _processorType = processorType;
         }
 
@@ -22,7 +24,7 @@ namespace GraphClimber
             Expression descriptor)
         {
             MethodInfo methodToCall =
-                _methodMapper.GetMethod(_processorType, member, member.MemberType);
+                _methodMapper.GetMethod(_processorType, member, member.MemberType, _routed);
 
             MethodCallExpression callProcessor =
                 Expression.Call(processor, methodToCall, descriptor);
