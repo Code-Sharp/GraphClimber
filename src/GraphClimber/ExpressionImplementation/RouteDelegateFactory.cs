@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
-using System.Reflection;
 using GraphClimber.ExpressionCompiler;
+using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
@@ -28,8 +28,8 @@ namespace GraphClimber
             ParameterExpression owner = Expression.Parameter(typeof (object), "owner");
             ParameterExpression skipSpecialMethods = Expression.Parameter(typeof (bool), "skipSpecialMethods");
 
-            UnaryExpression castedProcessor = 
-                Expression.Convert(processor, _processorType);
+            var castedProcessor =
+                processor.Convert(_processorType);
 
             DescriptorWriter descriptorWriter = new DescriptorWriter(_climbStore);
 
