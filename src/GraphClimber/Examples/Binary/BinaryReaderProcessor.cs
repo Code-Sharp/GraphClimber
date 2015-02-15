@@ -15,19 +15,19 @@ namespace GraphClimber.Examples
             _reader = reader;
         }
 
+        [ProcessorMethod(OnlyOnRoute = true, Precedence = 1)]
+        public void ProcessObjectAgain(IWriteOnlyExactValueDescriptor<object> descriptor)
+        {
+            descriptor.Set(new object());
+        }
+
         [ProcessorMethod(Precedence = 98)]
         public void ProcessObject(IWriteOnlyExactValueDescriptor<object> descriptor)
         {
             Type type;
 
             if (TryReadReferenceType(descriptor, out type))
-            {
-                if (type == typeof (object))
-                {
-                    descriptor.Set(new object());
-                    return;
-                }
-
+            {               
                 descriptor.Route(
                     new BinaryStateMember(
                         new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, type),

@@ -40,6 +40,12 @@ namespace GraphClimber.Examples
             descriptor.Climb();
         }
 
+        [ProcessorMethod(OnlyOnRoute = true, Precedence = 1)]
+        public void ProcessObjectOnly(IReadOnlyExactValueDescriptor<object> descriptor)
+        {
+            // Does nothing.
+        }
+
         [ProcessorMethod(Precedence = 97)]
         // Processes when the field type is exactly object.
         public void ProcessObject(IReadWriteValueDescriptor<object> descriptor)
