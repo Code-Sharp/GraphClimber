@@ -17,6 +17,8 @@ namespace GraphClimber.ExpressionCompiler
     /// </summary>
     public class AccessPrivateFieldVisitor : ExpressionVisitor
     {
+        private const BindingFlags BindingFlags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public;
+
         public static readonly ExpressionVisitor Empty = new AccessPrivateFieldVisitor();
 
         /// <summary>
@@ -29,7 +31,7 @@ namespace GraphClimber.ExpressionCompiler
         [DebuggerNonUserCode]
         public static object GetFieldValue(string assemblyQualifiedName, string fieldName, object instance)
         {
-            return GetType(assemblyQualifiedName).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).GetValue(instance);
+            return GetType(assemblyQualifiedName).GetField(fieldName, BindingFlags).GetValue(instance);
         }
 
         /// <summary>
@@ -42,7 +44,7 @@ namespace GraphClimber.ExpressionCompiler
         [DebuggerNonUserCode]
         public static object GetPropertyValue(string assemblyQualifiedName, string propertyName, object instance)
         {
-            return GetType(assemblyQualifiedName).GetProperty(propertyName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).GetValue(instance);
+            return GetType(assemblyQualifiedName).GetProperty(propertyName, BindingFlags).GetValue(instance);
         }
 
         /// <summary>
@@ -59,7 +61,7 @@ namespace GraphClimber.ExpressionCompiler
             object instance,
             params object[] parameters)
         {
-            var methodInfo = GetType(assemblyQualifiedName).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+            var methodInfo = GetType(assemblyQualifiedName).GetMethod(methodName, BindingFlags);
            
             if (methodInfo.ContainsGenericParameters)
             {
