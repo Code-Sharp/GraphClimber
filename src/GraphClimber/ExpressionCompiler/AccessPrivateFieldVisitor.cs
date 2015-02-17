@@ -164,7 +164,7 @@ namespace GraphClimber.ExpressionCompiler
 
             if (isPrivate)
             {
-                var argument = node.Expression ?? ExpressionExtensions.Null;
+                var argument = node.Expression.Convert<object>() ?? ExpressionExtensions.Null;
 
                 return Expression.Call(null,
                     typeof (AccessPrivateFieldVisitor).GetMethod("GetPropertyValue"),
