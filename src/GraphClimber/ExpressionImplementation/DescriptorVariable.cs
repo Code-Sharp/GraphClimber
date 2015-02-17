@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using GraphClimber.ExpressionCompiler;
 using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
@@ -19,7 +20,7 @@ namespace GraphClimber
             Type memberLocalType =
                 typeof(MemberLocal<,>).MakeGenericType(member.MemberType, runtimeType);
 
-            _reference = Expression.Variable(descriptorType, "descriptor");
+            _reference = Expression.Variable(descriptorType, member.Name.FirstLowerCase() + "Descriptor" );
 
             object memberLocal = Activator.CreateInstance(memberLocalType, store, member);
 

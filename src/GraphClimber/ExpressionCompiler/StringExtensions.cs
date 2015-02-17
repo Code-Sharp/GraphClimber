@@ -40,6 +40,11 @@ namespace GraphClimber.ExpressionCompiler
             return -1;
         }
 
+        public static string FirstLowerCase(this string str)
+        {
+            return str.Substring(0, 1).ToLowerInvariant() + str.Substring(1);
+        }
+
     }
 
     /// <summary>
