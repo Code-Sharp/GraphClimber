@@ -29,23 +29,23 @@ namespace GraphClimber.Examples
 
     public class BinaryStateMember : IReflectionStateMember
     {
-        private readonly IReflectionStateMember _stateMember;
+        private readonly IStateMember _stateMember;
         private readonly bool _knownType;
         private readonly bool _headerHandled;
 
-        public BinaryStateMember(IReflectionStateMember stateMember): 
+        public BinaryStateMember(IStateMember stateMember): 
             this(stateMember, IsKnownType(stateMember), false)
         {
         }
 
-        private static bool IsKnownType(IReflectionStateMember stateMember)
+        private static bool IsKnownType(IStateMember stateMember)
         {
             Type type = stateMember.MemberType;
 
             return type.IsSealed || type.IsValueType;
         }
 
-        public BinaryStateMember(IReflectionStateMember stateMember, 
+        public BinaryStateMember(IStateMember stateMember, 
             bool knownType, 
             bool headerHandled = false)
         {
@@ -133,12 +133,24 @@ namespace GraphClimber.Examples
 
         public object GetValue(object owner)
         {
-            return _stateMember.GetValue(owner);
+            var reflectionStateMember = _stateMember as IReflectionStateMember;
+            if (reflectionStateMember != null)
+            {
+                return reflectionStateMember.GetValue(owner);
+            }
+
+            throw new NotImplementedException();
         }
 
         public void SetValue(object owner, object value)
         {
-            _stateMember.SetValue(owner, value);
+            var reflectionStateMember = _stateMember as IReflectionStateMember;
+            if (reflectionStateMember != null)
+            {
+                reflectionStateMember.SetValue(owner, value);
+            }
+
+            throw new NotImplementedException();
         }
 
         protected bool Equals(BinaryStateMember other)
