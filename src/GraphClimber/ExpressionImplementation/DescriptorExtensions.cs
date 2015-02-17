@@ -8,24 +8,39 @@ namespace GraphClimber
         {
             if (member.CanRead && member.CanWrite)
             {
+                if (runtimeType.IsEnum)
+                {
+                    return typeof (EnumReadWriteDescriptor<,,>)
+                        .MakeGenericType(member.MemberType, runtimeType, runtimeType.GetEnumUnderlyingType());
+                }
+
                 // Assume field type == runtime type
                 return typeof(ReadWriteDescriptor<,>).
                     MakeGenericType(member.MemberType, runtimeType);
             }
-            else if (member.CanRead)
+            if (member.CanRead)
             {
+                if (runtimeType.IsEnum)
+                {
+                    throw new NotImplementedException("Descriptor for enum readonly is not yet available");
+                }
+
                 return typeof(ReadOnlyDescriptor<,>)
                     .MakeGenericType(member.MemberType, runtimeType);
             }
-            else if (member.CanWrite)
+            
+            if (member.CanWrite)
             {
+                if (runtimeType.IsEnum)
+                {
+                    throw new NotImplementedException("Descriptor for enum write only is not yet available");
+                }
+
                 return typeof(WriteOnlyDescriptor<>)
                     .MakeGenericType(runtimeType);
             }
-            else
-            {
-                throw new Exception("Are you kidding me?!");
-            }
+            
+            throw new Exception("Are you kidding me?!");
         }
     }
 }
