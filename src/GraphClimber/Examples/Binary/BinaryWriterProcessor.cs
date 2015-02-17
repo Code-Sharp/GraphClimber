@@ -140,7 +140,7 @@ namespace GraphClimber.Examples
             descriptor.Climb();
         }
 
-        [ProcessorMethod]
+        [ProcessorMethod(Precedence = 96)]
         public void ProcessEnumForReadOnly<[IsEnum]TEnum, TUnderlying>
             (IReadOnlyEnumExactValueDescriptor<TEnum, TUnderlying> descriptor)
             where TUnderlying : IConvertible
@@ -148,8 +148,7 @@ namespace GraphClimber.Examples
         {
             IStateMember underlying = descriptor.UnderlyingValueStateMember;
 
-            descriptor.Route(new BinaryStateMember
-                ((IReflectionStateMember) underlying),
+            descriptor.Route(new BinaryStateMember(underlying),
                 descriptor.Owner,
                 true);
         }
