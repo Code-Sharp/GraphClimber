@@ -273,7 +273,6 @@ namespace GraphClimber
             Person2 ilan = new Person2 { Age = 26 + 25, Name = "Ilan Zelingher" };
 
             ilan.Surprise = ilan;
-
             return new Person2()
             {
                 Age = 26,
@@ -285,15 +284,16 @@ namespace GraphClimber
                     Age = 21,
                     Name = "Yosi Attias",
                     Surprise =
-                    new object[]
-                    {
-                        ilan, ilan, 342, "Hello",
-                        new int[]{1,1,2,3,5,8},
-                        new int[,]{{1,1},{2,3},{5,8}},
-                        Days.Saturday
-                    }
+                        new object[]
+                        {
+                            ilan, ilan, 342, "Hello",
+                            new int[,]{{1,1},{2,3},{5,8}},
+                            new int[]{1,1,2,3,5,8},
+                            Days.Saturday
+                        }
                 }
             };
+
         }   
     }
 }

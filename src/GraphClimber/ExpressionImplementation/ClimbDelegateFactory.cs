@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using GraphClimber.ExpressionCompiler;
@@ -82,6 +83,63 @@ namespace GraphClimber
 
         private ClimbDelegate<T> CreateArrayDelegate<T>(Type runtimeType)
         {
+            var processor = Expression.Parameter(typeof(object), "processor");
+            var value = Expression.Parameter(typeof (T), "value");
+
+            Expression castedProcessor = processor.Convert(_processorType);
+            Expression owner = value.Convert(runtimeType);
+
+            var ranks = runtimeType.GetArrayRank();
+
+            var rankParameters =
+                Enumerable.Range(0, ranks).Select(r => Expression.Variable(typeof (int), "rank_" + r)).ToList();
+
+            var upperBoundParameters =
+                Enumerable.Range(0, ranks).Select(r => Expression.Variable(typeof (int), "upper_" + r)).ToList();
+
+            var assignRankParameters = new Expression[ranks];
+            var assignUpperParameters = new Expression[ranks];
+            
+
+            Expression callExpression = Expression.Empty(); // TODO : Complete.
+
+            for (int rank = ranks - 1; rank >= 0; rank--)
+            {
+                // Create a for loop from lowerBound to upperBound?
+                var breakTarget = Expression.Label("break");
+                var continueTarget = Expression.Label("continue");
+
+                assignRankParameters[rank] = Expression.Assign(rankParameters[rank],
+                    Expression.Call(owner, "GetLowerBound", null, Expression.Constant(rank)));
+
+                assignUpperParameters[rank] = Expression.Assign(upperBoundParameters[rank],
+                    Expression.Call(owner, "GetUpperBound", null, Expression.Constant(rank)));
+
+                var loopBody =
+                    Expression.Block(
+                        Expression.IfThen(
+                            Expression.Equal(upperBoundParameters[rank], rankParameters[rank]),
+                            Expression.Goto(breakTarget)),
+                        callExpression,
+                        Expression.PostIncrementAssign(rankParameters[rank]),
+                        Expression.Goto(continueTarget));
+
+                callExpression = Expression.Loop(loopBody, breakTarget, continueTarget);
+            }
+
+            BlockExpression climbBody =
+                Expression.Block(rankParameters.Concat(upperBoundParameters),
+                    assignRankParameters.Concat(assignUpperParameters).Concat(new[] {callExpression}));
+
+            Expression<ClimbDelegate<T>> lambda =
+                Expression.Lambda<ClimbDelegate<T>>(climbBody,
+                    "Climb_" + runtimeType.Name,
+                    new[] { processor, value });
+
+            ClimbDelegate<T> result = _compiler.Compile(lambda);
+
+            return result;
+
             throw new NotImplementedException("CreateArrayDelegate is not implemented");
         }
     }
