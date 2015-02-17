@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using GraphClimber.ExpressionCompiler;
 using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
@@ -29,7 +30,7 @@ namespace GraphClimber
                 return oldValue;
             }
 
-            ParameterExpression runtimeType = Expression.Variable(typeof (Type));
+            ParameterExpression runtimeType = Expression.Variable(typeof (Type), member.Name.FirstLowerCase() + "RuntimeType");
             
             Expression value = member.GetGetExpression(owner);
 
@@ -45,7 +46,7 @@ namespace GraphClimber
                     _routeMethod,
                     Expression.Constant(member),
                     runtimeType,
-                    owner,
+                    owner.Convert<object>(),
                     Expression.Constant(true));
 
             if (memberType.IsAbstract || memberType.IsInterface)
