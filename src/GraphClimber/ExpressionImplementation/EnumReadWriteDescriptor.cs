@@ -2,32 +2,82 @@ using System;
 
 namespace GraphClimber
 {
-    internal class EnumReadWriteDescriptor<TField, TRuntime, TUnderlying> :
-        ReadWriteDescriptor<TField, TRuntime>,
-        IReadOnlyEnumExactValueDescriptor<TField, TUnderlying>,
-        IWriteOnlyEnumExactValueDescriptor<TField, TUnderlying> 
-        where TRuntime : TField 
-        where TField : IConvertible 
+    internal class EnumReadOnlyDescriptor<TField, TRuntime, TUnderlying> :
+        ReadOnlyDescriptor<TField, TRuntime>,
+        IReadOnlyEnumExactValueDescriptor<TRuntime, TUnderlying>
+        where TRuntime : TField, IConvertible
         where TUnderlying : IConvertible
     {
-        public EnumReadWriteDescriptor(object processor, object owner, MemberLocal<TField, TRuntime> member, IClimbStore climbStore) : base(processor, owner, member, climbStore)
+        // TRuntime is Enum!
+        public EnumReadOnlyDescriptor(object processor,
+            object owner,
+            MemberLocal<TField, TRuntime> member,
+            IClimbStore climbStore)
+            : base(processor, owner, member, climbStore)
         {
         }
-
 
         public TUnderlying GetUnderlying()
         {
             return (TUnderlying) (object) Get();
         }
 
+        public new TField Get()
+        {
+            return base.Get();
+        }
+    }
+
+    internal class EnumWriteOnlyDescriptor<TField, TUnderlying> :
+        WriteOnlyDescriptor<TField>,
+        IWriteOnlyEnumExactValueDescriptor<TField, TUnderlying>
+        where TUnderlying : IConvertible
+        where TField : IConvertible
+    {
+        // TField is Enum!
+        public EnumWriteOnlyDescriptor(object processor,
+            object owner,
+            MemberLocal<TField, TField> member,
+            IClimbStore climbStore)
+            : base(processor, owner, member, climbStore)
+        {
+        }
+
         public void SetUnderlying(TUnderlying value)
         {
             Set((TField) (object) value);
         }
+    }
 
-        public IStateMember UnderlyingValueStateMember
+    internal class EnumReadWriteDescriptor<TField, TRuntime, TUnderlying> :
+        ReadWriteDescriptor<TField, TRuntime>,
+        IReadOnlyEnumExactValueDescriptor<TRuntime, TUnderlying>,
+        IWriteOnlyEnumExactValueDescriptor<TRuntime, TUnderlying> 
+        where TRuntime : TField, IConvertible 
+        where TUnderlying : IConvertible
+    {
+        // TRuntime is Enum!
+        public EnumReadWriteDescriptor(object processor,
+            object owner,
+            MemberLocal<TField, TRuntime> member,
+            IClimbStore climbStore)
+            : base(processor, owner, member, climbStore)
         {
-            get { return new EnumUnderlyingStateMember(StateMember);}
+        }
+
+        public TUnderlying GetUnderlying()
+        {
+            return (TUnderlying)(object)Get();
+        }
+
+        public void SetUnderlying(TUnderlying value)
+        {
+            Set((TRuntime)(object)value);
+        }
+
+        public void Set(TRuntime value)
+        {
+            base.Set(value);
         }
     }
 }

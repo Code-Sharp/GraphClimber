@@ -14,11 +14,6 @@ namespace GraphClimber
         {
         }
 
-        public TRuntime Get()
-        {
-            return (TRuntime)Member.Getter(Owner);
-        }
-
         public override void Climb()
         {
             // TODO: Maybe this value should be passed via ctor.
@@ -33,7 +28,7 @@ namespace GraphClimber
 
             if (!EqualityComparer<TField>.Default.Equals(field, value))
             {
-                throw new System.NotImplementedException("Are you crazy???");
+                throw new NotImplementedException("Are you crazy???");
             }
         }
     }

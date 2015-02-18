@@ -8,13 +8,6 @@ namespace GraphClimber
         {
             if (member.CanRead && member.CanWrite)
             {
-                // We're really screwed up here, how are we going to support everything in the world?
-                if (member.OwnerType.IsValueType)
-                {
-                    return typeof (StructReadWriteDescriptor<,,>)
-                        .MakeGenericType(member.OwnerType, member.MemberType, runtimeType);
-                }
-
                 if (runtimeType.IsEnum)
                 {
                     return typeof (EnumReadWriteDescriptor<,,>)
@@ -29,7 +22,8 @@ namespace GraphClimber
             {
                 if (runtimeType.IsEnum)
                 {
-                    throw new NotImplementedException("Descriptor for enum readonly is not yet available");
+                    return typeof(EnumReadOnlyDescriptor<,,>)
+                        .MakeGenericType(member.MemberType, runtimeType, runtimeType.GetEnumUnderlyingType());
                 }
 
                 return typeof(ReadOnlyDescriptor<,>)
@@ -40,7 +34,8 @@ namespace GraphClimber
             {
                 if (runtimeType.IsEnum)
                 {
-                    throw new NotImplementedException("Descriptor for enum write only is not yet available");
+                    return typeof(EnumWriteOnlyDescriptor<,>)
+                        .MakeGenericType(runtimeType, runtimeType.GetEnumUnderlyingType());
                 }
 
                 return typeof(WriteOnlyDescriptor<>)

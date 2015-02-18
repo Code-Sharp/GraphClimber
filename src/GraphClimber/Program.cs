@@ -106,7 +106,7 @@ namespace GraphClimber
 
         private static void SerializeDeserializeBinary()
         {
-            var person = GetPerson();
+            var person = GetPerson2();
 
             var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
 
@@ -291,14 +291,14 @@ namespace GraphClimber
                 {
                     Age = 21,
                     Name = "Yosi Attias",
-                    Surprise =
-                        new object[]
-                        {
-                            ilan, ilan, 342, "Hello",
-                            new int[,]{{1,1},{2,3},{5,8}},
-                            new int[]{1,1,2,3,5,8},
-                            Days.Saturday
-                        }
+                    Surprise =ilan
+                        //new object[]
+                        //{
+                        //    ilan, ilan, 342, "Hello",
+                        //    new int[,]{{1,1},{2,3},{5,8}},
+                        //    new int[]{1,1,2,3,5,8},
+                        //    Days.Saturday
+                        //}
                 }
             };
 

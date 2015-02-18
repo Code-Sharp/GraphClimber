@@ -13,13 +13,6 @@ namespace GraphClimber
         {
         }
 
-        public void Set(TField value)
-        {
-            _setCalled = true;
-            _newValue = value;
-            Member.Setter(Owner, _newValue);
-        }
-
         public override void Climb()
         {
             if (!_setCalled)
@@ -28,6 +21,13 @@ namespace GraphClimber
             }
 
             base.Climb(_newValue);
+        }
+
+        public override void Set(TField value)
+        {
+            _setCalled = true;
+            _newValue = value;
+            base.Set(value);
         }
 
         protected override void SetField(TField value)

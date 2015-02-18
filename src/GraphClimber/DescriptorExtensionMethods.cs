@@ -110,6 +110,27 @@ namespace GraphClimber
             {
                 get { return _underlying.ElementIndex; }
             }
+
+            protected bool Equals(NamedStateMember other)
+            {
+                return Equals(_underlying, other._underlying) && string.Equals(_name, other._name);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((NamedStateMember) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return ((_underlying != null ? _underlying.GetHashCode() : 0)*397) ^ (_name != null ? _name.GetHashCode() : 0);
+                }
+            }
         }
 
         private class MemberTypeStateMember : IStateMember
@@ -167,9 +188,27 @@ namespace GraphClimber
             {
                 get { return _underlying.ElementIndex; }
             }
+
+            protected bool Equals(MemberTypeStateMember other)
+            {
+                return Equals(_underlying, other._underlying) && Equals(_memberType, other._memberType);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((MemberTypeStateMember) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return ((_underlying != null ? _underlying.GetHashCode() : 0)*397) ^ (_memberType != null ? _memberType.GetHashCode() : 0);
+                }
+            }
         }
-
     }
-
-
 }

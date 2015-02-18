@@ -2,21 +2,22 @@ using System;
 
 namespace GraphClimber
 {
- 
-    internal abstract class ValueDescriptor<TField, TRuntime, TOwner> : IValueDescriptor
+    internal abstract class ValueDescriptor<TField, TRuntime> : IValueDescriptor
         where TRuntime : TField
     {
         private readonly MemberLocal<TField, TRuntime> _member;
         private readonly IClimbStore _climbStore;
-        protected readonly TOwner _owner;
+        protected readonly object _owner;
         private readonly object _processor;
+        private readonly bool _isStructMember;
 
-        protected ValueDescriptor(object processor, TOwner owner, MemberLocal<TField, TRuntime> member, IClimbStore climbStore)
+        protected ValueDescriptor(object processor, object owner, MemberLocal<TField, TRuntime> member, IClimbStore climbStore)
         {
             _owner = owner;
             _member = member;
             _climbStore = climbStore;
             _processor = processor;
+            _isStructMember = Member.Member.OwnerType.IsValueType;
         }
 
         public IStateMember StateMember
@@ -27,7 +28,13 @@ namespace GraphClimber
             }
         }
 
-        public abstract object Owner { get; }
+        public object Owner
+        {
+            get
+            {
+                return _owner;
+            }
+        }
 
         private IClimbStore ClimbStore
         {
@@ -42,6 +49,14 @@ namespace GraphClimber
             get
             {
                 return _member;
+            }
+        }
+
+        protected bool IsStructMember
+        {
+            get
+            {
+                return _isStructMember;
             }
         }
 
@@ -120,21 +135,38 @@ namespace GraphClimber
         {
             Route(stateMember, stateMember.MemberType, owner, skipSpecialMethod);
         }
-    }
 
-    internal abstract class ValueDescriptor<TField, TRuntime> : ValueDescriptor<TField, TRuntime, object> where TRuntime : TField
-    {
-        protected ValueDescriptor(object processor, object owner, MemberLocal<TField, TRuntime> member, IClimbStore climbStore) : 
-            base(processor, owner, member, climbStore)
+        public TRuntime Get()
         {
-        }
-
-        public override object Owner
-        {
-            get
+            if (IsStructMember)
             {
-                return _owner;
+                return (TRuntime)Member.BoxGetter(Owner);
+            }
+            else
+            {
+                return (TRuntime)Member.Getter(Owner);
             }
         }
+
+        public virtual void Set(TField value)
+        {
+            if (IsStructMember)
+            {
+                Member.BoxSetter(Owner, value);
+            }
+            else
+            {
+                Member.Setter(Owner, value);                
+            }
+        }
+
+        #region Enum Members
+
+        public IStateMember UnderlyingValueStateMember
+        {
+            get { return new EnumUnderlyingStateMember(StateMember); }
+        }
+
+        #endregion
     }
 }

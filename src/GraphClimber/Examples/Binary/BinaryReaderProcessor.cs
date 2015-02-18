@@ -259,8 +259,7 @@ namespace GraphClimber.Examples
         {
             IStateMember underlying = descriptor.UnderlyingValueStateMember;
 
-            descriptor.Route(new BinaryStateMember
-                ((IReflectionStateMember)underlying),
+            descriptor.Route(new BinaryStateMember(underlying),
                 descriptor.Owner,
                 true);
         }
