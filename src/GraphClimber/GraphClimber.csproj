@@ -102,6 +102,8 @@
     <Compile Include="ExpressionImplementation\DescriptorExtensions.cs" />
     <Compile Include="ExpressionImplementation\DescriptorVariable.cs" />
     <Compile Include="ExpressionImplementation\DescriptorWriter.cs" />
+    <Compile Include="ExpressionImplementation\EnumReadWriteDescriptor.cs" />
+    <Compile Include="ExpressionImplementation\EnumUnderlyingStateMember.cs" />
     <Compile Include="ExpressionImplementation\IAccessorFactory.cs" />
     <Compile Include="ExpressionImplementation\IClimbStore.cs" />
     <Compile Include="ExpressionImplementation\IDescriptorWriter.cs" />
@@ -123,6 +125,7 @@
     <Compile Include="ExpressionImplementation\RouteDelegate.cs" />
     <Compile Include="ExpressionImplementation\DelegateCache\RouteDelegateCache.cs" />
     <Compile Include="ExpressionImplementation\RouteDelegateFactory.cs" />
+    <Compile Include="ExpressionImplementation\StructValueDescriptor.cs" />
     <Compile Include="ExpressionImplementation\ValueDescriptor.cs" />
     <Compile Include="ExpressionImplementation\WriteOnlyDescriptor.cs" />
     <Compile Include="GenericArgumentBinder.cs" />

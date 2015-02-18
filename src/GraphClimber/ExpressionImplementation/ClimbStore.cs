@@ -7,7 +7,10 @@ namespace GraphClimber
     {
         private readonly AccessorDelegateCache _setters = new AccessorDelegateCache();
         private readonly AccessorDelegateCache _getters = new AccessorDelegateCache();
+        private readonly AccessorDelegateCache _boxSetters = new AccessorDelegateCache();
+        private readonly AccessorDelegateCache _boxGetters = new AccessorDelegateCache();
         private readonly ClimbDelegateCache _climbs = new ClimbDelegateCache();
+        private readonly ClimbDelegateCache _structClimbs = new ClimbDelegateCache();
         private readonly RouteDelegateCache _routes = new RouteDelegateCache();
 
         private readonly IAccessorFactory _accessorFactory;
@@ -47,6 +50,27 @@ namespace GraphClimber
             return _climbs.GetOrAdd(typeof (TField), runtimeType,
                 (typeKey, runtimeTypeKey) => 
                     _climbFactory.CreateDelegate<TField>(runtimeTypeKey));
+        }
+
+        public StructClimbDelegate<TField> GetStructClimb<TField>(Type runtimeType)
+        {
+            return _structClimbs.GetOrAdd(typeof (TField), runtimeType,
+                (typeKey, runtimeTypeKey) =>
+                    _climbFactory.CreateStructDelegate<TField>(runtimeTypeKey));
+        }
+
+        public Action<object, T> GetBoxSetter<T>(IStateMember member)
+        {
+            return _boxSetters.GetOrAdd
+                (member,
+                key => _accessorFactory.GetBoxSetter<T>(key));
+        }
+
+        public Func<object, T> GetBoxGetter<T>(IStateMember member)
+        {
+            return _boxGetters.GetOrAdd
+                (member,
+                key => _accessorFactory.GetBoxGetter<T>(key));
         }
     }
 }

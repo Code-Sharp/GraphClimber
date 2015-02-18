@@ -2,15 +2,16 @@ using System;
 
 namespace GraphClimber
 {
-    internal abstract class ValueDescriptor<TField, TRuntime> : IValueDescriptor
+ 
+    internal abstract class ValueDescriptor<TField, TRuntime, TOwner> : IValueDescriptor
         where TRuntime : TField
     {
         private readonly MemberLocal<TField, TRuntime> _member;
         private readonly IClimbStore _climbStore;
-        private readonly object _owner;
+        protected readonly TOwner _owner;
         private readonly object _processor;
 
-        protected ValueDescriptor(object processor, object owner, MemberLocal<TField, TRuntime> member, IClimbStore climbStore)
+        protected ValueDescriptor(object processor, TOwner owner, MemberLocal<TField, TRuntime> member, IClimbStore climbStore)
         {
             _owner = owner;
             _member = member;
@@ -26,13 +27,7 @@ namespace GraphClimber
             }
         }
 
-        public object Owner
-        {
-            get
-            {
-                return _owner;
-            }
-        }
+        public abstract object Owner { get; }
 
         private IClimbStore ClimbStore
         {
@@ -61,20 +56,59 @@ namespace GraphClimber
 
             Type type = value.GetType();
 
-            if (type == typeof(TRuntime))
+            if (type.IsValueType)
             {
-                ClimbDelegate<TRuntime> climbDelegate = Member.Climb;
-                climbDelegate(_processor, (TRuntime) value);
+                ClimbStruct(value, type);
             }
             else
             {
-                ClimbDelegate<TField> climbDelegate = 
+                ClimReference(value, type);
+            }
+        }
+
+        private void ClimReference(TField value, Type type)
+        {
+            if (type == typeof(TRuntime))
+            {
+                ClimbDelegate<TRuntime> climbDelegate = Member.Climb;
+                climbDelegate(_processor, (TRuntime)value);
+            }
+            else
+            {
+                ClimbDelegate<TField> climbDelegate =
                     ClimbStore.GetClimb<TField>(type);
 
                 climbDelegate(_processor, value);
             }
-
         }
+
+        private void ClimbStruct(TField value, Type type)
+        {
+            if (type == typeof(TRuntime))
+            {
+                Box<TRuntime> boxed = new Box<TRuntime>((TRuntime) value);
+
+                StructClimbDelegate<TRuntime> climbDelegate = Member.StructClimb;
+
+                climbDelegate(_processor, boxed);
+
+                SetField(boxed.Value);
+            }
+            else
+            {
+                // Wow, we're screwed
+                Box<TField> boxed = new Box<TField>(value);
+
+                StructClimbDelegate<TField> climbDelegate =
+                    ClimbStore.GetStructClimb<TField>(type);
+
+                climbDelegate(_processor, boxed);
+
+                SetField(boxed.Value);
+            }
+        }
+
+        protected abstract void SetField(TField value);
 
         public void Route(IStateMember stateMember, Type runtimeMemberType, object owner, bool skipSpecialMethod)
         {
@@ -85,6 +119,22 @@ namespace GraphClimber
         public void Route(IStateMember stateMember, object owner, bool skipSpecialMethod)
         {
             Route(stateMember, stateMember.MemberType, owner, skipSpecialMethod);
+        }
+    }
+
+    internal abstract class ValueDescriptor<TField, TRuntime> : ValueDescriptor<TField, TRuntime, object> where TRuntime : TField
+    {
+        protected ValueDescriptor(object processor, object owner, MemberLocal<TField, TRuntime> member, IClimbStore climbStore) : 
+            base(processor, owner, member, climbStore)
+        {
+        }
+
+        public override object Owner
+        {
+            get
+            {
+                return _owner;
+            }
         }
     }
 }

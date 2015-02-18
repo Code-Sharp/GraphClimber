@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace GraphClimber
 {
@@ -24,6 +25,16 @@ namespace GraphClimber
             TRuntime value = Get();
 
             Climb(value);
+        }
+
+        protected override void SetField(TField value)
+        {
+            TField field = Get();
+
+            if (!EqualityComparer<TField>.Default.Equals(field, value))
+            {
+                throw new System.NotImplementedException("Are you crazy???");
+            }
         }
     }
 }

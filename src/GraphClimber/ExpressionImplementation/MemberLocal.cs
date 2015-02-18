@@ -7,6 +7,10 @@ namespace GraphClimber
         private readonly Lazy<Func<object, TField>> _getter;
         private readonly Lazy<Action<object, TField>> _setter;
         private readonly Lazy<ClimbDelegate<TRuntime>> _climb;
+        private readonly Lazy<StructClimbDelegate<TRuntime>> _structClimb;
+        private readonly Lazy<Func<object, TField>> _boxGetter;
+        private readonly Lazy<Action<object, TField>> _boxSetter;
+
         private readonly IStateMember _member;
 
         public MemberLocal(IClimbStore climbStore,
@@ -20,11 +24,36 @@ namespace GraphClimber
             _setter =
                 new Lazy<Action<object, TField>>(() => climbStore.GetSetter<TField>(member));
 
+            _boxGetter =
+                new Lazy<Func<object, TField>>(() => climbStore.GetBoxGetter<TField>(member));
+
+            _boxSetter =
+                new Lazy<Action<object, TField>>(() => climbStore.GetBoxSetter<TField>(member));
+
             _climb =
                 new Lazy<ClimbDelegate<TRuntime>>
                     (() => climbStore.GetClimb<TRuntime>(typeof(TRuntime)));
+
+            _structClimb =
+                new Lazy<StructClimbDelegate<TRuntime>>
+                    (() => climbStore.GetStructClimb<TRuntime>(typeof(TRuntime)));
         }
 
+        public Func<object, TField> BoxGetter
+        {
+            get
+            {
+                return _boxGetter.Value;
+            }
+        }
+
+        public Action<object, TField> BoxSetter
+        {
+            get
+            {
+                return _boxSetter.Value;
+            }
+        }
 
         public Func<object, TField> Getter
         {
@@ -47,6 +76,14 @@ namespace GraphClimber
             get
             {
                 return _climb.Value;
+            }
+        }
+
+        public StructClimbDelegate<TRuntime> StructClimb
+        {
+            get
+            {
+                return _structClimb.Value;
             }
         }
 

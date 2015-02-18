@@ -26,10 +26,13 @@ namespace GraphClimber
 
             ConstructorInfo constructor = descriptorType.GetConstructors().FirstOrDefault();
 
+            ParameterInfo ownerParameter = constructor.GetParameters()[1];
+            Type ownerParameterType = ownerParameter.ParameterType;
+
             NewExpression creation =
                 Expression.New(constructor,
                     processor,
-                    owner.Convert<object>(),
+                    owner.Convert(ownerParameterType),
                     memberLocal.Constant(),
                     store.Constant());
 

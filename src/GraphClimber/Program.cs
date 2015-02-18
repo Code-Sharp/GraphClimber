@@ -106,7 +106,7 @@ namespace GraphClimber
 
         private static void SerializeDeserializeBinary()
         {
-            var person = GetPerson2();
+            var person = GetPerson();
 
             var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
 
@@ -119,7 +119,7 @@ namespace GraphClimber
             ClimbStore store2 = new ClimbStore(binaryWriterProcessor.GetType(),
                 new BinaryStateMemberProvider(new PropertyStateMemberProvider()),
                 new MethodMapper(),
-                new DebugExpressionCompiler((IExpressionDescriber)Type.GetType("GraphClimber.Debug.ExpressionCompiler.CSharpExpressionDescriber, GraphClimber.Debug, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null").GetField("Empty").GetValue(null)));
+                new TrivialExpressionCompiler());
 
             ClimbDelegate<StrongBox<object>> climb2 = 
                 store2.GetClimb<StrongBox<object>>(typeof(StrongBox<object>));
@@ -197,6 +197,11 @@ namespace GraphClimber
                 processor);
         }
 
+        public struct MyClass
+        {
+            public string Name { get; set; }
+        }
+
         class Person
         {
             public Person()
@@ -263,7 +268,10 @@ namespace GraphClimber
                 {
                     Age = 21,
                     Name = "Yosi Attias",
-                    Surprise = ilan
+                    Surprise = new MyClass()
+                    {
+                        Name = "YO!"
+                    }
                 }
             };
         }

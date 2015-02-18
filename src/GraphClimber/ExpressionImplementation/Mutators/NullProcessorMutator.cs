@@ -16,12 +16,11 @@ namespace GraphClimber
             _nullProcessorImplemented = typeof(INullProcessor).IsAssignableFrom(processorType);
         }
 
-        public Expression Mutate(Expression oldValue, Expression processor, Expression owner, IStateMember member,
-            Expression descriptor)
+        public Expression Mutate(Expression oldExpression, Expression processor, Expression value, Expression owner, IStateMember member, Expression descriptor)
         {
             if (!_nullProcessorImplemented)
             {
-                return oldValue;
+                return oldExpression;
             }
 
             Type memberType = member.MemberType;
@@ -32,10 +31,8 @@ namespace GraphClimber
                 !member.CanWrite ||
                 (memberType.IsValueType && !memberType.IsNullable()))
             {
-                return oldValue;
+                return oldExpression;
             }
-
-            Expression value = member.GetGetExpression(owner);
 
             MethodInfo method = 
                 _processNull.MakeGenericMethod(member.MemberType);
@@ -52,7 +49,7 @@ namespace GraphClimber
             Expression body =
                 Expression.Condition(Expression.Equal(value, ExpressionExtensions.Null),
                     Expression.Call(processor, method, descriptor),
-                    oldValue);
+                    oldExpression);
 
             return body;
         }

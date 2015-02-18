@@ -8,5 +8,8 @@ namespace GraphClimber
         Func<object, T> GetGetter<T>(IStateMember member);
         RouteDelegate GetRoute(IStateMember member, Type runtimeMemberType);
         ClimbDelegate<T> GetClimb<T>(Type runtimeType);
+        StructClimbDelegate<T> GetStructClimb<T>(Type runtimeType);
+        Func<object,T> GetBoxGetter<T>(IStateMember member);
+        Action<object, T> GetBoxSetter<T>(IStateMember member);
     }
 }

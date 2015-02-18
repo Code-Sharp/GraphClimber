@@ -8,6 +8,13 @@ namespace GraphClimber
         {
             if (member.CanRead && member.CanWrite)
             {
+                // We're really screwed up here, how are we going to support everything in the world?
+                if (member.OwnerType.IsValueType)
+                {
+                    return typeof (StructReadWriteDescriptor<,,>)
+                        .MakeGenericType(member.OwnerType, member.MemberType, runtimeType);
+                }
+
                 if (runtimeType.IsEnum)
                 {
                     return typeof (EnumReadWriteDescriptor<,,>)

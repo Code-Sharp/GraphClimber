@@ -29,5 +29,10 @@ namespace GraphClimber
 
             base.Climb(_newValue);
         }
+
+        protected override void SetField(TField value)
+        {
+            Set(value);
+        }
     }
 }
