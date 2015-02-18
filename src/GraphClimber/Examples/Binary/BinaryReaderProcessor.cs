@@ -56,9 +56,14 @@ namespace GraphClimber.Examples
             if (TryReadReferenceType(descriptor, out type))
             {
                 T instance = (T) Activator.CreateInstance(type);
-                _objects.Add(instance);
                 descriptor.Set(instance);
+                _objects.Add(null);
+                int index = _objects.Count - 1;
                 descriptor.Climb();
+
+                // TODO: this is a patch to solve the boxed struct revisit problem.
+                var casted = descriptor as IReadOnlyValueDescriptor<T>;
+                _objects[index] = casted.Get();
             }
         }
 
