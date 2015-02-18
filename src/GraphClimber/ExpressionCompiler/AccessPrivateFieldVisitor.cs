@@ -160,7 +160,7 @@ namespace GraphClimber.ExpressionCompiler
             bool isPrivate =
                 new[] {propertyInfo.GetGetMethod(true), propertyInfo.GetSetMethod(true)}.Where(m => m != null)
                     .Select(m => m.Attributes)
-                    .Any(m => m.HasFlag(MethodAttributes.Private) || m.HasFlag(MethodAttributes.PrivateScope));
+                    .Any(m => m.HasFlag(MethodAttributes.Private));
 
             if (isPrivate)
             {
