@@ -59,6 +59,15 @@ namespace GraphClimber.ExpressionCompiler.Extensions
                 return expression;
             }
 
+            var unaryExpression = expression as UnaryExpression;
+            if (unaryExpression != null)
+            {
+                if (unaryExpression.NodeType == ExpressionType.Convert)
+                {
+                    return Convert(unaryExpression.Operand, newType);
+                }
+            }
+
             return Expression.Convert(expression, newType);
         }
 
