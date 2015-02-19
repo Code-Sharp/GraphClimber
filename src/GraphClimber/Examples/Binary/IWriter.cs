@@ -698,134 +698,124 @@ namespace GraphClimber.Examples.Binary
             _output = output;
         }
 
-        private void LogTrivialCall([CallerMemberName] string callerName = null)
+        private T LogTrivialCall<T>(T retVal, [CallerMemberName] string callerName = null)
         {
-            _output.WriteLine("{0}()", callerName);
+            _output.WriteLine("{0} {1}()", retVal, callerName);
+
+            return retVal;
         }
 
         public override string ReadString()
         {
-            LogTrivialCall();
-            return base.ReadString();
+            return LogTrivialCall(base.ReadString());
         }
 
         public override int PeekChar()
         {
-            LogTrivialCall();
-            return base.PeekChar();
+            return LogTrivialCall(base.PeekChar());
         }
 
         public override int Read()
         {
-            LogTrivialCall();
-            return base.Read();
+            return LogTrivialCall(base.Read());
         }
 
         public override bool ReadBoolean()
         {
-            LogTrivialCall();
-            return base.ReadBoolean();
+            return LogTrivialCall(base.ReadBoolean());
         }
 
         public override byte ReadByte()
         {
-            LogTrivialCall();
-            return base.ReadByte();
+            return LogTrivialCall(base.ReadByte());
         }
 
         public override sbyte ReadSByte()
         {
-            LogTrivialCall();
-            return base.ReadSByte();
+            return LogTrivialCall(base.ReadSByte());
         }
 
         public override char ReadChar()
         {
-            LogTrivialCall();
-            return base.ReadChar();
+            return LogTrivialCall(base.ReadChar());
         }
 
         public override short ReadInt16()
         {
-            LogTrivialCall();
-            return base.ReadInt16();
+            return LogTrivialCall(base.ReadInt16());
         }
 
         public override ushort ReadUInt16()
         {
-            LogTrivialCall();
-            return base.ReadUInt16();
+            return LogTrivialCall(base.ReadUInt16());
         }
 
         public override int ReadInt32()
         {
-            LogTrivialCall();
-            return base.ReadInt32();
+            return LogTrivialCall(base.ReadInt32());
         }
 
         public override uint ReadUInt32()
         {
-            LogTrivialCall();
-            return base.ReadUInt32();
+            return LogTrivialCall(base.ReadUInt32());
         }
 
         public override long ReadInt64()
         {
-            LogTrivialCall();
-            return base.ReadInt64();
+            return LogTrivialCall(base.ReadInt64());
         }
 
         public override ulong ReadUInt64()
         {
-            LogTrivialCall();
-            return base.ReadUInt64();
+            return LogTrivialCall(base.ReadUInt64());
         }
 
         public override float ReadSingle()
         {
-            LogTrivialCall();
-            return base.ReadSingle();
+            return LogTrivialCall(base.ReadSingle());
         }
 
         public override double ReadDouble()
         {
-            LogTrivialCall();
-            return base.ReadDouble();
+            return LogTrivialCall(base.ReadDouble());
         }
 
         public override decimal ReadDecimal()
         {
-            LogTrivialCall();
-            return base.ReadDecimal();
+            return LogTrivialCall(base.ReadDecimal());
         }
 
         public override int Read(char[] buffer, int index, int count)
         {
-            _output.WriteLine("Read(buffer {0}, index {1}, count {2})", buffer, index, count);
-            return base.Read(buffer, index, count);
+            var retVal = base.Read(buffer, index, count);
+            _output.WriteLine("{0} Read(buffer {1}, index {2}, count {3})", retVal, buffer, index, count);
+            return retVal;
         }
 
         public override char[] ReadChars(int count)
         {
-            _output.WriteLine("ReadChars(count {0})", count);
-            return base.ReadChars(count);
+            var readChars = base.ReadChars(count);
+            _output.WriteLine("{0} ReadChars(count {1})", readChars, count);
+            return readChars;
         }
 
         public override int Read(byte[] buffer, int index, int count)
         {
-            _output.WriteLine("Read(buffer {0}, index {1}, count {2})", buffer, index, count);
-            return base.Read(buffer, index, count);
+            var readBytes = base.Read(buffer, index, count);
+            _output.WriteLine("{3} Read(buffer {0}, index {1}, count {2})", buffer, index, count, readBytes);
+            return readBytes;
         }
 
         public override byte[] ReadBytes(int count)
         {
-            _output.WriteLine("ReadBytes(count {0})", count);
-            return base.ReadBytes(count);
+            var readBytes = base.ReadBytes(count);
+            _output.WriteLine("{1} ReadBytes(count {0})", count, readBytes);
+            return readBytes;
         }
 
         public override void Dispose()
         {
-            LogTrivialCall();
+            _output.WriteLine("Dispose()");
             base.Dispose();
         }
     }

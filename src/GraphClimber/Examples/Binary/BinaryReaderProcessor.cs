@@ -2,15 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using GraphClimber.Bulks;
+using GraphClimber.Examples.Binary;
 
 namespace GraphClimber.Examples
 {
     internal class BinaryReaderProcessor : IWriteOnlyExactPrimitiveProcessor
     {
         private readonly IList<object> _objects = new List<object>();
-        private readonly BinaryReader _reader;
+        private readonly IReader _reader;
 
-        public BinaryReaderProcessor(BinaryReader reader)
+        public BinaryReaderProcessor(IReader reader)
         {
             _reader = reader;
         }

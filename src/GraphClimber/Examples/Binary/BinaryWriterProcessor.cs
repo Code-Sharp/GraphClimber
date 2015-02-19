@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using GraphClimber.Bulks;
+using GraphClimber.Examples.Binary;
 using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber.Examples
@@ -18,10 +19,10 @@ namespace GraphClimber.Examples
 
     class BinaryWriterProcessor : IReadOnlyPrimitiveProcessor, INullProcessor, IRevisitedProcessor
     {
-        private readonly BinaryWriter _writer;
+        private readonly IWriter _writer;
         private readonly IDictionary<object, int> _visitedHash = new Dictionary<object, int>();
 
-        public BinaryWriterProcessor(BinaryWriter writer)
+        public BinaryWriterProcessor(IWriter writer)
         {
             _writer = writer;
         }
