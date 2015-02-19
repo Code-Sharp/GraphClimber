@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using GraphClimber.Examples;
+using GraphClimber.Examples.Binary;
 using GraphClimber.ExpressionCompiler;
 using GraphClimber.ExpressionCompiler.Extensions;
 using GraphClimber.ValueDescriptor;
@@ -79,6 +80,19 @@ namespace GraphClimber
         
     }
 
+    class SimpleType
+    {
+
+
+        public ValueType SomeValueType { get; set; }
+
+        public string String { get; set; }
+
+        public IConvertible Convertible { get; set; }
+
+
+    }
+
     public class Program
     {
         private static readonly IStateMemberProvider _stateMemberProvider = new CachingStateMemberProvider(new ReflectionPropertyStateMemberProvider());
@@ -104,9 +118,19 @@ namespace GraphClimber
             SerializeDeserializeBinary();
         }
 
+        public static object GetSimpleTypeInstance()
+        {
+            return new SimpleType()
+            {
+                Convertible = Days.Monday,
+                SomeValueType = 5,
+                String = "Hello W0rld"
+            };
+        }
+
         private static void SerializeDeserializeBinary()
         {
-            var person = GetPerson2();
+            var person = GetSimpleTypeInstance();
 
             var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
 
@@ -114,7 +138,7 @@ namespace GraphClimber
             //var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(stateMemberProvider);
 
             var stream = new MemoryStream();
-            var binaryWriterProcessor = new BinaryWriterProcessor(new SuperBinaryWriter(stream));
+            var binaryWriterProcessor = new BinaryWriterProcessor(new LoggingWriter(new CompressingWriter(new BinaryWriterAdapter(new BinaryWriter(stream))), Console.Out));
 
             ClimbStore store2 = new ClimbStore(binaryWriterProcessor.GetType(),
                 new BinaryStateMemberProvider(new PropertyStateMemberProvider()),
@@ -130,7 +154,7 @@ namespace GraphClimber
             //writeClimber.Route(person, binaryWriterProcessor, false);
             
             stream.Position = 0;
-            var binaryReaderProcessor = new BinaryReaderProcessor(new SuperBinaryReader(stream));
+            var binaryReaderProcessor = new BinaryReaderProcessor(new LoggingReader(new DecompressingReader(new BinaryReaderAdapter(new BinaryReader(stream))), Console.Out));
 
             var strongBox = new StrongBox<object>();
 

@@ -45,6 +45,7 @@ namespace GraphClimber.Examples
         }
     }
 
+
     class SuperBinaryReader : BinaryReader
     {
         private readonly IList<string> _readStrings = new List<string>();
@@ -179,11 +180,6 @@ namespace GraphClimber.Examples
         public override byte[] ReadBytes(int count)
         {
             return base.ReadBytes(count);
-        }
-
-        protected override void FillBuffer(int numBytes)
-        {
-            base.FillBuffer(numBytes);
         }
 
         public override Stream BaseStream

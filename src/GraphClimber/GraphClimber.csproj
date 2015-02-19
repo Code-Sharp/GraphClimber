@@ -70,6 +70,7 @@
     <Compile Include="Examples\Binary\BinaryStateMemberProvider.cs" />
     <Compile Include="Examples\Binary\BinaryWriterProcessor.cs" />
     <Compile Include="Examples\Binary\IsArrayAttribute.cs" />
+    <Compile Include="Examples\Binary\IWriter.cs" />
     <Compile Include="Examples\Extractor\Extractor.cs" />
     <Compile Include="Examples\Extractor\ExtractorProcessor.cs" />
     <Compile Include="Examples\Store\IStore.cs" />
