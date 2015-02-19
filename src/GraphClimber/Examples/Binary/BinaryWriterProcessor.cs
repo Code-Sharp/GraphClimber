@@ -147,9 +147,11 @@ namespace GraphClimber.Examples
             where TUnderlying : IConvertible
             where TEnum : IConvertible
         {
+            WriteAssemblyQualifiedNameIfNeeded((BinaryStateMember)descriptor.StateMember, typeof (TEnum));
+
             IStateMember underlying = descriptor.UnderlyingValueStateMember;
 
-            descriptor.Route(new BinaryStateMember(underlying),
+            descriptor.Route(new BinaryStateMember(underlying, true, true),
                 descriptor.Owner,
                 true);
         }
@@ -157,60 +159,70 @@ namespace GraphClimber.Examples
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<byte> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<sbyte> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<short> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<ushort> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<int> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<uint> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<long> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<ulong> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<char> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<double> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
@@ -225,6 +237,7 @@ namespace GraphClimber.Examples
         [ProcessorMethod]
         public void ProcessForReadOnly(IReadOnlyValueDescriptor<DateTime> descriptor)
         {
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get().Ticks);
         }
 

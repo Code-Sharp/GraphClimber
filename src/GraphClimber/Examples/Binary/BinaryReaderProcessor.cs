@@ -56,6 +56,22 @@ namespace GraphClimber.Examples
 
             if (TryReadReferenceType(descriptor, out type))
             {
+                // Do not create instance when value type, Just route to it.
+                if (type.IsValueType)
+                {
+                    descriptor.Route(
+                    new BinaryStateMember(
+                        new MyCustomStateMember((IReflectionStateMember)descriptor.StateMember, type),
+                        true,
+                        true),
+                    descriptor.Owner,
+                    true);
+
+                    _objects.Add(((IReadOnlyExactValueDescriptor<T>)descriptor).Get());
+
+                    return;
+                }
+
                 T instance = (T) Activator.CreateInstance(type);
                 _objects.Add(instance);
                 descriptor.Set(instance);
@@ -100,6 +116,7 @@ namespace GraphClimber.Examples
                 if (header == ReadWriteHeader.KnownType)
                 {
                     return true;
+
                 }
                 
                 throw new Exception(
@@ -118,60 +135,85 @@ namespace GraphClimber.Examples
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<byte> descriptor)
         {
+            AssertKnownType(descriptor);
             descriptor.Set(_reader.ReadByte());
+        }
+
+        private void AssertKnownType(IValueDescriptor descriptor)
+        {
+            var binaryStateMember = descriptor.StateMember as BinaryStateMember;
+
+            if (binaryStateMember != null && binaryStateMember.HeaderHandled)
+            {
+                return;
+            }
+
+            if (_reader.ReadByte() != ReadWriteHeader.KnownType)
+            {
+                throw new Exception("Header should have been known.");
+            }
         }
 
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<sbyte> descriptor)
         {
+            AssertKnownType(descriptor);
             descriptor.Set(_reader.ReadSByte());
         }
 
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<short> descriptor)
         {
+            AssertKnownType(descriptor);
             descriptor.Set(_reader.ReadInt16());
         }
 
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<ushort> descriptor)
         {
+            AssertKnownType(descriptor);
             descriptor.Set(_reader.ReadUInt16());
         }
 
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<int> descriptor)
         {
+            AssertKnownType(descriptor);
             descriptor.Set(_reader.ReadInt32());
         }
 
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<uint> descriptor)
         {
+            AssertKnownType(descriptor);
             descriptor.Set(_reader.ReadUInt32());
         }
 
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<long> descriptor)
         {
+            AssertKnownType(descriptor);
             descriptor.Set(_reader.ReadInt64());
         }
 
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<ulong> descriptor)
         {
+            AssertKnownType(descriptor);
             descriptor.Set(_reader.ReadUInt64());
         }
 
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<char> descriptor)
         {
+            AssertKnownType(descriptor);
             descriptor.Set(_reader.ReadChar());
         }
 
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<double> descriptor)
         {
+            AssertKnownType(descriptor);
             descriptor.Set(_reader.ReadDouble());
         }
 
@@ -192,6 +234,7 @@ namespace GraphClimber.Examples
         [ProcessorMethod]
         public void ProcessForWriteOnly(IWriteOnlyExactValueDescriptor<DateTime> descriptor)
         {
+            AssertKnownType(descriptor);
             long ticks = _reader.ReadInt64();
             descriptor.Set(DateTime.FromBinary(ticks));
         }
@@ -254,7 +297,7 @@ namespace GraphClimber.Examples
 
         [ProcessorMethod]
         public void ProcessEnumForWriteOnly<[IsEnum]TEnum, TUnderlying>
-            (IWriteOnlyEnumExactValueDescriptor<TEnum, TUnderlying> descriptor)
+            (IEnumReadWriteExactValueDescriptor<TEnum, TUnderlying> descriptor)
             where TUnderlying : IConvertible
             where TEnum : IConvertible
         {
@@ -263,6 +306,9 @@ namespace GraphClimber.Examples
             descriptor.Route(new BinaryStateMember(underlying),
                 descriptor.Owner,
                 true);
+
+            // This is some patchy patch :D
+            descriptor.SetUnderlying(descriptor.GetUnderlying());
         }
     }
 }
