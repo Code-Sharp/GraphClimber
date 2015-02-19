@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace GraphClimber
 {
@@ -133,7 +134,7 @@ namespace GraphClimber
             }
         }
 
-        private class MemberTypeStateMember : IStateMember
+        private class MemberTypeStateMember : IStateMember, IReflectionStateMember
         {
             private readonly IStateMember _underlying;
             private readonly Type _memberType;
@@ -208,6 +209,21 @@ namespace GraphClimber
                 {
                     return ((_underlying != null ? _underlying.GetHashCode() : 0)*397) ^ (_memberType != null ? _memberType.GetHashCode() : 0);
                 }
+            }
+
+            public MemberInfo UnderlyingMemberInfo
+            {
+                get { return ((IReflectionStateMember)_underlying).UnderlyingMemberInfo; }
+            }
+
+            public object GetValue(object owner)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetValue(object owner, object value)
+            {
+                throw new NotImplementedException();
             }
         }
     }
