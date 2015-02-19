@@ -64,6 +64,10 @@ namespace GraphClimber
             generator.Emit(OpCodes.Ldarg_0);                       // object
             generator.Emit(OpCodes.Unbox, member.OwnerType);  // Struct&
             generator.Emit(OpCodes.Ldarg_1);                       // Struct& T
+            if (typeof (T).IsValueType && !property.PropertyType.IsValueType)
+            {
+                generator.Emit(OpCodes.Box, typeof(T));
+            }
             generator.Emit(OpCodes.Call, property.SetMethod);                  // --empty--
             generator.Emit(OpCodes.Ret);                           // --empty--
 
