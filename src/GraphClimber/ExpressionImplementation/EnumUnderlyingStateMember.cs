@@ -1,10 +1,11 @@
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
-    internal class EnumUnderlyingStateMember : IStateMember
+    internal class EnumUnderlyingStateMember : IStateMember, IReflectionStateMember
     {
         private readonly IStateMember _underlying;
 
@@ -74,6 +75,47 @@ namespace GraphClimber
         public override int GetHashCode()
         {
             return (_underlying != null ? _underlying.GetHashCode() : 0);
+        }
+
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get
+            {
+                var underlying = _underlying as IReflectionStateMember;
+
+                if (underlying != null)
+                {
+                    return underlying.UnderlyingMemberInfo;
+                }
+
+                throw new NotImplementedException();
+            }
+        }
+
+        public object GetValue(object owner)
+        {
+            var underlying = _underlying as IReflectionStateMember;
+
+            if (underlying != null)
+            {
+                return underlying.GetValue(owner);
+            }
+
+            throw new NotImplementedException();
+        }
+
+        public void SetValue(object owner, object value)
+        {
+            var underlying = _underlying as IReflectionStateMember;
+
+            if (underlying != null)
+            {
+                underlying.SetValue(owner, value);
+            }
+            else
+            {
+                throw new NotImplementedException();                
+            }
         }
     }
 }

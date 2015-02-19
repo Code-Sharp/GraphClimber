@@ -7,7 +7,7 @@ namespace GraphClimber
         private readonly Lazy<Func<object, TField>> _getter;
         private readonly Lazy<Action<object, TField>> _setter;
         private readonly Lazy<ClimbDelegate<TRuntime>> _climb;
-        private readonly Lazy<StructClimbDelegate<TRuntime>> _structClimb;
+        private readonly Lazy<ClimbDelegate<object>> _structClimb;
         private readonly Lazy<Func<object, TField>> _boxGetter;
         private readonly Lazy<Action<object, TField>> _boxSetter;
 
@@ -35,8 +35,8 @@ namespace GraphClimber
                     (() => climbStore.GetClimb<TRuntime>(typeof(TRuntime)));
 
             _structClimb =
-                new Lazy<StructClimbDelegate<TRuntime>>
-                    (() => climbStore.GetStructClimb<TRuntime>(typeof(TRuntime)));
+                new Lazy<ClimbDelegate<object>>
+                    (() => climbStore.GetClimb<object>(typeof(TRuntime)));
         }
 
         public Func<object, TField> BoxGetter
@@ -79,7 +79,7 @@ namespace GraphClimber
             }
         }
 
-        public StructClimbDelegate<TRuntime> StructClimb
+        public ClimbDelegate<object> StructClimb
         {
             get
             {

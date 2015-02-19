@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using GraphClimber.ExpressionCompiler.Extensions;
 
@@ -57,6 +58,11 @@ namespace GraphClimber.ValueDescriptor
         }
 
         public int[] ElementIndex
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
         {
             get { throw new NotImplementedException(); }
         }
@@ -124,6 +130,11 @@ namespace GraphClimber.ValueDescriptor
         }
 
         public int[] ElementIndex
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
         {
             get { throw new NotImplementedException(); }
         }
@@ -196,6 +207,11 @@ namespace GraphClimber.ValueDescriptor
         public int[] ElementIndex
         {
             get { throw new NotSupportedException(); }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public object GetValue(object owner)
@@ -273,6 +289,11 @@ namespace GraphClimber.ValueDescriptor
         public int[] ElementIndex
         {
             get { throw new NotSupportedException(); }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public object GetValue(object owner)

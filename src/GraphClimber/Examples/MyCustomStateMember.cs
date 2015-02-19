@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace GraphClimber.Examples
 {
@@ -60,6 +61,11 @@ namespace GraphClimber.Examples
         public Expression GetSetExpression(Expression obj, Expression value)
         {
             return _underlying.GetSetExpression(obj, value);
+        }
+
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get { return _underlying.UnderlyingMemberInfo; }
         }
 
         public object GetValue(object owner)

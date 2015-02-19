@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace GraphClimber.Examples
 {
@@ -129,6 +130,20 @@ namespace GraphClimber.Examples
         public bool HeaderHandled
         {
             get { return _headerHandled; }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get
+            {
+                var reflectionStateMember = _stateMember as IReflectionStateMember;
+                if (reflectionStateMember != null)
+                {
+                    return reflectionStateMember.UnderlyingMemberInfo;
+                }
+
+                throw new NotImplementedException();
+            }
         }
 
         public object GetValue(object owner)

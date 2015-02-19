@@ -6,7 +6,6 @@ namespace GraphClimber
     {
         Expression Mutate(Expression oldExpression,
             Expression processor,
-            Expression value,
             Expression owner,
             IStateMember member,
             Expression descriptor);

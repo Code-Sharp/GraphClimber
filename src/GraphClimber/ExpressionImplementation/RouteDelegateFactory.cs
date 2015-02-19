@@ -46,7 +46,7 @@ namespace GraphClimber
             Expression value = GetGetExpression(member, owner);
 
             Expression callProcessWithSpecialMethods =
-                _specialMutator.Mutate(callProcess, castedProcessor, value, owner, member, descriptor.Reference);
+                _specialMutator.Mutate(callProcess, castedProcessor, owner, member, descriptor.Reference);
 
             BlockExpression body =
                 Expression.Block(new[] {descriptor.Reference},

@@ -71,6 +71,14 @@ namespace GraphClimber
             }
         }
 
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get
+            {
+                return _property;
+            }
+        }
+
         public object GetValue(object owner)
         {
             return _property.GetValue(owner);

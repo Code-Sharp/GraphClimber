@@ -15,7 +15,7 @@ namespace GraphClimber
 
         private static readonly MethodInfo _getTypeMethod = typeof(object).GetMethod("GetType");
 
-        public Expression Mutate(Expression oldExpression, Expression processor, Expression value, Expression owner, IStateMember member, Expression descriptor)
+        public Expression Mutate(Expression oldExpression, Expression processor, Expression owner, IStateMember member, Expression descriptor)
         {
             if (!member.CanRead)
             {
@@ -32,6 +32,8 @@ namespace GraphClimber
             ParameterExpression runtimeType = Expression.Variable(typeof (Type), member.Name.FirstLowerCase() + "RuntimeType");
             
             var memberTypeConstant = memberType.Constant();
+
+            var value = member.GetGetExpression(owner);
 
             var runtimeTypeAssign = 
                 Expression.Condition(Expression.Equal(value, ExpressionExtensions.Null),

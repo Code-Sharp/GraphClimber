@@ -39,28 +39,13 @@ namespace GraphClimber
             }
         }
 
-
         private ClimbDelegate<T> CreateReferenceDelegate<T>(Type runtimeType)
         {
-            var processor = Expression.Parameter(typeof(object), "processor");
+            var processor = Expression.Parameter(typeof (object), "processor");
             var value = Expression.Parameter(typeof (T), "value");
 
             Expression owner = value.Convert(runtimeType);
-            BlockExpression climbBody = 
-                GetClimbBody(runtimeType, processor, owner, owner);
 
-            Expression<ClimbDelegate<T>> lambda =
-                Expression.Lambda<ClimbDelegate<T>>(climbBody,
-                    "Climb_" + runtimeType.Name,
-                    new[] {processor, value});
-
-            ClimbDelegate<T> result = _compiler.Compile(lambda);
-
-            return result;
-        }
-
-        private BlockExpression GetClimbBody(Type runtimeType, Expression processor, Expression ownerForRoute, Expression ownerValue)
-        {
             Expression castedProcessor = processor.Convert(_processorType);
 
             IEnumerable<IStateMember> members =
@@ -74,25 +59,10 @@ namespace GraphClimber
                 DescriptorWriter writer = new DescriptorWriter(_climbStore);
 
                 DescriptorVariable descriptor =
-                    writer.GetDescriptor(castedProcessor, ownerForRoute, member, member.MemberType);
-
-                Expression value;
-
-                if (member.CanRead)
-                {
-                    value = member.GetGetExpression(ownerValue);                    
-                }
-                else
-                {
-                    value = Expression.Empty();
-                }
+                    writer.GetDescriptor(castedProcessor, owner, member, member.MemberType);
 
                 Expression callProcessor =
-                    _mutator.GetExpression(castedProcessor,
-                        value,
-                        ownerForRoute,
-                        member,
-                        descriptor.Reference);
+                    _mutator.GetExpression(castedProcessor, owner, member, descriptor.Reference);
 
                 descriptorVariables.Add(descriptor.Reference);
                 expressions.Add(descriptor.Declaration);
@@ -101,63 +71,17 @@ namespace GraphClimber
 
             BlockExpression climbBody =
                 Expression.Block(descriptorVariables, expressions);
-            
-            return climbBody;
-        }
 
-        public StructClimbDelegate<TField> CreateStructDelegate<TField>(Type structType)
-        {
-            // Ok! whats going to happen here:
-            // 1) Get the value and cast it 
-            //      TStruct value = (TStruct)box.Value;
-            // 2) Rebox it:
-            //      Box<TStruct> reboxed = new Box<TStruct>(value);
-            // 3) Do the regular climb thingy. Now ownerForRoute is "reboxed", ownerValue is reboxed.Value (step 2).
-            // 4) Assign the reboxed value to the original value:
-            //      box.Value = reboxed.Value;
-            // 5) Get outta here.
-            // (TODO: you can avoid the 2nd and 4th step if structType == typeof(T))
-            var processor = Expression.Parameter(typeof(object), "processor");
-            var box = Expression.Parameter(typeof(Box<TField>), "box");
+            Expression<ClimbDelegate<T>> lambda =
+                Expression.Lambda<ClimbDelegate<T>>(climbBody,
+                    "Climb_" + runtimeType.Name,
+                    new[] {processor, value});
 
-            Expression value = Expression.Field(box, "Value");
-
-            Type boxType = typeof(Box<>).MakeGenericType(structType);
-
-            ParameterExpression reboxed = Expression.Variable(boxType, "reboxed");
-
-            ConstructorInfo boxCtor = 
-                boxType.GetConstructors().FirstOrDefault();
-
-            Expression assignReboxed =
-                Expression.Assign(reboxed,
-                    Expression.New(boxCtor, value.Convert(structType)));
-
-            Expression ownerValue = Expression.Field(reboxed, "Value");
-
-            BlockExpression climbBody =
-                GetClimbBody(structType, processor, reboxed, ownerValue);
-
-            Expression assignBox =
-                Expression.Assign(value, ownerValue.Convert<TField>());
-
-            BlockExpression body =
-                Expression.Block(new[] {reboxed},
-                    assignReboxed,
-                    climbBody,
-                    assignBox);
-
-            Expression<StructClimbDelegate<TField>> lambda =
-                Expression.Lambda<StructClimbDelegate<TField>>
-                    (body,
-                        "StructClimb_" + structType.Name,
-                        new[] {processor, box});
-
-            StructClimbDelegate<TField> result = 
-                _compiler.Compile(lambda);
+            ClimbDelegate<T> result = _compiler.Compile(lambda);
 
             return result;
         }
+
 
         private ClimbDelegate<T> CreateArrayDelegate<T>(Type runtimeType)
         {

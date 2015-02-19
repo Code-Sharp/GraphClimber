@@ -19,13 +19,9 @@ namespace GraphClimber
         }
 
         public Expression GetExpression
-            (Expression processor,
-                Expression value,
-                Expression owner,
-                IStateMember member,
-                Expression descriptor)
+            (Expression processor, Expression owner, IStateMember member, Expression descriptor)
         {
-            return _mutator.Mutate(Expression.Empty(), processor, value, owner, member, descriptor);
+            return _mutator.Mutate(Expression.Empty(), processor, owner, member, descriptor);
         }
     }
 }

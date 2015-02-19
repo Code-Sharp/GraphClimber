@@ -17,9 +17,9 @@ namespace GraphClimber
                 });
         }
 
-        public Expression Mutate(Expression oldExpression, Expression processor, Expression value, Expression owner, IStateMember member, Expression descriptor)
+        public Expression Mutate(Expression oldExpression, Expression processor, Expression owner, IStateMember member, Expression descriptor)
         {
-            return _mutator.Mutate(oldExpression, processor, value, owner, member, descriptor);
+            return _mutator.Mutate(oldExpression, processor, owner, member, descriptor);
         }
     }
 }

@@ -13,13 +13,13 @@ namespace GraphClimber
             _mutators = mutators;
         }
 
-        public Expression Mutate(Expression oldExpression, Expression processor, Expression value, Expression owner, IStateMember member, Expression descriptor)
+        public Expression Mutate(Expression oldExpression, Expression processor, Expression owner, IStateMember member, Expression descriptor)
         {
             Expression result = oldExpression;
             
             foreach (var mutator in _mutators)
             {
-                result = mutator.Mutate(result, processor, value, owner, member, descriptor);
+                result = mutator.Mutate(result, processor, owner, member, descriptor);
             }
 
             return result;

@@ -121,6 +121,14 @@ namespace GraphClimber
             }
         }
 
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get
+            {
+                return _property;
+            }
+        }
+
         public object GetValue(object owner)
         {
             return _property.GetValue(owner);
@@ -134,6 +142,8 @@ namespace GraphClimber
 
     public interface IReflectionStateMember : IStateMember
     {
+        MemberInfo UnderlyingMemberInfo { get; }
+
         object GetValue(object owner);
 
         void SetValue(object owner, object value);
@@ -534,6 +544,11 @@ namespace GraphClimber
             get { return _stateMember.ElementIndex; }
         }
 
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get { return _stateMember.UnderlyingMemberInfo; }
+        }
+
         public object GetValue(object owner)
         {
             return Convert.ChangeType(_stateMember.GetValue(owner), _underlyingType);
@@ -621,6 +636,11 @@ namespace GraphClimber
             {
                 return _indices;
             }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public object GetValue(object owner)

@@ -99,28 +99,23 @@ namespace GraphClimber
 
         private void ClimbStruct(TField value, Type type)
         {
+            object boxed = value;
+
+            ClimbDelegate<object> climbDelegate;
+
             if (type == typeof(TRuntime))
             {
-                Box<TRuntime> boxed = new Box<TRuntime>((TRuntime) value);
-
-                StructClimbDelegate<TRuntime> climbDelegate = Member.StructClimb;
-
-                climbDelegate(_processor, boxed);
-
-                SetField(boxed.Value);
+                 climbDelegate= Member.StructClimb;
             }
             else
             {
-                // Wow, we're screwed
-                Box<TField> boxed = new Box<TField>(value);
-
-                StructClimbDelegate<TField> climbDelegate =
-                    ClimbStore.GetStructClimb<TField>(type);
-
-                climbDelegate(_processor, boxed);
-
-                SetField(boxed.Value);
+                climbDelegate =
+                    ClimbStore.GetClimb<object>(type);
             }
+
+            climbDelegate(_processor, boxed);
+
+            SetField((TField)boxed);
         }
 
         protected abstract void SetField(TField value);

@@ -1,5 +1,7 @@
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Emit;
 using GraphClimber.ExpressionCompiler;
 using GraphClimber.ExpressionCompiler.Extensions;
 
@@ -49,49 +51,30 @@ namespace GraphClimber
 
         public Action<object, T> GetBoxSetter<T>(IStateMember member)
         {
-            ParameterExpression instance = Expression.Parameter(typeof(object));
-            ParameterExpression value = Expression.Parameter(typeof(T));
+            // TODO: this should be somewhere specific to the state member.
+            IReflectionStateMember stateMember = member as IReflectionStateMember;
+            PropertyInfo property = stateMember.UnderlyingMemberInfo as PropertyInfo;
 
-            Type boxType = GetBoxType(member);
+            // See http://stackoverflow.com/questions/18937935/how-to-mutate-a-boxed-struct-using-il
+            var dynamicMethod =
+                new DynamicMethod("BoxSetter_" + member.Name, typeof (void), new[] {typeof (object), typeof (T)},
+                    typeof (AccessorFactory).Module, true);
+            
+            var generator = dynamicMethod.GetILGenerator();
+            generator.Emit(OpCodes.Ldarg_0);                       // object
+            generator.Emit(OpCodes.Unbox, member.OwnerType);  // Struct&
+            generator.Emit(OpCodes.Ldarg_1);                       // Struct& T
+            generator.Emit(OpCodes.Call, property.SetMethod);                  // --empty--
+            generator.Emit(OpCodes.Ret);                           // --empty--
 
-            Expression casted = instance.Convert(boxType);
+            Action<object, T> result = (Action<object, T>) dynamicMethod.CreateDelegate(typeof (Action<object, T>));
 
-            Expression owner =
-                Expression.Field(casted, "Value");
-
-            Expression<Action<object, T>> lambda =
-                Expression.Lambda<Action<object, T>>
-                    (member.GetSetExpression(owner, value),
-                        "Setter_" + member.Name,
-                        new[] { instance, value });
-
-            return _compiler.Compile(lambda);
+            return result;
         }
 
         public Func<object, T> GetBoxGetter<T>(IStateMember member)
         {
-            ParameterExpression instance = Expression.Parameter(typeof(object));
-
-            Type boxType = GetBoxType(member);
-
-            Expression casted = instance.Convert(boxType);
-
-            Expression owner =
-                Expression.Field(casted, "Value")
-                    .Convert(typeof (object));
-
-            Expression<Func<object, T>> lambda =
-                Expression.Lambda<Func<object, T>>
-                    (GetGetterExpression<T>(member, owner),
-                        "BoxGetter_" + member.Name,
-                        new[] {instance});
-
-            return _compiler.Compile(lambda);
-        }
-
-        private static Type GetBoxType(IStateMember member)
-        {
-            return typeof (Box<>).MakeGenericType(member.OwnerType);
+            return GetGetter<T>(member);
         }
     }
 }
