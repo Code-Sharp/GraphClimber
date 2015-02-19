@@ -128,10 +128,23 @@ namespace GraphClimber
             };
         }
 
+        public class PersonHolder
+        {
+            public IPerson A { get; set; }
+            public IPerson B { get; set; }
+
+            public IPerson C { get; set; }
+        }
+
         private static void SerializeDeserializeBinary()
         {
-            var person = GetSimpleTypeInstance();
+            object person = GetSimpleTypeInstance();
 
+            IPerson structure = new Person2() {Age = 25};
+            person = new PersonHolder() {A = structure, B = structure, C = structure};
+
+            structure.IncreaseAge();
+            
             var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
 
             //var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(stateMemberProvider);
@@ -244,7 +257,7 @@ namespace GraphClimber
             //public IList<Person> Children { get; set; }
         }
 
-        internal struct Person2
+        internal struct Person2 : IPerson
         {
             public string Name { get; set; }
 
@@ -255,6 +268,10 @@ namespace GraphClimber
             public object Father { get; set; }
 
             public Days Day { get; set; }
+            public void IncreaseAge()
+            {
+                Age++;
+            }
         }
 
 
@@ -327,5 +344,12 @@ namespace GraphClimber
             };
 
         }   
+    }
+
+    public interface IPerson
+    {
+
+        void IncreaseAge();
+
     }
 }
