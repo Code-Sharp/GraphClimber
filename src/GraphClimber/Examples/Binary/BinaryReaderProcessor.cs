@@ -303,7 +303,15 @@ namespace GraphClimber.Examples
         {
             IStateMember underlying = descriptor.UnderlyingValueStateMember;
 
-            descriptor.Route(new BinaryStateMember(underlying),
+            bool handled = false;
+
+            var olderStateMember = descriptor.StateMember as BinaryStateMember;
+            if (olderStateMember != null && olderStateMember.HeaderHandled)
+            {
+                handled = true;
+            }
+
+            descriptor.Route(new BinaryStateMember(underlying, true, handled),
                 descriptor.Owner,
                 true);
 
