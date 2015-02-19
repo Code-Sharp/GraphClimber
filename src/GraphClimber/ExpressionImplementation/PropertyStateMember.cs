@@ -55,7 +55,7 @@ namespace GraphClimber
                 Expression.Assign(Expression.Property
                     (obj.Convert(_property.DeclaringType),
                         _property),
-                    value);
+                    value.Convert(_property.PropertyType));
         }
 
         public bool IsArrayElement
