@@ -107,6 +107,11 @@ namespace GraphClimber.Examples
             return _stateMember.GetSetExpression(obj, value);
         }
 
+        public Action<object, T> BuildSetterForBox<T>()
+        {
+            return _stateMember.BuildSetterForBox<T>();
+        }
+
         public bool IsArrayElement
         {
             get { return _stateMember.IsArrayElement; }

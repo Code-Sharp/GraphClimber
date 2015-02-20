@@ -159,7 +159,7 @@ namespace GraphClimber
 
         public IStateMember UnderlyingValueStateMember
         {
-            get { return StateMember.WithMemberType(typeof(TRuntime).GetEnumUnderlyingType()); }
+            get { return new EnumUnderlyingStateMember<TRuntime>(StateMember); }
         }
 
         #endregion

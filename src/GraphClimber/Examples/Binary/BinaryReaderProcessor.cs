@@ -280,7 +280,7 @@ namespace GraphClimber.Examples
         }
 
         [ProcessorMethod]
-        public void ProcessEnumForWriteOnly<[IsEnum]TEnum, TUnderlying>
+        public void ProcessEnumForWriteOnly<[IsEnum] TEnum, TUnderlying>
             (IEnumReadWriteExactValueDescriptor<TEnum, TUnderlying> descriptor)
             where TUnderlying : IConvertible
             where TEnum : IConvertible
@@ -298,9 +298,6 @@ namespace GraphClimber.Examples
             descriptor.Route(new BinaryStateMember(underlying, true, handled),
                 descriptor.Owner,
                 true);
-
-            // This is some patchy patch :D
-            descriptor.SetUnderlying(descriptor.GetUnderlying());
         }
     }
 }

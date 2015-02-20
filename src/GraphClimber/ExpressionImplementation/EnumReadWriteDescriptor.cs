@@ -19,12 +19,9 @@ namespace GraphClimber
 
         public TUnderlying GetUnderlying()
         {
-            return (TUnderlying) (object) Get();
-        }
-
-        public new TField Get()
-        {
-            return base.Get();
+            TRuntime asEnum = Get();
+            TUnderlying underlying = EnumConvert<TRuntime, TUnderlying>.ToUnderlying(asEnum);
+            return underlying;
         }
     }
 
@@ -45,7 +42,8 @@ namespace GraphClimber
 
         public void SetUnderlying(TUnderlying value)
         {
-            Set((TField) (object) value);
+            TField @enum = EnumConvert<TField, TUnderlying>.ToEnum(value);
+            Set(@enum);
         }
     }
 
@@ -72,12 +70,15 @@ namespace GraphClimber
 
         public TUnderlying GetUnderlying()
         {
-            return (TUnderlying)(object)Get();
+            TRuntime asEnum = (TRuntime)Get();
+            TUnderlying underlying = EnumConvert<TRuntime, TUnderlying>.ToUnderlying(asEnum);
+            return underlying;
         }
 
         public void SetUnderlying(TUnderlying value)
         {
-            Set((TRuntime)(object)value);
+            TRuntime @enum = EnumConvert<TRuntime, TUnderlying>.ToEnum(value);
+            Set(@enum);
         }
 
         public void Set(TRuntime value)

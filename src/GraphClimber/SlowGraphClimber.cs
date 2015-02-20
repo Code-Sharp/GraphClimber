@@ -107,6 +107,11 @@ namespace GraphClimber
             throw new NotImplementedException();
         }
 
+        public Action<object, T> BuildSetterForBox<T>()
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsArrayElement
         {
             get { return false; }
@@ -534,6 +539,11 @@ namespace GraphClimber
             return _stateMember.GetSetExpression(obj, value);
         }
 
+        public Action<object, T> BuildSetterForBox<T>()
+        {
+            return _stateMember.BuildSetterForBox<T>();
+        }
+
         public bool IsArrayElement
         {
             get { return _stateMember.IsArrayElement; }
@@ -618,6 +628,11 @@ namespace GraphClimber
         }
 
         public Expression GetSetExpression(Expression obj, Expression value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Action<object, T> BuildSetterForBox<T>()
         {
             throw new NotImplementedException();
         }

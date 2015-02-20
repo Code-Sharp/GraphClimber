@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,10 +8,38 @@ using GraphClimber.Examples;
 using GraphClimber.Examples.Binary;
 using GraphClimber.ExpressionCompiler;
 using GraphClimber.ExpressionCompiler.Extensions;
-using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber
 {
+    internal class EnumConvert<TEnum, TUnderlying>
+    {
+        public static readonly Func<TEnum, TUnderlying> ToUnderlying = GetToUnderlying();
+        public static readonly Func<TUnderlying, TEnum> ToEnum = GetToEnum();
+
+        private static Func<TEnum, TUnderlying> GetToUnderlying()
+        {
+            return GetConvert<TEnum, TUnderlying>();
+        }
+
+        private static Func<TUnderlying, TEnum> GetToEnum()
+        {
+            return GetConvert<TUnderlying, TEnum>();
+        }
+
+
+        private static Func<TSource, TTarget> GetConvert<TSource, TTarget>()
+        {
+            var parameter = Expression.Parameter(typeof(TSource), "value");
+
+            Expression<Func<TSource, TTarget>> lambda =
+                Expression.Lambda<Func<TSource, TTarget>>
+                    (Expression.Convert(parameter, typeof (TTarget)),
+                        parameter);
+
+            return lambda.Compile();
+        } 
+    
+    }
 
     enum Days
     {

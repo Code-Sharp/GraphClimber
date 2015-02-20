@@ -52,6 +52,11 @@ namespace GraphClimber.ValueDescriptor
             return Expression.Empty();
         }
 
+        public Action<object, T> BuildSetterForBox<T>()
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsArrayElement
         {
             get { return false; }
@@ -120,6 +125,11 @@ namespace GraphClimber.ValueDescriptor
         }
 
         public Expression GetSetExpression(Expression obj, Expression value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Action<object, T1> BuildSetterForBox<T1>()
         {
             throw new NotImplementedException();
         }
@@ -197,6 +207,11 @@ namespace GraphClimber.ValueDescriptor
         public Expression GetSetExpression(Expression obj, Expression value)
         {
             return Expression.Invoke(_setValue.Constant(), value);
+        }
+
+        public Action<object, T> BuildSetterForBox<T>()
+        {
+            throw new NotImplementedException();
         }
 
         public bool IsArrayElement
@@ -279,6 +294,11 @@ namespace GraphClimber.ValueDescriptor
         public Expression GetSetExpression(Expression obj, Expression value)
         {
             return Expression.Invoke(_setValue.Constant(), value);
+        }
+
+        public Action<object, T1> BuildSetterForBox<T1>()
+        {
+            throw new NotImplementedException();
         }
 
         public bool IsArrayElement

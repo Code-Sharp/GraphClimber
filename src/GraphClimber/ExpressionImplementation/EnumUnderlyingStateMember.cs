@@ -5,7 +5,7 @@ using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
-    internal class EnumUnderlyingStateMember : IStateMember, IReflectionStateMember
+    internal class EnumUnderlyingStateMember<TEnum> : IStateMember, IReflectionStateMember
     {
         private readonly IStateMember _underlying;
 
@@ -26,7 +26,7 @@ namespace GraphClimber
 
         public Type MemberType
         {
-            get { return _underlying.MemberType.GetEnumUnderlyingType(); }
+            get { return typeof(TEnum).GetEnumUnderlyingType(); }
         }
 
         public bool CanRead
@@ -49,6 +49,21 @@ namespace GraphClimber
             return _underlying.GetSetExpression(obj, value.Convert(_underlying.MemberType));
         }
 
+        public Action<object, T> BuildSetterForBox<T>()
+        {
+            // TODO: make this "BuildSetterForBox" thingy more composite,
+            // TODO: so we won't call for 3 methods for a setter of a boxed enum.
+            Action<object, TEnum> underlyingSet = 
+                _underlying.BuildSetterForBox<TEnum>();
+
+            Func<T, TEnum> toEnum = EnumConvert<TEnum, T>.ToEnum;
+
+            Action<object, T> result = (instance, value) =>
+                underlyingSet(instance, toEnum(value));
+
+            return result;
+        }
+
         public bool IsArrayElement
         {
             get { return _underlying.IsArrayElement; }
@@ -59,7 +74,7 @@ namespace GraphClimber
             get { return _underlying.ElementIndex; }
         }
 
-        protected bool Equals(EnumUnderlyingStateMember other)
+        protected bool Equals(EnumUnderlyingStateMember<TEnum> other)
         {
             return Equals(_underlying, other._underlying);
         }
@@ -69,7 +84,7 @@ namespace GraphClimber
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((EnumUnderlyingStateMember) obj);
+            return Equals((EnumUnderlyingStateMember<TEnum>)obj);
         }
 
         public override int GetHashCode()

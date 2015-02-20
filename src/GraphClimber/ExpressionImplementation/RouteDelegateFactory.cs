@@ -43,8 +43,6 @@ namespace GraphClimber
             MethodCallExpression callProcess =
                 Expression.Call(castedProcessor, methodToCall, descriptor.Reference);
 
-            Expression value = GetGetExpression(member, owner);
-
             Expression callProcessWithSpecialMethods =
                 _specialMutator.Mutate(callProcess, castedProcessor, owner, member, descriptor.Reference);
 
@@ -61,16 +59,6 @@ namespace GraphClimber
                     new[] {processor, owner, skipSpecialMethods});
 
             return _compiler.Compile(lambda);
-        }
-
-        private static Expression GetGetExpression(IStateMember member, ParameterExpression owner)
-        {
-            if (member.CanRead)
-            {
-                return member.GetGetExpression(owner);                
-            }
-
-            return Expression.Empty();
         }
     }
 }
