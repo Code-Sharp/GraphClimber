@@ -1,11 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using GraphClimber.Bulks;
 using GraphClimber.Examples.Binary;
 
 namespace GraphClimber.Examples
 {
+    internal class BinaryReaderWriterExtensions
+    {
+        public static bool IsPredefinedType(Type type)
+        {
+            return type.IsPrimitive || type.IsEnum ||
+                   type == typeof(string) || type == typeof(DateTime);
+        }
+    }
+
     internal class BinaryReaderProcessor : IWriteOnlyExactPrimitiveProcessor
     {
         private readonly IList<object> _objects = new List<object>();
@@ -14,29 +22,6 @@ namespace GraphClimber.Examples
         public BinaryReaderProcessor(IReader reader)
         {
             _reader = reader;
-        }
-
-        [ProcessorMethod(OnlyOnRoute = true, Precedence = 1)]
-        public void ProcessObjectAgain(IWriteOnlyExactValueDescriptor<object> descriptor)
-        {
-            descriptor.Set(new object());
-        }
-
-        [ProcessorMethod(Precedence = 98)]
-        public void ProcessObject(IWriteOnlyExactValueDescriptor<object> descriptor)
-        {
-            Type type;
-
-            if (TryReadReferenceType(descriptor, out type))
-            {               
-                descriptor.Route(
-                    new BinaryStateMember(
-                        new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, type),
-                        true,
-                        true),
-                    descriptor.Owner,
-                    true);
-            }
         }
 
         [ProcessorMethod(Precedence = 102)]
@@ -56,18 +41,17 @@ namespace GraphClimber.Examples
 
             if (TryReadReferenceType(descriptor, out type))
             {
-                // Do not create instance when value type, Just route to it.
-                if (type.IsValueType)
+                // Do not create instance when predefined type, Just route to it.
+                if (BinaryReaderWriterExtensions.IsPredefinedType(type))
                 {
                     descriptor.Route(
-                    new BinaryStateMember(
-                        new MyCustomStateMember((IReflectionStateMember)descriptor.StateMember, type),
-                        true,
-                        true),
-                    descriptor.Owner,
-                    true);
-
-                    _objects.Add(((IReadOnlyExactValueDescriptor<T>)descriptor).Get());
+                        new BinaryStateMember
+                            (new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember,
+                                type),
+                                true,
+                                true),
+                        descriptor.Owner,
+                        true);
 
                     return;
                 }

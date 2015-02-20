@@ -122,8 +122,8 @@ namespace GraphClimber
         {
             return new SimpleType()
             {
-                Convertible = Days.Monday,
-                SomeValueType = 5,
+                Convertible = "sadasd",
+                SomeValueType = Days.Monday,
                 String = "Hello W0rld"
             };
         }
@@ -140,8 +140,8 @@ namespace GraphClimber
         {
             object person = GetSimpleTypeInstance();
 
-            IPerson structure = new Person2() {Age = 25, Surprise = Days.Monday};
-            person = new PersonHolder() {A = structure, B = structure, C = structure};
+            IPerson structure = new Person2() { Age = 25, Surprise = Days.Monday };
+            person = new PersonHolder() { A = structure, B = structure, C = structure };
 
             structure.IncreaseAge();
             

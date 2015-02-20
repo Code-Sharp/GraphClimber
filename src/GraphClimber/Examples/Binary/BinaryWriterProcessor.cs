@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using GraphClimber.Bulks;
 using GraphClimber.Examples.Binary;
-using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber.Examples
 {
@@ -17,10 +14,30 @@ namespace GraphClimber.Examples
         public const byte UnknownType = 4;
     }
 
-    class BinaryWriterProcessor : IReadOnlyPrimitiveProcessor, INullProcessor, IRevisitedProcessor
+    class ReferenceEqualityComparer : IEqualityComparer<object>
+    {
+        public bool Equals(object x, object y)
+        {
+            return ReferenceEquals(x, y);
+        }
+
+        public int GetHashCode(object obj)
+        {
+            if (obj == null)
+            {
+                return 0;
+            }
+
+            return obj.GetHashCode();
+        }
+    }
+
+    class BinaryWriterProcessor : IReadOnlyExactPrimitiveProcessor, INullProcessor, IRevisitedProcessor
     {
         private readonly IWriter _writer;
-        private readonly IDictionary<object, int> _visitedHash = new Dictionary<object, int>();
+
+        private readonly IDictionary<object, int> _visitedHash = 
+            new Dictionary<object, int>(new ReferenceEqualityComparer());
 
         public BinaryWriterProcessor(IWriter writer)
         {
@@ -45,27 +62,7 @@ namespace GraphClimber.Examples
         public void ProcessObjectOnly(IReadOnlyExactValueDescriptor<object> descriptor)
         {
             // Does nothing.
-        }
-
-        [ProcessorMethod(Precedence = 97)]
-        // Processes when the field type is exactly object.
-        public void ProcessObject(IReadWriteValueDescriptor<object> descriptor)
-        {
-            object objectToSerialize = descriptor.Get();
-            
-            BinaryStateMember member = descriptor.StateMember as BinaryStateMember;
-            
-            Type runtimeType = objectToSerialize.GetType();
-            
-            WriteAssemblyQualifiedNameIfNeeded(member, runtimeType);
-
-            descriptor.Route(
-                new BinaryStateMember(
-                    new MyCustomStateMember((IReflectionStateMember) descriptor.StateMember, runtimeType),
-                    true,
-                    true),
-                descriptor.Owner,
-                true);
+            WriteAssemblyQualifiedNameIfNeeded(descriptor);
         }
 
         private void WriteAssemblyQualifiedNameIfNeeded(BinaryStateMember member, Type runtimeType)
@@ -98,7 +95,7 @@ namespace GraphClimber.Examples
             }
         }
 
-        private void WriteAssemblyQualifiedNameIfNeeded<T>(IReadOnlyValueDescriptor<T> descriptor)
+        private void WriteAssemblyQualifiedNameIfNeeded<T>(IReadOnlyExactValueDescriptor<T> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded
                 (descriptor.StateMember as BinaryStateMember,
@@ -116,7 +113,7 @@ namespace GraphClimber.Examples
         }
 
         [ProcessorMethod]
-        public void ProcessArray<[IsArray]TArray>(IReadOnlyValueDescriptor<TArray> descriptor)
+        public void ProcessArray<[IsArray]TArray>(IReadOnlyExactValueDescriptor<TArray> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
 
@@ -157,77 +154,77 @@ namespace GraphClimber.Examples
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<byte> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<byte> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<sbyte> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<sbyte> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<short> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<short> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<ushort> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<ushort> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<int> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<int> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<uint> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<uint> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<long> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<long> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<ulong> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<ulong> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<char> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<char> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<double> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<double> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get());
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<string> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<string> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
 
@@ -235,7 +232,7 @@ namespace GraphClimber.Examples
         }
 
         [ProcessorMethod]
-        public void ProcessForReadOnly(IReadOnlyValueDescriptor<DateTime> descriptor)
+        public void ProcessForReadOnly(IReadOnlyExactValueDescriptor<DateTime> descriptor)
         {
             WriteAssemblyQualifiedNameIfNeeded(descriptor);
             _writer.Write(descriptor.Get().Ticks);
@@ -253,12 +250,12 @@ namespace GraphClimber.Examples
                 return true;
             }
 
-            Type type = obj.GetType();
-
-            if (!type.IsPrimitive && type != typeof(DateTime))
+            if (BinaryReaderWriterExtensions.IsPredefinedType(obj.GetType()))
             {
-                _visitedHash[obj] = _visitedHash.Count;                
+                return false;
             }
+
+            _visitedHash[obj] = _visitedHash.Count;
 
             return false;
         }
