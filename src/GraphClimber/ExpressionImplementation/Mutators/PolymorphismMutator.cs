@@ -9,11 +9,12 @@ namespace GraphClimber
 {
     internal class PolymorphismMutator : IMethodMutator
     {
-        private static readonly MethodInfo _routeMethod = typeof (IValueDescriptor)
-            .GetMethods()
-            .FirstOrDefault(x => x.Name == "Route" && x.GetParameters().Length == 4);
+        private static readonly MethodInfo _routeMethod =
+            Method.Get((IValueDescriptor descriptor) =>
+                descriptor.Route(default(IStateMember), default(Type), default(object), default(bool)));
 
-        private static readonly MethodInfo _getTypeMethod = typeof(object).GetMethod("GetType");
+        private static readonly MethodInfo _getTypeMethod = 
+            Method.Get((object instance) => instance.GetType());
 
         public Expression Mutate(Expression oldExpression, Expression processor, Expression owner, IStateMember member, Expression descriptor)
         {

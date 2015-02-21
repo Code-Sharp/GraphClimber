@@ -7,7 +7,10 @@ namespace GraphClimber
 {
     internal class NullProcessorMutator : IMethodMutator
     {
-        private static readonly MethodInfo _processNull = typeof (INullProcessor).GetMethod("ProcessNull");
+        private static readonly MethodInfo _processNull =
+            Method.Get((INullProcessor processor) =>
+                processor.ProcessNull<object>(default(IWriteOnlyValueDescriptor<object>)))
+                .GetGenericMethodDefinition();
 
         private readonly bool _nullProcessorImplemented;
 

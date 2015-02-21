@@ -142,6 +142,7 @@
     <Compile Include="IRevisitedProcessor.cs" />
     <Compile Include="IStateMember.cs" />
     <Compile Include="IStateMemberProvider.cs" />
+    <Compile Include="Utilities\Method.cs" />
     <Compile Include="Utilities\SwapDictionary.cs" />
     <Compile Include="ValueDescriptor\DelegateStateMember.cs" />
     <Compile Include="ValueDescriptor\IEnumValueDescriptor.cs" />

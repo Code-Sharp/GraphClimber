@@ -8,10 +8,12 @@ namespace GraphClimber
     internal class RevisitedMutator : IMethodMutator
     {
         private static readonly MethodInfo _visitedMethod =
-            typeof (IRevisitedFilter).GetMethod("Visited");
+            Method.Get((IRevisitedFilter filter) => filter.Visited(default(object)));
 
         private static readonly MethodInfo _processRevisitedMethod =
-            typeof (IRevisitedProcessor).GetMethod("ProcessRevisited");
+            Method.Get((IRevisitedProcessor filter) =>
+                filter.ProcessRevisited<object>(default(IReadWriteValueDescriptor<object>)))
+                .GetGenericMethodDefinition();
 
         private readonly bool _isRevisitedFilter;
 
