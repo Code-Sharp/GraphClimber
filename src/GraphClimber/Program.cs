@@ -171,7 +171,8 @@ namespace GraphClimber
 
             structure.IncreaseAge();
             
-            var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
+            //var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
+            var stateMemberProvider = new BinaryStateMemberProvider(new PropertyStateMemberProvider());
 
             //var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(stateMemberProvider);
             //var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(stateMemberProvider);
@@ -179,32 +180,35 @@ namespace GraphClimber
             var stream = new MemoryStream();
             var binaryWriterProcessor = new BinaryWriterProcessor(new LoggingWriter(new CompressingWriter(new BinaryWriterAdapter(new BinaryWriter(stream))), Console.Out));
 
-            ClimbStore store2 = new ClimbStore(binaryWriterProcessor.GetType(),
-                new BinaryStateMemberProvider(new PropertyStateMemberProvider()),
-                new MethodMapper(),
-                new TrivialExpressionCompiler());
+            var writerGraphClimber = DefaultGraphClimber<BinaryWriterProcessor>.Create(stateMemberProvider);
 
-            ClimbDelegate<StrongBox<object>> climb2 = 
-                store2.GetClimb<StrongBox<object>>(typeof(StrongBox<object>));
+            //ClimbDelegate<StrongBox<object>> climb2 = 
+            //    store2.GetClimb<StrongBox<object>>(typeof(StrongBox<object>));
 
-            climb2(binaryWriterProcessor,
-                new StrongBox<object>(person));
+            //climb2(binaryWriterProcessor,
+            //    new StrongBox<object>(person));
+
+            writerGraphClimber.Climb(new StrongBox<object>(person), binaryWriterProcessor);
 
             //writeClimber.Route(person, binaryWriterProcessor, false);
             
             stream.Position = 0;
             var binaryReaderProcessor = new BinaryReaderProcessor(new LoggingReader(new DecompressingReader(new BinaryReaderAdapter(new BinaryReader(stream))), Console.Out));
 
+            var readerGraphClimber = DefaultGraphClimber<BinaryReaderProcessor>.Create(stateMemberProvider);
             var strongBox = new StrongBox<object>();
 
-            ClimbStore store = new ClimbStore(binaryReaderProcessor.GetType(),
-                new BinaryStateMemberProvider(new PropertyStateMemberProvider()), 
-                new MethodMapper(),
-                new TrivialExpressionCompiler());
+            readerGraphClimber.Climb(strongBox, binaryReaderProcessor);
 
-            ClimbDelegate<StrongBox<object>> climb = store.GetClimb<StrongBox<object>>(typeof (StrongBox<object>));
 
-            climb(binaryReaderProcessor, strongBox);
+            //ClimbStore store = new ClimbStore(binaryReaderProcessor.GetType(),
+            //    new BinaryStateMemberProvider(new PropertyStateMemberProvider()), 
+            //    new MethodMapper(),
+            //    new TrivialExpressionCompiler());
+
+            //ClimbDelegate<StrongBox<object>> climb = store.GetClimb<StrongBox<object>>(typeof (StrongBox<object>));
+
+            //climb(binaryReaderProcessor, strongBox);
         }
 
         private static void SerializeDeserializeXML()

@@ -126,6 +126,7 @@
     <Compile Include="ExpressionImplementation\RouteDelegate.cs" />
     <Compile Include="ExpressionImplementation\DelegateCache\RouteDelegateCache.cs" />
     <Compile Include="ExpressionImplementation\RouteDelegateFactory.cs" />
+    <Compile Include="ExpressionImplementation\DefaultGraphClimber.cs" />
     <Compile Include="ExpressionImplementation\ValueDescriptor.cs" />
     <Compile Include="ExpressionImplementation\WriteOnlyDescriptor.cs" />
     <Compile Include="GenericArgumentBinder.cs" />

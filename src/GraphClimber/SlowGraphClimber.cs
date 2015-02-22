@@ -693,6 +693,11 @@ namespace GraphClimber
             descriptor.Climb();
         }
 
+        public void Route(IStateMember stateMember, object current, TProcessor processor, bool skipSpecialMethod)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Route(object current, TProcessor processor, bool skipSpecialMethod)
         {
             var descriptor = GetDescriptor(current, processor);
