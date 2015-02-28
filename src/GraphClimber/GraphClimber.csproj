@@ -35,7 +35,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -45,7 +45,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -65,10 +65,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bulks\IPrimitiveProcessor.cs" />
+    <Compile Include="DescriptorExtensionMethods.cs" />
     <Compile Include="Examples\Binary\BinaryReaderProcessor.cs" />
     <Compile Include="Examples\Binary\BinaryStateMemberProvider.cs" />
     <Compile Include="Examples\Binary\BinaryWriterProcessor.cs" />
     <Compile Include="Examples\Binary\IsArrayAttribute.cs" />
+    <Compile Include="Examples\Binary\IWriter.cs" />
     <Compile Include="Examples\Extractor\Extractor.cs" />
     <Compile Include="Examples\Extractor\ExtractorProcessor.cs" />
     <Compile Include="Examples\Store\IStore.cs" />
@@ -88,8 +90,45 @@
     <Compile Include="ExpressionCompiler\Extensions\ExpressionExtensions.cs" />
     <Compile Include="ExpressionCompiler\IExpressionCompiler.cs" />
     <Compile Include="ExpressionCompiler\IExpressionDescriber.cs" />
+    <Compile Include="ExpressionCompiler\NonTrivialConstantVisitor.cs" />
     <Compile Include="ExpressionCompiler\StringExtensions.cs" />
     <Compile Include="ExpressionCompiler\TrivialExpressionCompiler.cs" />
+    <Compile Include="ExpressionImplementation\ClimbDelegateFactory.cs" />
+    <Compile Include="ExpressionImplementation\ClimbDelegate.cs" />
+    <Compile Include="ExpressionImplementation\AccessorFactory.cs" />
+    <Compile Include="ExpressionImplementation\ClimbStore.cs" />
+    <Compile Include="ExpressionImplementation\DelegateCache\AccessorDelegateCache.cs" />
+    <Compile Include="ExpressionImplementation\DelegateCache\ClimbDelegateCache.cs" />
+    <Compile Include="ExpressionImplementation\DelegateCache\DelegateCache.cs" />
+    <Compile Include="ExpressionImplementation\DescriptorExtensions.cs" />
+    <Compile Include="ExpressionImplementation\DescriptorVariable.cs" />
+    <Compile Include="ExpressionImplementation\DescriptorWriter.cs" />
+    <Compile Include="ExpressionImplementation\EnumReadWriteDescriptor.cs" />
+    <Compile Include="ExpressionImplementation\EnumUnderlyingStateMember.cs" />
+    <Compile Include="ExpressionImplementation\IAccessorFactory.cs" />
+    <Compile Include="ExpressionImplementation\IClimbStore.cs" />
+    <Compile Include="ExpressionImplementation\IDescriptorWriter.cs" />
+    <Compile Include="ExpressionImplementation\Mutators\CallProcessMutator.cs" />
+    <Compile Include="ExpressionImplementation\Mutators\CompositeMutator.cs" />
+    <Compile Include="ExpressionImplementation\Mutators\IMethodMutator.cs" />
+    <Compile Include="ExpressionImplementation\Mutators\MethodCallMutator.cs" />
+    <Compile Include="ExpressionImplementation\Mutators\NullProcessorMutator.cs" />
+    <Compile Include="ExpressionImplementation\Mutators\PolymorphismMutator.cs" />
+    <Compile Include="ExpressionImplementation\Mutators\RevisitedMutator.cs" />
+    <Compile Include="ExpressionImplementation\Mutators\SpecialMethodMutator.cs" />
+    <Compile Include="ExpressionImplementation\PropertyStateMember.cs" />
+    <Compile Include="ExpressionImplementation\PropertyStateMemberProvider.cs" />
+    <Compile Include="ExpressionImplementation\ReadWriteDescriptor.cs" />
+    <Compile Include="ExpressionImplementation\IMethodMapper.cs" />
+    <Compile Include="ExpressionImplementation\MemberLocal.cs" />
+    <Compile Include="ExpressionImplementation\MethodMapper.cs" />
+    <Compile Include="ExpressionImplementation\ReadOnlyDescriptor.cs" />
+    <Compile Include="ExpressionImplementation\RouteDelegate.cs" />
+    <Compile Include="ExpressionImplementation\DelegateCache\RouteDelegateCache.cs" />
+    <Compile Include="ExpressionImplementation\RouteDelegateFactory.cs" />
+    <Compile Include="ExpressionImplementation\DefaultGraphClimber.cs" />
+    <Compile Include="ExpressionImplementation\ValueDescriptor.cs" />
+    <Compile Include="ExpressionImplementation\WriteOnlyDescriptor.cs" />
     <Compile Include="GenericArgumentBinder.cs" />
     <Compile Include="IEnumProcessor.cs" />
     <Compile Include="IGenericParameterFilter.cs" />
@@ -104,6 +143,8 @@
     <Compile Include="IRevisitedProcessor.cs" />
     <Compile Include="IStateMember.cs" />
     <Compile Include="IStateMemberProvider.cs" />
+    <Compile Include="Utilities\Method.cs" />
+    <Compile Include="Utilities\SwapDictionary.cs" />
     <Compile Include="ValueDescriptor\DelegateStateMember.cs" />
     <Compile Include="ValueDescriptor\IEnumValueDescriptor.cs" />
     <Compile Include="ValueDescriptor\IReadOnlyValueDescriptor.cs" />

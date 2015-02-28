@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using GraphClimber.ExpressionCompiler.Extensions;
 
@@ -31,6 +32,16 @@ namespace GraphClimber.ValueDescriptor
             get { return typeof(object); }
         }
 
+        public bool CanRead
+        {
+            get { return true; }
+        }
+
+        public bool CanWrite
+        {
+            get { return false; }
+        }
+
         public Expression GetGetExpression(Expression obj)
         {
             return _value.Constant();
@@ -41,12 +52,22 @@ namespace GraphClimber.ValueDescriptor
             return Expression.Empty();
         }
 
+        public Action<object, T> BuildSetterForBox<T>()
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsArrayElement
         {
             get { return false; }
         }
 
         public int[] ElementIndex
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
         {
             get { throw new NotImplementedException(); }
         }
@@ -88,6 +109,16 @@ namespace GraphClimber.ValueDescriptor
             get { return typeof (T); }
         }
 
+        public bool CanRead
+        {
+            get { return true; }
+        }
+
+        public bool CanWrite
+        {
+            get { return true; }
+        }
+
         public Expression GetGetExpression(Expression obj)
         {
             throw new NotImplementedException();
@@ -98,12 +129,22 @@ namespace GraphClimber.ValueDescriptor
             throw new NotImplementedException();
         }
 
+        public Action<object, T1> BuildSetterForBox<T1>()
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsArrayElement
         {
             get { return false; }
         }
 
         public int[] ElementIndex
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
         {
             get { throw new NotImplementedException(); }
         }
@@ -148,6 +189,16 @@ namespace GraphClimber.ValueDescriptor
             get { return _memberType; }
         }
 
+        public bool CanRead
+        {
+            get { return true; }
+        }
+
+        public bool CanWrite
+        {
+            get { return true; }
+        }
+
         public Expression GetGetExpression(Expression obj)
         {
             return Expression.Invoke(_getValue.Constant());
@@ -158,6 +209,11 @@ namespace GraphClimber.ValueDescriptor
             return Expression.Invoke(_setValue.Constant(), value);
         }
 
+        public Action<object, T> BuildSetterForBox<T>()
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsArrayElement
         {
             get { return false; }
@@ -166,6 +222,11 @@ namespace GraphClimber.ValueDescriptor
         public int[] ElementIndex
         {
             get { throw new NotSupportedException(); }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public object GetValue(object owner)
@@ -215,6 +276,16 @@ namespace GraphClimber.ValueDescriptor
             get { return typeof (T); }
         }
 
+        public bool CanRead
+        {
+            get { return true; }
+        }
+
+        public bool CanWrite
+        {
+            get { return true; }
+        }
+
         public Expression GetGetExpression(Expression obj)
         {
             return Expression.Invoke(_getValue.Constant());
@@ -225,6 +296,11 @@ namespace GraphClimber.ValueDescriptor
             return Expression.Invoke(_setValue.Constant(), value);
         }
 
+        public Action<object, T1> BuildSetterForBox<T1>()
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsArrayElement
         {
             get { return false; }
@@ -233,6 +309,11 @@ namespace GraphClimber.ValueDescriptor
         public int[] ElementIndex
         {
             get { throw new NotSupportedException(); }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public object GetValue(object owner)

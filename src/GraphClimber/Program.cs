@@ -1,18 +1,46 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using GraphClimber.Examples;
+using GraphClimber.Examples.Binary;
 using GraphClimber.ExpressionCompiler;
 using GraphClimber.ExpressionCompiler.Extensions;
-using GraphClimber.ValueDescriptor;
 
 namespace GraphClimber
 {
+    internal class EnumConvert<TEnum, TUnderlying>
+    {
+        public static readonly Func<TEnum, TUnderlying> ToUnderlying = GetToUnderlying();
+        public static readonly Func<TUnderlying, TEnum> ToEnum = GetToEnum();
+
+        private static Func<TEnum, TUnderlying> GetToUnderlying()
+        {
+            return GetConvert<TEnum, TUnderlying>();
+        }
+
+        private static Func<TUnderlying, TEnum> GetToEnum()
+        {
+            return GetConvert<TUnderlying, TEnum>();
+        }
+
+
+        private static Func<TSource, TTarget> GetConvert<TSource, TTarget>()
+        {
+            var parameter = Expression.Parameter(typeof(TSource), "value");
+
+            Expression<Func<TSource, TTarget>> lambda =
+                Expression.Lambda<Func<TSource, TTarget>>
+                    (Expression.Convert(parameter, typeof (TTarget)),
+                        parameter);
+
+            return lambda.Compile();
+        } 
+    
+    }
+
     enum Days
     {
         Sunday,
@@ -78,6 +106,19 @@ namespace GraphClimber
         
     }
 
+    class SimpleType
+    {
+
+
+        public ValueType SomeValueType { get; set; }
+
+        public string String { get; set; }
+
+        public IConvertible Convertible { get; set; }
+
+
+    }
+
     public class Program
     {
         private static readonly IStateMemberProvider _stateMemberProvider = new CachingStateMemberProvider(new ReflectionPropertyStateMemberProvider());
@@ -90,7 +131,7 @@ namespace GraphClimber
 
         static void Main(string[] args)
         {
-            ExpressionDebugGames.Play();
+            //ExpressionDebugGames.Play();
             //IStore store = new TrivialStore();
 
             //store.Set("A", 5);
@@ -98,30 +139,76 @@ namespace GraphClimber
 
             //SerializeDeserializeXML();
 
-            SerializeDeserializeStore();
+            //SerializeDeserializeStore();
 
-            //SerializeDeserializeBinary();
+            SerializeDeserializeBinary();
+        }
+
+        public static object GetSimpleTypeInstance()
+        {
+            return new SimpleType()
+            {
+                Convertible = "sadasd",
+                SomeValueType = Days.Monday,
+                String = "Hello W0rld"
+            };
+        }
+
+        public class PersonHolder
+        {
+            public IPerson A { get; set; }
+            public IPerson B { get; set; }
+
+            public IPerson C { get; set; }
         }
 
         private static void SerializeDeserializeBinary()
         {
-            var person = GetPerson2();
+            object person = GetSimpleTypeInstance();
 
-            var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
+            IPerson structure = new Person2() { Age = 25, Surprise = Days.Monday };
+            person = new PersonHolder() { A = structure, B = structure, C = structure };
 
-            var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(stateMemberProvider);
-            var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(stateMemberProvider);
+            structure.IncreaseAge();
+            
+            //var stateMemberProvider = new BinaryStateMemberProvider(_stateMemberProvider);
+            var stateMemberProvider = new BinaryStateMemberProvider(new PropertyStateMemberProvider());
+
+            //var writeClimber = new SlowGraphClimber<BinaryWriterProcessor>(stateMemberProvider);
+            //var readClimber = new SlowGraphClimber<BinaryReaderProcessor>(stateMemberProvider);
 
             var stream = new MemoryStream();
-            var binaryWriterProcessor = new BinaryWriterProcessor(new SuperBinaryWriter(stream));
+            var binaryWriterProcessor = new BinaryWriterProcessor(new LoggingWriter(new CompressingWriter(new BinaryWriterAdapter(new BinaryWriter(stream))), Console.Out));
 
-            writeClimber.Route(person, binaryWriterProcessor, false);
+            var writerGraphClimber = DefaultGraphClimber<BinaryWriterProcessor>.Create(stateMemberProvider);
+
+            //ClimbDelegate<StrongBox<object>> climb2 = 
+            //    store2.GetClimb<StrongBox<object>>(typeof(StrongBox<object>));
+
+            //climb2(binaryWriterProcessor,
+            //    new StrongBox<object>(person));
+
+            writerGraphClimber.Climb(new StrongBox<object>(person), binaryWriterProcessor);
+
+            //writeClimber.Route(person, binaryWriterProcessor, false);
             
             stream.Position = 0;
-            var binaryReaderProcessor = new BinaryReaderProcessor(new SuperBinaryReader(stream));
+            var binaryReaderProcessor = new BinaryReaderProcessor(new LoggingReader(new DecompressingReader(new BinaryReaderAdapter(new BinaryReader(stream))), Console.Out));
 
+            var readerGraphClimber = DefaultGraphClimber<BinaryReaderProcessor>.Create(stateMemberProvider);
             var strongBox = new StrongBox<object>();
-            readClimber.Climb(strongBox, binaryReaderProcessor);
+
+            readerGraphClimber.Climb(strongBox, binaryReaderProcessor);
+
+
+            //ClimbStore store = new ClimbStore(binaryReaderProcessor.GetType(),
+            //    new BinaryStateMemberProvider(new PropertyStateMemberProvider()), 
+            //    new MethodMapper(),
+            //    new TrivialExpressionCompiler());
+
+            //ClimbDelegate<StrongBox<object>> climb = store.GetClimb<StrongBox<object>>(typeof (StrongBox<object>));
+
+            //climb(binaryReaderProcessor, strongBox);
         }
 
         private static void SerializeDeserializeXML()
@@ -177,11 +264,16 @@ namespace GraphClimber
                 processor);
         }
 
+        public struct MyClass
+        {
+            public string Name { get; set; }
+        }
+
         class Person
         {
             public Person()
             {
-                Children = new List<Person>();
+                //Children = new List<Person>();
             }
 
             public string Name { get; set; }
@@ -192,10 +284,10 @@ namespace GraphClimber
 
             public Person Father { get; set; }
 
-            public IList<Person> Children { get; set; }
+            //public IList<Person> Children { get; set; }
         }
 
-        struct Person2
+        internal struct Person2 : IPerson
         {
             public string Name { get; set; }
 
@@ -206,6 +298,10 @@ namespace GraphClimber
             public object Father { get; set; }
 
             public Days Day { get; set; }
+            public void IncreaseAge()
+            {
+                Age++;
+            }
         }
 
 
@@ -238,12 +334,15 @@ namespace GraphClimber
                 Age = 26,
                 Name = "Elad Zelinger",
                 Father = ilan,
-                Children = { new Person() { Name = "Jason"}, new Person() { Name = "Tomerh" }},
+                //Children = { new Person() { Name = "Jason"}, new Person() { Name = "Tomerh" }},
                 Surprise = new Person()
                 {
                     Age = 21,
                     Name = "Yosi Attias",
-                    Surprise = ilan
+                    Surprise = new MyClass()
+                    {
+                        Name = "YO!"
+                    }
                 }
             };
         }
@@ -253,7 +352,6 @@ namespace GraphClimber
             Person2 ilan = new Person2 { Age = 26 + 25, Name = "Ilan Zelingher" };
 
             ilan.Surprise = ilan;
-
             return new Person2()
             {
                 Age = 26,
@@ -264,16 +362,24 @@ namespace GraphClimber
                 {
                     Age = 21,
                     Name = "Yosi Attias",
-                    Surprise =
-                    new object[]
-                    {
-                        ilan, ilan, 342, "Hello",
-                        new int[]{1,1,2,3,5,8},
-                        new int[,]{{1,1},{2,3},{5,8}},
-                        Days.Saturday
-                    }
+                    Surprise =ilan
+                        //new object[]
+                        //{
+                        //    ilan, ilan, 342, "Hello",
+                        //    new int[,]{{1,1},{2,3},{5,8}},
+                        //    new int[]{1,1,2,3,5,8},
+                        //    Days.Saturday
+                        //}
                 }
             };
+
         }   
+    }
+
+    public interface IPerson
+    {
+
+        void IncreaseAge();
+
     }
 }

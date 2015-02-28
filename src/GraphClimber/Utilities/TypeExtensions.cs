@@ -21,6 +21,21 @@ namespace GraphClimber
             }
         }
 
+        public static IEnumerable<Type> AsEnumerable(this Type type)
+        {
+            yield return type;
+        }
+
+        public static IEnumerable<Type> WithInterfaces(this Type type)
+        {
+            yield return type;
+
+            foreach (Type interfaceType in type.GetInterfaces())
+            {
+                yield return interfaceType;
+            }
+        }
+
         public static bool IsNullable(this Type type)
         {
             return (type.IsGenericType &&

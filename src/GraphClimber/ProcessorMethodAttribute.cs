@@ -8,7 +8,7 @@ namespace GraphClimber
     /// by the graph climber if it is found as the most suitable method to call.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class ProcessorMethodAttribute : Attribute
+    public sealed class ProcessorMethodAttribute : Attribute
     {
         public ProcessorMethodAttribute()
         {
@@ -22,6 +22,11 @@ namespace GraphClimber
         /// Defaults to 100.
         /// </summary>
         public int Precedence { get; set; }
-    }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this method will be called only via 
+        /// <see cref="IValueDescriptor.Route(GraphClimber.IStateMember,System.Type,object,bool)"/> calls.
+        /// </summary>
+        public bool OnlyOnRoute { get; set; }
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace GraphClimber.Examples
 {
@@ -17,6 +18,11 @@ namespace GraphClimber.Examples
         public int[] ElementIndex
         {
             get { return _underlying.ElementIndex; }
+        }
+
+        public Action<object, T> BuildSetterForBox<T>()
+        {
+            return _underlying.BuildSetterForBox<T>();
         }
 
         public bool IsArrayElement
@@ -42,6 +48,16 @@ namespace GraphClimber.Examples
             }
         }
 
+        public bool CanRead
+        {
+            get { return _underlying.CanRead; }
+        }
+
+        public bool CanWrite
+        {
+            get { return _underlying.CanWrite; }
+        }
+
         public Expression GetGetExpression(Expression obj)
         {
             return _underlying.GetGetExpression(obj);
@@ -52,6 +68,11 @@ namespace GraphClimber.Examples
             return _underlying.GetSetExpression(obj, value);
         }
 
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get { return _underlying.UnderlyingMemberInfo; }
+        }
+
         public object GetValue(object owner)
         {
             return _underlying.GetValue(owner);
@@ -60,6 +81,27 @@ namespace GraphClimber.Examples
         public void SetValue(object owner, object value)
         {
             _underlying.SetValue(owner, value);
+        }
+
+        protected bool Equals(MyCustomStateMember other)
+        {
+            return Equals(_underlying, other._underlying) && Equals(_memberType, other._memberType);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((MyCustomStateMember) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((_underlying != null ? _underlying.GetHashCode() : 0)*397) ^ (_memberType != null ? _memberType.GetHashCode() : 0);
+            }
         }
     }
 }

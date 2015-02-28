@@ -14,6 +14,11 @@ namespace GraphClimber.ExpressionCompiler.Extensions
         /// Expression of Null.
         /// </summary>
         public static readonly ConstantExpression Null = Expression.Constant(null);
+        
+        /// <summary>
+        /// Empty Expression.
+        /// </summary>
+        public static readonly DefaultExpression Empty = Expression.Empty();
 
         /// <summary>
         /// Creates an <see cref="ConstantExpression"/>
@@ -24,7 +29,7 @@ namespace GraphClimber.ExpressionCompiler.Extensions
         /// <returns></returns>
         public static Expression Constant<T>(this T value)
         {
-            return Expression.Constant(value, typeof (T));
+            return Expression.Constant(value);
         }
 
         /// <summary>
@@ -48,6 +53,21 @@ namespace GraphClimber.ExpressionCompiler.Extensions
         /// <returns></returns>
         public static Expression Convert(this Expression expression, Type newType)
         {
+            // Avoid redundent converts
+            if (expression.Type == newType)
+            {
+                return expression;
+            }
+
+            var unaryExpression = expression as UnaryExpression;
+            if (unaryExpression != null)
+            {
+                if (unaryExpression.NodeType == ExpressionType.Convert)
+                {
+                    return Convert(unaryExpression.Operand, newType);
+                }
+            }
+
             return Expression.Convert(expression, newType);
         }
 

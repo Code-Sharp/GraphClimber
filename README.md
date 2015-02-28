@@ -4,13 +4,11 @@ Climbs on graph of objects (.net)
 Master | Provider
 ------ | --------
 [![Build Status][MonoImgMaster]][MonoLinkMaster] | Mono CI Provided by [travis-ci][] 
-[![Build status](https://ci.appveyor.com/api/projects/status/rka7yi9j5j7dm9hr/branch/master?svg=true)](https://ci.appveyor.com/project/shanielh/graphclimber/branch/master) | Windows CI Provided by [AppVeyor][]
 
-[MonoImgMaster]:https://travis-ci.org/Code-Sharp/GraphClimber.png?branch=master
+[MonoImgMaster]:https://travis-ci.org/Code-Sharp/GraphClimber.png?branch=expression-gc-structs3
 [MonoLinkMaster]:https://travis-ci.org/Code-Sharp/GraphClimber
 
 [travis-ci]:https://travis-ci.org/
-[AppVeyor]:http://www.appveyor.com/
 [JetBrains]:http://www.jetbrains.com/
 [CodeBetter]:http://codebetter.com/
 

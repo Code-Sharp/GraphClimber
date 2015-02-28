@@ -61,6 +61,8 @@ namespace GraphClimber
         }
     }
 
+
+
     internal class ReflectionPropertyStateMember : IReflectionStateMember
     {
         private readonly PropertyInfo _property;
@@ -85,12 +87,27 @@ namespace GraphClimber
             get { return _property.PropertyType; }
         }
 
+        public bool CanRead
+        {
+            get { return _property.CanRead; }
+        }
+
+        public bool CanWrite
+        {
+            get { return _property.CanWrite; }
+        }
+
         public Expression GetGetExpression(Expression obj)
         {
             throw new NotImplementedException();
         }
 
         public Expression GetSetExpression(Expression obj, Expression value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Action<object, T> BuildSetterForBox<T>()
         {
             throw new NotImplementedException();
         }
@@ -109,6 +126,14 @@ namespace GraphClimber
             }
         }
 
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get
+            {
+                return _property;
+            }
+        }
+
         public object GetValue(object owner)
         {
             return _property.GetValue(owner);
@@ -122,6 +147,8 @@ namespace GraphClimber
 
     public interface IReflectionStateMember : IStateMember
     {
+        MemberInfo UnderlyingMemberInfo { get; }
+
         object GetValue(object owner);
 
         void SetValue(object owner, object value);
@@ -216,7 +243,7 @@ namespace GraphClimber
                     members.Cast<IReflectionStateMember>())
                 {
                     Type runtimeMemberType = GetRuntimeMemberType(member, value);
-                    VisitMember(member, boxed, runtimeMemberType, false);
+                    VisitMember(member, boxed, runtimeMemberType, false, false);
                 }
 
                 if (runtimeType.IsValueType)
@@ -247,7 +274,7 @@ namespace GraphClimber
                 
                 Type runtimeMemberType = GetRuntimeMemberType(decorated, array);
                 
-                VisitMember(decorated, array, runtimeMemberType, false);
+                VisitMember(decorated, array, runtimeMemberType, false, false);
             }
         }
 
@@ -263,13 +290,16 @@ namespace GraphClimber
             return result;
         }
 
-        private void VisitMember(IReflectionStateMember member, object owner, Type runtimeMemberType,
-            bool skipSpecialMethod)
+        private void VisitMember(IReflectionStateMember member,
+            object owner,
+            Type runtimeMemberType,
+            bool skipSpecialMethod,
+            bool routed)
         {
             IReflectionValueDescriptor descriptor =
                 CreateDescriptor(member, owner, runtimeMemberType);
 
-            CallProcess(descriptor, skipSpecialMethod);
+            CallProcess(descriptor, skipSpecialMethod, routed);
         }
 
         private IReflectionValueDescriptor CreateDescriptor(IReflectionStateMember member, object value,
@@ -303,7 +333,7 @@ namespace GraphClimber
             VisitMember((IReflectionStateMember) stateMember,
                 owner,
                 stateMember.MemberType,
-                skipSpecialMethod);
+                skipSpecialMethod, true);
         }
 
         public void Route(IStateMember stateMember, Type runtimeMemberType, object owner, bool skipSpecialMethod = true)
@@ -311,10 +341,10 @@ namespace GraphClimber
             VisitMember((IReflectionStateMember) stateMember,
                 owner,
                 runtimeMemberType,
-                skipSpecialMethod);
+                skipSpecialMethod, true);
         }
 
-        private void CallProcess(IReflectionValueDescriptor descriptor, bool skipSpecialMethod)
+        private void CallProcess(IReflectionValueDescriptor descriptor, bool skipSpecialMethod, bool routed)
         {
             Type fieldType = descriptor.StateMember.MemberType;
 
@@ -327,7 +357,7 @@ namespace GraphClimber
 
             if (!methodCalled)
             {
-                CallMatchedProcess(descriptor);
+                CallMatchedProcess(descriptor, routed);
             }
         }
 
@@ -363,13 +393,14 @@ namespace GraphClimber
             methodToCall.Invoke(_processor, new object[] {descriptor});
         }
 
-        private void CallMatchedProcess(IReflectionValueDescriptor descriptor)
+        private void CallMatchedProcess(IReflectionValueDescriptor descriptor, bool routed)
         {
             GenericArgumentBinder binder = new GenericArgumentBinder(new FallbackToFirstCandidateMethodSelector(new BinderMethodSelector(Type.DefaultBinder)));
 
             IEnumerable<MethodInfo> methods =
                 _processor.GetType().GetMethods()
-                    .Where(x => x.IsDefined(typeof (ProcessorMethodAttribute)));
+                    .Where(x => x.IsDefined(typeof (ProcessorMethodAttribute)))
+                    .Where(x => !x.GetCustomAttribute<ProcessorMethodAttribute>().OnlyOnRoute || routed);
 
             Type descriptorType = descriptor.GetType();
 
@@ -488,6 +519,16 @@ namespace GraphClimber
             get { return _underlyingType; }
         }
 
+        public bool CanRead
+        {
+            get { return _stateMember.CanRead; }
+        }
+
+        public bool CanWrite
+        {
+            get { return _stateMember.CanWrite; }
+        }
+
         public Expression GetGetExpression(Expression obj)
         {
             return _stateMember.GetGetExpression(obj);
@@ -498,6 +539,11 @@ namespace GraphClimber
             return _stateMember.GetSetExpression(obj, value);
         }
 
+        public Action<object, T> BuildSetterForBox<T>()
+        {
+            return _stateMember.BuildSetterForBox<T>();
+        }
+
         public bool IsArrayElement
         {
             get { return _stateMember.IsArrayElement; }
@@ -506,6 +552,11 @@ namespace GraphClimber
         public int[] ElementIndex
         {
             get { return _stateMember.ElementIndex; }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get { return _stateMember.UnderlyingMemberInfo; }
         }
 
         public object GetValue(object owner)
@@ -561,12 +612,27 @@ namespace GraphClimber
             }
         }
 
+        public bool CanRead
+        {
+            get { return true; }
+        }
+
+        public bool CanWrite
+        {
+            get { return true; }
+        }
+
         public Expression GetGetExpression(Expression obj)
         {
             throw new NotImplementedException();
         }
 
         public Expression GetSetExpression(Expression obj, Expression value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Action<object, T> BuildSetterForBox<T>()
         {
             throw new NotImplementedException();
         }
@@ -585,6 +651,11 @@ namespace GraphClimber
             {
                 return _indices;
             }
+        }
+
+        public MemberInfo UnderlyingMemberInfo
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public object GetValue(object owner)
@@ -620,6 +691,11 @@ namespace GraphClimber
             var descriptor = GetDescriptor(parent, processor);
 
             descriptor.Climb();
+        }
+
+        public void Route(IStateMember stateMember, object current, TProcessor processor, bool skipSpecialMethod)
+        {
+            throw new NotImplementedException();
         }
 
         public void Route(object current, TProcessor processor, bool skipSpecialMethod)
