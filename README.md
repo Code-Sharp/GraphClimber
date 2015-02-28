@@ -5,12 +5,12 @@ Master | Provider
 ------ | --------
 [![Build Status][MonoImgMaster]][MonoLinkMaster] | Mono CI Provided by [travis-ci][]
 [![Build Status][TeamCityImgMaster]][TeamCityLinkMaster] | TeamCity CI Provided by [CodeBetter][]    
-[![Build status](https://ci.appveyor.com/api/projects/status/rka7yi9j5j7dm9hr/branch/master?svg=true)](https://ci.appveyor.com/project/shanielh/graphclimber/branch/master) | Windows CI Provided by [AppVeyor][]
+[![Build status](https://img.shields.io/appveyor/ci/shanielh/graphclimber.svg)](https://ci.appveyor.com/project/shanielh/graphclimber/branch/master) | Windows CI Provided by [AppVeyor][]
 
-[MonoImgMaster]:https://travis-ci.org/Code-Sharp/GraphClimber.png?branch=master
+[MonoImgMaster]:https://img.shields.io/travis/Code-Sharp/GraphClimber/master.svg
 [MonoLinkMaster]:https://travis-ci.org/Code-Sharp/GraphClimber
 
-[TeamCityImgMaster]:http://teamcity.codebetter.com/app/rest/builds/buildType:\(id:GraphClimber_Dev_Build_Github\)/statusIcon
+[TeamCityImgMaster]:https://img.shields.io/teamcity/codebetter/GraphClimber_Dev_Build_Github.svg
 [TeamCityLinkMaster]:http://teamcity.codebetter.com/project.html?projectId=GraphClimber_Dev&tab=projectOverview&guest=1
 
 
