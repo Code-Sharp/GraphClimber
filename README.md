@@ -11,7 +11,7 @@ Master | Provider
 [MonoImgMaster]:https://travis-ci.org/Code-Sharp/GraphClimber.png?branch=master
 [MonoLinkMaster]:https://travis-ci.org/Code-Sharp/GraphClimber
 
-[TeamCityImgMaster]:http://teamcity.codebetter.com/app/rest/builds/buildType:\(id:GraphClimber_Dev_Build\)/statusIcon
+[TeamCityImgMaster]:http://teamcity.codebetter.com/app/rest/builds/buildType:\(id:GraphClimber_Dev_Build_Github\)/statusIcon
 [TeamCityLinkMaster]:http://teamcity.codebetter.com/project.html?projectId=GraphClimber_Dev&tab=projectOverview&guest=1
 
 
