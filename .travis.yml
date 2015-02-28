@@ -4,8 +4,8 @@ language: csharp
 solution: src/GraphClimber.sln
 
 install:
-  - nuget restore src/GraphClimber.sln
-  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+  - travis_retry nuget restore src/GraphClimber.sln
+  - travis_retry nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
 script:
   - xbuild /p:Configuration=Release src/GraphClimber.sln
   - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./bin/Release/Tests/GraphClimber.Tests.dll
