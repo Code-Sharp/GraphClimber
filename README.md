@@ -5,7 +5,6 @@ Master | Provider
 ------ | --------
 [![Build Status][MonoImgMaster]][MonoLinkMaster] | Mono CI Provided by [travis-ci][]
 [![Build Status][TeamCityImgMaster]][TeamCityLinkMaster] | TeamCity CI Provided by [CodeBetter][]    
-
 [![Build status](https://ci.appveyor.com/api/projects/status/rka7yi9j5j7dm9hr/branch/master?svg=true)](https://ci.appveyor.com/project/shanielh/graphclimber/branch/master) | Windows CI Provided by [AppVeyor][]
 
 [MonoImgMaster]:https://travis-ci.org/Code-Sharp/GraphClimber.png?branch=master
