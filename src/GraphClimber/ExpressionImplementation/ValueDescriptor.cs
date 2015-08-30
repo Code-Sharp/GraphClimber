@@ -133,26 +133,12 @@ namespace GraphClimber
 
         public TRuntime Get()
         {
-            if (IsStructMember)
-            {
-                return (TRuntime)Member.BoxGetter(Owner);
-            }
-            else
-            {
-                return (TRuntime)Member.Getter(Owner);
-            }
+            return (TRuntime) Member.Getter(Owner);
         }
 
         public virtual void Set(TField value)
         {
-            if (IsStructMember)
-            {
-                Member.BoxSetter(Owner, value);
-            }
-            else
-            {
-                Member.Setter(Owner, value);                
-            }
+            Member.Setter(Owner, value);
         }
 
         #region Enum Members

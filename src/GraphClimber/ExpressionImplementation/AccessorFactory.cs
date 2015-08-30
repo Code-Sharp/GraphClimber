@@ -48,16 +48,5 @@ namespace GraphClimber
             // We need to convert to the type, since sometimes we fake the member type.
             return member.GetGetExpression(instance).Convert(typeof(T));
         }
-
-        public Action<object, T> GetBoxSetter<T>(IStateMember member)
-        {
-            Action<object, T> result = member.BuildSetterForBox<T>();
-            return result;
-        }
-
-        public Func<object, T> GetBoxGetter<T>(IStateMember member)
-        {
-            return GetGetter<T>(member);
-        }
     }
 }

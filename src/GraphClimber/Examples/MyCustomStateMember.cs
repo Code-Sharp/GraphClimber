@@ -20,11 +20,6 @@ namespace GraphClimber.Examples
             get { return _underlying.ElementIndex; }
         }
 
-        public Action<object, T> BuildSetterForBox<T>()
-        {
-            return _underlying.BuildSetterForBox<T>();
-        }
-
         public bool IsArrayElement
         {
             get { return _underlying.IsArrayElement; }

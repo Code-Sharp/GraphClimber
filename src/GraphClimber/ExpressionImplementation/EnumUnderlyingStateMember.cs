@@ -49,21 +49,6 @@ namespace GraphClimber
             return _underlying.GetSetExpression(obj, value.Convert(_underlying.MemberType));
         }
 
-        public Action<object, T> BuildSetterForBox<T>()
-        {
-            // TODO: make this "BuildSetterForBox" thingy more composite,
-            // TODO: so we won't call for 3 methods for a setter of a boxed enum.
-            Action<object, TEnum> underlyingSet = 
-                _underlying.BuildSetterForBox<TEnum>();
-
-            Func<T, TEnum> toEnum = EnumConvert<TEnum, T>.ToEnum;
-
-            Action<object, T> result = (instance, value) =>
-                underlyingSet(instance, toEnum(value));
-
-            return result;
-        }
-
         public bool IsArrayElement
         {
             get { return _underlying.IsArrayElement; }

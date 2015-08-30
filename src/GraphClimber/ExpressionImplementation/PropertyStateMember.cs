@@ -1,7 +1,6 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
@@ -52,37 +51,24 @@ namespace GraphClimber
 
         public Expression GetSetExpression(Expression obj, Expression value)
         {
-            return
-                Expression.Assign(Expression.Property
-                    (obj.Convert(_property.DeclaringType),
-                        _property),
-                    value.Convert(_property.PropertyType));
-        }
+            Expression convertInstance;
 
-        public Action<object, T> BuildSetterForBox<T>()
-        {
-            // See http://stackoverflow.com/questions/18937935/how-to-mutate-a-boxed-struct-using-il
-            var dynamicMethod =
-                new DynamicMethod("BoxSetter_" + this.Name, typeof (void),
-                    new[] {typeof (object), typeof (T)},
-                    typeof (AccessorFactory).Module, true);
-
-            var generator = dynamicMethod.GetILGenerator();
-            generator.Emit(OpCodes.Ldarg_0);                       // object
-            generator.Emit(OpCodes.Unbox, this.OwnerType);         // Struct&
-            generator.Emit(OpCodes.Ldarg_1);                       // Struct& T
-
-            if (typeof(T).IsValueType && !_property.PropertyType.IsValueType)
+            if (!_property.DeclaringType.IsValueType)
             {
-                generator.Emit(OpCodes.Box, typeof(T));
+                convertInstance = 
+                    obj.Convert(_property.DeclaringType);
+            }
+            else
+            {
+                convertInstance =
+                    Expression.Unbox(obj, _property.DeclaringType);
             }
 
-            generator.Emit(OpCodes.Call, _property.SetMethod);     // --empty--
-            generator.Emit(OpCodes.Ret);                           // --empty--
-
-            Action<object, T> result = (Action<object, T>)dynamicMethod.CreateDelegate(typeof(Action<object, T>));
-
-            return result;
+            return
+                Expression.Assign(Expression.Property
+                    (convertInstance,
+                        _property),
+                    value.Convert(_property.PropertyType));
         }
 
         public bool IsArrayElement

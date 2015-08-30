@@ -102,11 +102,6 @@ namespace GraphClimber
                 return _underlying.GetSetExpression(obj, value);
             }
 
-            public Action<object, T> BuildSetterForBox<T>()
-            {
-                return _underlying.BuildSetterForBox<T>();
-            }
-
             public bool IsArrayElement
             {
                 get { return _underlying.IsArrayElement; }
@@ -183,11 +178,6 @@ namespace GraphClimber
             public Expression GetSetExpression(Expression obj, Expression value)
             {
                 return _underlying.GetSetExpression(obj, value);
-            }
-
-            public Action<object, T> BuildSetterForBox<T>()
-            {
-                return _underlying.BuildSetterForBox<T>();
             }
 
             public bool IsArrayElement

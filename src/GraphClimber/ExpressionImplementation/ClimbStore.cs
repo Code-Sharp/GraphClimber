@@ -50,19 +50,5 @@ namespace GraphClimber
                 (typeKey, runtimeTypeKey) => 
                     _climbFactory.CreateDelegate<TField>(runtimeTypeKey));
         }
-
-        public Action<object, T> GetBoxSetter<T>(IStateMember member)
-        {
-            return _boxSetters.GetOrAdd
-                (member,
-                key => _accessorFactory.GetBoxSetter<T>(key));
-        }
-
-        public Func<object, T> GetBoxGetter<T>(IStateMember member)
-        {
-            return _boxGetters.GetOrAdd
-                (member,
-                key => _accessorFactory.GetBoxGetter<T>(key));
-        }
     }
 }

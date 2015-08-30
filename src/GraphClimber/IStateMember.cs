@@ -47,8 +47,6 @@ namespace GraphClimber
         /// <param name="value">The value to be set</param>
         /// <returns></returns>
         Expression GetSetExpression(Expression obj, Expression value);
-        
-        Action<object, T> BuildSetterForBox<T>();
 
         /// <summary>
         /// Gets a value indicating whether this member is an array element.
