@@ -31,29 +31,37 @@ Other examples :
 
 You write a `Processor`, a `Processor` is an object that has a lot of `ProcessMethod`s, they have a signature like this one :
 
-    [ProcessorMethod(Precedence = 102)]
-    public void ProcessReferenceType<T>(IWriteOnlyExactValueDescriptor<T> descriptor)
-        where T : class
+```csharp
+[ProcessorMethod(Precedence = 102)]
+public void ProcessReferenceType<T>(IWriteOnlyExactValueDescriptor<T> descriptor)
+    where T : class
+```
 
 There are many `Descriptors` to choose from, and you can _really_ go crazy with generic arguments. You can even implement `IGenericParameterFilter` in an Attribute and decorate your generic parameter with it, Like this method here which accepts only primitive values :
 
-    [ProcessorMethod(Precedence = 99)]
-    public void ProcessPrimitives<[Primitive]T>(IReadOnlyValueDescriptor<T> descriptor)
+```csharp
+[ProcessorMethod(Precedence = 99)]
+public void ProcessPrimitives<[Primitive]T>(IReadOnlyValueDescriptor<T> descriptor)
+```
 
 Then you need to choose between the simple state member providers (or to create one of your own). The objective of the `IStateMemberProvider` is to identify all the "State Members" that lies inside a given type. The graph climber climbs only on state members, Those can be fields, properties and even pair of get/set methods. 
 
 __Note__ : A state member can be "read"/"write" only, but that's good as long as you want only read/write only access, When you'll try to read/write to those state members, no exception will be thrown from the default implementations of the `StateMemberProviders`. You may throw it from the `StateMember` (if you created it).
 
-    var stateMemberProvider = new CachingStateMemberProvider(new PropertiesStateMemberProvider());
-    var gc = new GraphClimber<MyProcessor>(stateMemberProvider);
+```csharp
+var stateMemberProvider = new CachingStateMemberProvider(new PropertiesStateMemberProvider());
+var gc = new GraphClimber<MyProcessor>(stateMemberProvider);
+```
 
 After you've done those, you ready to climb on objects : 
 
-    var myProcessorInstance = new MyProcessor();
-    var myObject = GetComplexObject();
+```csharp
+var myProcessorInstance = new MyProcessor();
+var myObject = GetComplexObject();
     
-    gc.Climb(myObject, myProcessorInstance);
-    
+gc.Climb(myObject, myProcessorInstance);
+```
+
 What's the graph climber is going to do now? 
  
 1. Look for the climbed object type
