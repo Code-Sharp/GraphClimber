@@ -51,16 +51,7 @@ namespace GraphClimber
 
             foreach (IStateMember member in members)
             {
-                DescriptorWriter writer = new DescriptorWriter(_climbStore);
-
-                DescriptorVariable descriptor =
-                    writer.GetDescriptor(castedProcessor, owner, member, member.MemberType);
-
-                Expression callProcessor =
-                    _mutator.GetExpression(castedProcessor, owner, member, descriptor.Reference);
-
-                descriptorVariables.Add(descriptor.Reference);
-                expressions.Add(descriptor.Declaration);
+                Expression callProcessor = CallProcessor(castedProcessor, owner, member, descriptorVariables, expressions);
                 expressions.Add(callProcessor);
             }
 
@@ -77,6 +68,27 @@ namespace GraphClimber
             return result;
         }
 
+        private Expression CallProcessor
+        (Expression castedProcessor, 
+         Expression owner, 
+         IStateMember member,
+         List<ParameterExpression> methodVariables,
+         List<Expression> methodAssignments)
+        {
+            DescriptorWriter writer = new DescriptorWriter(_climbStore);
+
+            DescriptorVariable descriptor =
+                writer.GetDescriptor(castedProcessor, owner, member, member.MemberType);
+
+            Expression callProcessor =
+                _mutator.GetExpression(castedProcessor, owner, member, descriptor.Reference);
+
+            methodVariables.Add(descriptor.Reference);
+            methodAssignments.Add(descriptor.Declaration);
+
+            return callProcessor;
+        }
+
 
         private ClimbDelegate<T> CreateArrayDelegate<T>(Type runtimeType)
         {
@@ -88,17 +100,45 @@ namespace GraphClimber
 
             var ranks = runtimeType.GetArrayRank();
 
+            int[] indices = new int[ranks];
+            var member = _stateMemberProvider.ProvideArrayMember(runtimeType, indices);
+
+            List<ParameterExpression> variables = new List<ParameterExpression>();
+            List<Expression> assignments = new List<Expression>();
+
+            Expression callExpression =
+                CallProcessor(castedProcessor, owner, member, variables, assignments);
+
+            var loop = LoopArrayBounds(ranks, owner, Expression.Constant(indices), callExpression, variables, assignments);
+
+            BlockExpression climbBody =
+                Expression.Block(variables,
+                                 assignments.Concat(new[] {loop}));
+
+            Expression<ClimbDelegate<T>> lambda =
+                Expression.Lambda<ClimbDelegate<T>>(climbBody,
+                                                    "Climb_" + runtimeType.Name,
+                                                    new[] { processor, value });
+
+            ClimbDelegate<T> result = lambda.Compile();
+
+            return result;
+        }
+
+        private static Expression LoopArrayBounds
+        (int ranks,
+         Expression owner,
+         Expression stateMemberArray,
+         Expression callExpression,
+         List<ParameterExpression> parameterExpressions,
+         List<Expression> assignments)
+        {
             var rankParameters =
-                Enumerable.Range(0, ranks).Select(r => Expression.Variable(typeof (int), "rank_" + r)).ToList();
+                Enumerable.Range(0, ranks).Select(r => Expression.Variable(typeof(int), "rank_" + r)).ToList();
 
             var upperBoundParameters =
-                Enumerable.Range(0, ranks).Select(r => Expression.Variable(typeof (int), "upper_" + r)).ToList();
+                Enumerable.Range(0, ranks).Select(r => Expression.Variable(typeof(int), "upper_" + r)).ToList();
 
-            var assignRankParameters = new Expression[ranks];
-            var assignUpperParameters = new Expression[ranks];
-            
-
-            Expression callExpression = Expression.Empty(); // TODO : Complete.
 
             for (int rank = ranks - 1; rank >= 0; rank--)
             {
@@ -106,38 +146,45 @@ namespace GraphClimber
                 var breakTarget = Expression.Label("break");
                 var continueTarget = Expression.Label("continue");
 
-                assignRankParameters[rank] = Expression.Assign(rankParameters[rank],
-                    Expression.Call(owner, "GetLowerBound", null, Expression.Constant(rank)));
+                // i_k = array.GetLowerBound(k)
+                var currentLoopVariableAssignment =
+                    Expression.Assign(rankParameters[rank],
+                                      Expression.Call(owner, "GetLowerBound", null,
+                                                      Expression.Constant(rank)));
 
-                assignUpperParameters[rank] = Expression.Assign(upperBoundParameters[rank],
-                    Expression.Call(owner, "GetUpperBound", null, Expression.Constant(rank)));
+                // length_k = array.GetUpperBound(k)
+                var currentUpperBoundAssignment = Expression.Assign(upperBoundParameters[rank],
+                                                                   Expression.Call(owner, "GetUpperBound", null,
+                                                                                   Expression.Constant(rank)));
+
+                assignments.Add(currentLoopVariableAssignment);
+                assignments.Add(currentUpperBoundAssignment);
+
+                Expression binaryExpression = Expression.ArrayAccess(stateMemberArray,
+                                                             Expression.Constant(rank));
+                Expression setIndexer =
+                    Expression.Assign(binaryExpression,
+                                      rankParameters[rank]);
+
+                Expression setIndexerAndCallMethod = 
+                    Expression.Block(setIndexer, callExpression);
 
                 var loopBody =
                     Expression.Block(
-                        Expression.IfThen(
-                            Expression.Equal(upperBoundParameters[rank], rankParameters[rank]),
-                            Expression.Goto(breakTarget)),
-                        callExpression,
-                        Expression.PostIncrementAssign(rankParameters[rank]),
-                        Expression.Goto(continueTarget));
+                                     Expression.IfThen(
+                                                       Expression.GreaterThan(rankParameters[rank], upperBoundParameters[rank]),
+                                                       Expression.Goto(breakTarget)),
+                                     setIndexerAndCallMethod,
+                                     Expression.PostIncrementAssign(rankParameters[rank]),
+                                     Expression.Goto(continueTarget));
 
                 callExpression = Expression.Loop(loopBody, breakTarget, continueTarget);
             }
 
-            BlockExpression climbBody =
-                Expression.Block(rankParameters.Concat(upperBoundParameters),
-                    assignRankParameters.Concat(assignUpperParameters).Concat(new[] {callExpression}));
+            parameterExpressions.AddRange(rankParameters);
+            parameterExpressions.AddRange(upperBoundParameters);
 
-            Expression<ClimbDelegate<T>> lambda =
-                Expression.Lambda<ClimbDelegate<T>>(climbBody,
-                    "Climb_" + runtimeType.Name,
-                    new[] { processor, value });
-
-            ClimbDelegate<T> result = lambda.Compile();
-
-            return result;
-
-            throw new NotImplementedException("CreateArrayDelegate is not implemented");
+            return callExpression;
         }
     }
 }

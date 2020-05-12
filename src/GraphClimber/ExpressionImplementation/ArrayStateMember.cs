@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -54,12 +56,25 @@ namespace GraphClimber
 
         public Expression GetGetExpression(Expression obj)
         {
-            throw new NotImplementedException();
+            Expression getExpression = ArrayAccess(obj);
+            return getExpression;
+        }
+
+        private Expression ArrayAccess(Expression obj)
+        {
+            ConstantExpression array = Expression.Constant(_indices, typeof(int[]));
+
+            IEnumerable<BinaryExpression> indices =
+                Enumerable.Range(0, _indices.Length)
+                          .Select(x => Expression.ArrayIndex(array,
+                                                             Expression.Constant(x)));
+            return Expression.ArrayAccess(obj.Convert(this._arrayType), indices);
         }
 
         public Expression GetSetExpression(Expression obj, Expression value)
         {
-            throw new NotImplementedException();
+            Expression arrayAccess = ArrayAccess(obj);
+            return Expression.Assign(arrayAccess, value);
         }
 
         public bool IsArrayElement
