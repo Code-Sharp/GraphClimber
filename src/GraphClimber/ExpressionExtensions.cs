@@ -58,13 +58,23 @@ namespace GraphClimber
             var unaryExpression = expression as UnaryExpression;
             if (unaryExpression != null)
             {
-                if (unaryExpression.NodeType == ExpressionType.Convert)
+                if (unaryExpression.NodeType == ExpressionType.Convert &&
+                    !unaryExpression.IsCustomConversion())
                 {
                     return Convert(unaryExpression.Operand, newType);
                 }
             }
 
             return Expression.Convert(expression, newType);
+        }
+
+        private static bool IsCustomConversion(this UnaryExpression unaryExpression)
+        {
+            Type conversionType = unaryExpression.Type;
+            Type originalType = unaryExpression.Operand.Type;
+
+            return !(conversionType.IsAssignableFrom(originalType) ||
+                     originalType.IsAssignableFrom(conversionType));
         }
 
         public static string FirstLowerCase(this string str)

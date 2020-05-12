@@ -298,9 +298,6 @@ namespace GraphClimber.Examples
             descriptor.Route(new BinaryStateMember(underlying, true, handled),
                 descriptor.Owner,
                 true);
-
-            // TODO: weird
-            descriptor.Set(descriptor.Get());
         }
     }
 }
