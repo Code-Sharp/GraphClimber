@@ -143,8 +143,8 @@ namespace GraphClimber
             for (int rank = ranks - 1; rank >= 0; rank--)
             {
                 // Create a for loop from lowerBound to upperBound?
-                var breakTarget = Expression.Label("break");
-                var continueTarget = Expression.Label("continue");
+                var breakTarget = Expression.Label("break" + rank);
+                var continueTarget = Expression.Label("continue" + rank);
 
                 // i_k = array.GetLowerBound(k)
                 var currentLoopVariableAssignment =
@@ -157,7 +157,6 @@ namespace GraphClimber
                                                                    Expression.Call(owner, "GetUpperBound", null,
                                                                                    Expression.Constant(rank)));
 
-                assignments.Add(currentLoopVariableAssignment);
                 assignments.Add(currentUpperBoundAssignment);
 
                 Expression binaryExpression = Expression.ArrayAccess(stateMemberArray,
@@ -178,7 +177,9 @@ namespace GraphClimber
                                      Expression.PostIncrementAssign(rankParameters[rank]),
                                      Expression.Goto(continueTarget));
 
-                callExpression = Expression.Loop(loopBody, breakTarget, continueTarget);
+                callExpression = 
+                    Expression.Block(currentLoopVariableAssignment,
+                    Expression.Loop(loopBody, breakTarget, continueTarget));
             }
 
             parameterExpressions.AddRange(rankParameters);

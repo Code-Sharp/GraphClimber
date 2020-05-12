@@ -82,7 +82,7 @@ namespace GraphClimber
         {
             BinaryFormatter formatter = new BinaryFormatter();
 
-            var person = new Box<string[]>{Value = new []{"abc", "abc", "abc"}};
+            var person = new Box<string[,]>{Value = new [,]{{"abc", "abc", "abc"},{"2","3","4"}}};
 
             //object person = GetPerson();
 
