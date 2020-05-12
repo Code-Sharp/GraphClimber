@@ -1,21 +1,9 @@
 using System;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Reflection.Emit;
-using GraphClimber.ExpressionCompiler;
-using GraphClimber.ExpressionCompiler.Extensions;
-
 namespace GraphClimber
 {
     internal class AccessorFactory : IAccessorFactory
     {
-        private readonly IExpressionCompiler _compiler;
-
-        public AccessorFactory(IExpressionCompiler compiler)
-        {
-            _compiler = compiler;
-        }
-
         public Action<object, T> GetSetter<T>(IStateMember member)
         {
             ParameterExpression instance = Expression.Parameter(typeof(object));
@@ -27,7 +15,7 @@ namespace GraphClimber
                         "Setter_" + member.Name,
                         new[] {instance, value});
 
-            return _compiler.Compile(lambda);
+            return lambda.Compile();
         }
 
         public Func<object, T> GetGetter<T>(IStateMember member)
@@ -40,7 +28,7 @@ namespace GraphClimber
                         "Getter_" + member.Name,
                         new[] {instance});
 
-            return _compiler.Compile(lambda);
+            return lambda.Compile();
         }
 
         private static Expression GetGetterExpression<T>(IStateMember member, Expression instance)

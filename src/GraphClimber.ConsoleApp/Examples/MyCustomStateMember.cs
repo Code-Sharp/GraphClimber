@@ -1,16 +1,28 @@
-using System;
+﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace GraphClimber
+namespace GraphClimber.Examples
 {
-    internal class EnumUnderlyingStateMember<TEnum> : IStateMember
+    public class MyCustomStateMember : IStateMember
     {
         private readonly IStateMember _underlying;
+        private readonly Type _memberType;
 
-        public EnumUnderlyingStateMember(IStateMember underlying)
+        public MyCustomStateMember(IStateMember underlying, Type memberType)
         {
             _underlying = underlying;
+            _memberType = memberType;
+        }
+
+        public int[] ElementIndex
+        {
+            get { return _underlying.ElementIndex; }
+        }
+
+        public bool IsArrayElement
+        {
+            get { return _underlying.IsArrayElement; }
         }
 
         public string Name
@@ -25,7 +37,10 @@ namespace GraphClimber
 
         public Type MemberType
         {
-            get { return typeof(TEnum).GetEnumUnderlyingType(); }
+            get
+            {
+                return _memberType;
+            }
         }
 
         public bool CanRead
@@ -40,27 +55,17 @@ namespace GraphClimber
 
         public Expression GetGetExpression(Expression obj)
         {
-            return _underlying.GetGetExpression(obj).Convert(MemberType);
+            return _underlying.GetGetExpression(obj);
         }
 
         public Expression GetSetExpression(Expression obj, Expression value)
         {
-            return _underlying.GetSetExpression(obj, value.Convert(_underlying.MemberType));
+            return _underlying.GetSetExpression(obj, value);
         }
 
-        public bool IsArrayElement
+        protected bool Equals(MyCustomStateMember other)
         {
-            get { return _underlying.IsArrayElement; }
-        }
-
-        public int[] ElementIndex
-        {
-            get { return _underlying.ElementIndex; }
-        }
-
-        protected bool Equals(EnumUnderlyingStateMember<TEnum> other)
-        {
-            return Equals(_underlying, other._underlying);
+            return Equals(_underlying, other._underlying) && Equals(_memberType, other._memberType);
         }
 
         public override bool Equals(object obj)
@@ -68,12 +73,15 @@ namespace GraphClimber
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((EnumUnderlyingStateMember<TEnum>)obj);
+            return Equals((MyCustomStateMember) obj);
         }
 
         public override int GetHashCode()
         {
-            return (_underlying != null ? _underlying.GetHashCode() : 0);
+            unchecked
+            {
+                return ((_underlying != null ? _underlying.GetHashCode() : 0)*397) ^ (_memberType != null ? _memberType.GetHashCode() : 0);
+            }
         }
     }
 }

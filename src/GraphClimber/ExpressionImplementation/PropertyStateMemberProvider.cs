@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace GraphClimber
 {
-    internal class PropertyStateMemberProvider : IStateMemberProvider
+    public class PropertyStateMemberProvider : IStateMemberProvider
     {
         public IEnumerable<IStateMember> Provide(Type type)
         {

@@ -1,5 +1,4 @@
 using System;
-using GraphClimber.ExpressionCompiler;
 
 namespace GraphClimber
 {
@@ -16,11 +15,11 @@ namespace GraphClimber
         private readonly RouteDelegateFactory _routeFactory;
         private readonly ClimbDelegateFactory _climbFactory;
 
-        public ClimbStore(Type processorType, IStateMemberProvider stateMemberProvider, IMethodMapper methodMapper, IExpressionCompiler compiler)
+        public ClimbStore(Type processorType, IStateMemberProvider stateMemberProvider, IMethodMapper methodMapper)
         {
-            _accessorFactory = new AccessorFactory(compiler);
-            _routeFactory = new RouteDelegateFactory(processorType, methodMapper, this, compiler);
-            _climbFactory = new ClimbDelegateFactory(processorType, stateMemberProvider, methodMapper, this, compiler);
+            _accessorFactory = new AccessorFactory();
+            _routeFactory = new RouteDelegateFactory(processorType, methodMapper, this);
+            _climbFactory = new ClimbDelegateFactory(processorType, stateMemberProvider, methodMapper, this);
         }
 
         public Action<object, T> GetSetter<T>(IStateMember member)

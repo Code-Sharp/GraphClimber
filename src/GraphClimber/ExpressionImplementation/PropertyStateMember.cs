@@ -1,11 +1,10 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
-    internal class PropertyStateMember : IReflectionStateMember
+    internal class PropertyStateMember : IStateMember
     {
         private readonly PropertyInfo _property;
         private static readonly int[] EmptyIndex = new int[0];

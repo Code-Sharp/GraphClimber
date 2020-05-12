@@ -77,11 +77,11 @@ namespace GraphClimber
             }
             else
             {
-                ClimReference(value, type);
+                ClimbReference(value, type);
             }
         }
 
-        private void ClimReference(TField value, Type type)
+        private void ClimbReference(TField value, Type type)
         {
             if (type == typeof(TRuntime))
             {

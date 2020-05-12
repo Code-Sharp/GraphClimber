@@ -1,14 +1,12 @@
-﻿using GraphClimber.ExpressionCompiler;
-
-namespace GraphClimber
+﻿namespace GraphClimber
 {
-    class DefaultGraphClimber<TProcessor> : IGraphClimber<TProcessor>
+    public class DefaultGraphClimber<TProcessor> : IGraphClimber<TProcessor>
     {
         private readonly ClimbStore _climbStore;
 
-        public DefaultGraphClimber(IStateMemberProvider stateMemberProvider, IMethodMapper methodMapper, IExpressionCompiler expressionCompiler )
+        private DefaultGraphClimber(IStateMemberProvider stateMemberProvider, IMethodMapper methodMapper)
         {
-            _climbStore = new ClimbStore(typeof (TProcessor), stateMemberProvider, methodMapper, expressionCompiler);
+            _climbStore = new ClimbStore(typeof (TProcessor), stateMemberProvider, methodMapper);
         }
 
         public void Climb(object parent, TProcessor processor)
@@ -25,8 +23,7 @@ namespace GraphClimber
         {
             return new DefaultGraphClimber<TProcessor>(
                 stateMemberProvider,
-                new MethodMapper(),
-                new TrivialExpressionCompiler());
+                new MethodMapper());
         } 
     }
 }

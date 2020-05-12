@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using GraphClimber.ExpressionCompiler;
-using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
@@ -14,16 +11,14 @@ namespace GraphClimber
         private readonly IStateMemberProvider _stateMemberProvider;
         private readonly IMethodMapper _methodMapper;
         private readonly ClimbStore _climbStore;
-        private readonly IExpressionCompiler _compiler;
         private readonly CallProcessMutator _mutator;
 
-        public ClimbDelegateFactory(Type processorType, IStateMemberProvider stateMemberProvider, IMethodMapper methodMapper, ClimbStore climbStore, IExpressionCompiler compiler)
+        public ClimbDelegateFactory(Type processorType, IStateMemberProvider stateMemberProvider, IMethodMapper methodMapper, ClimbStore climbStore)
         {
             _processorType = processorType;
             _stateMemberProvider = stateMemberProvider;
             _methodMapper = methodMapper;
             _climbStore = climbStore;
-            _compiler = compiler;
             _mutator = new CallProcessMutator(_processorType, _methodMapper);
         }
 
@@ -77,7 +72,7 @@ namespace GraphClimber
                     "Climb_" + runtimeType.Name,
                     new[] {processor, value});
 
-            ClimbDelegate<T> result = _compiler.Compile(lambda);
+            ClimbDelegate<T> result = lambda.Compile();
 
             return result;
         }
@@ -138,7 +133,7 @@ namespace GraphClimber
                     "Climb_" + runtimeType.Name,
                     new[] { processor, value });
 
-            ClimbDelegate<T> result = _compiler.Compile(lambda);
+            ClimbDelegate<T> result = lambda.Compile();
 
             return result;
 

@@ -1,26 +1,22 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using GraphClimber.ExpressionCompiler;
-using GraphClimber.ExpressionCompiler.Extensions;
 
 namespace GraphClimber
 {
     internal class RouteDelegateFactory
     {
         private readonly IClimbStore _climbStore;
-        private readonly IExpressionCompiler _compiler;
         private readonly Type _processorType;
         private readonly SpecialMethodMutator _specialMutator;
         private readonly IMethodMapper _methodMapper;
 
-        public RouteDelegateFactory(Type processorType, IMethodMapper methodMapper, IClimbStore climbStore, IExpressionCompiler compiler)
+        public RouteDelegateFactory(Type processorType, IMethodMapper methodMapper, IClimbStore climbStore)
         {
             _processorType = processorType;
             _climbStore = climbStore;
             _specialMutator = new SpecialMethodMutator(processorType);
             _methodMapper = methodMapper;
-            _compiler = compiler;
         }
 
         public RouteDelegate GetRouteDelegate(IStateMember member, Type runtimeMemberType)
@@ -58,7 +54,7 @@ namespace GraphClimber
                     "Route_" + runtimeMemberType.Name,
                     new[] {processor, owner, skipSpecialMethods});
 
-            return _compiler.Compile(lambda);
+            return lambda.Compile();
         }
     }
 }
