@@ -283,7 +283,7 @@ namespace GraphClimber.Examples
         public void ProcessEnumForWriteOnly<[IsEnum] TEnum, TUnderlying>
             (IEnumReadWriteExactValueDescriptor<TEnum, TUnderlying> descriptor)
             where TUnderlying : IConvertible
-            where TEnum : IConvertible
+            where TEnum : Enum, IConvertible
         {
             IStateMember underlying = descriptor.UnderlyingValueStateMember;
 

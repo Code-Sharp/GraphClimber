@@ -142,7 +142,7 @@ namespace GraphClimber.Examples
         public void ProcessEnumForReadOnly<[IsEnum]TEnum, TUnderlying>
             (IReadOnlyEnumExactValueDescriptor<TEnum, TUnderlying> descriptor)
             where TUnderlying : IConvertible
-            where TEnum : IConvertible
+            where TEnum : Enum
         {
             WriteAssemblyQualifiedNameIfNeeded((BinaryStateMember)descriptor.StateMember, typeof (TEnum));
 

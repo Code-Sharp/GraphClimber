@@ -5,7 +5,7 @@ namespace GraphClimber
     internal class EnumReadOnlyDescriptor<TField, TRuntime, TUnderlying> :
         ReadOnlyDescriptor<TField, TRuntime>,
         IReadOnlyEnumExactValueDescriptor<TRuntime, TUnderlying>
-        where TRuntime : TField, IConvertible
+        where TRuntime : Enum, TField
         where TUnderlying : IConvertible
     {
         // TRuntime is Enum!
@@ -29,7 +29,7 @@ namespace GraphClimber
         WriteOnlyDescriptor<TField>,
         IWriteOnlyEnumExactValueDescriptor<TField, TUnderlying>
         where TUnderlying : IConvertible
-        where TField : IConvertible
+        where TField : Enum
     {
         // TField is Enum!
         public EnumWriteOnlyDescriptor(object processor,
@@ -48,7 +48,7 @@ namespace GraphClimber
     }
 
     public interface IEnumReadWriteExactValueDescriptor<TEnum, TUnderlying> : IReadOnlyEnumExactValueDescriptor<TEnum, TUnderlying>, IWriteOnlyEnumExactValueDescriptor<TEnum, TUnderlying> 
-        where TEnum : IConvertible 
+        where TEnum : Enum, IConvertible 
         where TUnderlying : IConvertible
     {
     }
@@ -56,7 +56,7 @@ namespace GraphClimber
     internal class EnumReadWriteDescriptor<TField, TRuntime, TUnderlying> :
         ReadWriteDescriptor<TField, TRuntime>, 
         IEnumReadWriteExactValueDescriptor<TRuntime, TUnderlying> 
-        where TRuntime : TField, IConvertible 
+        where TRuntime : Enum, TField 
         where TUnderlying : IConvertible
     {
         // TRuntime is Enum!

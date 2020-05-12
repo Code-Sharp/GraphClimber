@@ -14,7 +14,7 @@ namespace GraphClimber
     public interface IReadOnlyEnumExactValueDescriptor<TEnum, TUnderlying> : 
         IEnumValueDescriptor,
         IReadOnlyExactValueDescriptor<TEnum>
-        where TEnum : IConvertible
+        where TEnum : Enum
         where TUnderlying : IConvertible
     {
         /// <summary>
@@ -31,7 +31,7 @@ namespace GraphClimber
     public interface IWriteOnlyEnumExactValueDescriptor<TEnum, TUnderlying> :
         IEnumValueDescriptor,
         IWriteOnlyExactValueDescriptor<TEnum>
-        where TEnum : IConvertible
+        where TEnum : Enum
         where TUnderlying : IConvertible
     {
         /// <summary>
