@@ -19,7 +19,8 @@ namespace GraphClimber
             _methodMapper = methodMapper;
         }
 
-        public RouteDelegate GetRouteDelegate(IStateMember member, Type runtimeMemberType)
+        public RouteDelegate GetRouteDelegate(IStateMember member, Type runtimeMemberType,
+                                              IStateMemberProvider stateMemberProvider)
         {
             ParameterExpression processor = Expression.Parameter(typeof (object), "processor");
             ParameterExpression owner = Expression.Parameter(typeof (object), "owner");
@@ -31,7 +32,7 @@ namespace GraphClimber
             DescriptorWriter descriptorWriter = new DescriptorWriter(_climbStore);
 
             DescriptorVariable descriptor =
-                descriptorWriter.GetDescriptor(processor, owner, member, runtimeMemberType);
+                descriptorWriter.GetDescriptor(processor, owner, member, runtimeMemberType, stateMemberProvider);
 
             MethodInfo methodToCall =
                 _methodMapper.GetMethod(_processorType, member, runtimeMemberType, true);

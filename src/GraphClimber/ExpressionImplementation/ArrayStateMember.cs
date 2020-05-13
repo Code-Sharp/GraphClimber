@@ -92,5 +92,13 @@ namespace GraphClimber
                 return _indices;
             }
         }
+
+        public IEnumerable<string> Aliases
+        {
+            get
+            {
+                yield break;
+            }
+        }
     }
 }

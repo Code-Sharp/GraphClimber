@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -60,6 +61,14 @@ namespace GraphClimber.ValueDescriptor
         {
             get { throw new NotImplementedException(); }
         }
+
+        public IEnumerable<string> Aliases
+        {
+            get
+            {
+                yield return Name;
+            }
+        }
     }
 
     public class StrongBoxStateMember<T> : IStateMember
@@ -118,6 +127,13 @@ namespace GraphClimber.ValueDescriptor
             get { throw new NotImplementedException(); }
         }
 
+        public IEnumerable<string> Aliases
+        {
+            get
+            {
+                yield return Name;
+            }
+        }
         public MemberInfo UnderlyingMemberInfo
         {
             get { throw new NotImplementedException(); }

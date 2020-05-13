@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -56,6 +57,14 @@ namespace GraphClimber
         public int[] ElementIndex
         {
             get { return _underlying.ElementIndex; }
+        }
+
+        public IEnumerable<string> Aliases
+        {
+            get
+            {
+                yield return Name;
+            }
         }
 
         protected bool Equals(EnumUnderlyingStateMember<TEnum> other)

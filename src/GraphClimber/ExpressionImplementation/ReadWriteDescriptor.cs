@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace GraphClimber
 {    
     internal class ReadWriteDescriptor<TField, TRuntime> :
@@ -9,7 +12,8 @@ namespace GraphClimber
         IWriteOnlyValueDescriptor<TField>
         where TRuntime : TField
     {
-        public ReadWriteDescriptor(object processor, object owner, MemberLocal<TField, TRuntime> member, IClimbStore climbStore) :
+        public ReadWriteDescriptor(object processor, object owner, MemberLocal<TField, TRuntime> member,
+                                   IClimbStore climbStore) :
             base(processor, owner, member, climbStore)
         {
         }

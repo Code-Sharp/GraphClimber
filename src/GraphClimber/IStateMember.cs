@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace GraphClimber
@@ -57,5 +58,10 @@ namespace GraphClimber
         /// Gets the index of this element in the array.
         /// </summary>
         int[] ElementIndex { get; }
+
+        /// <summary>
+        /// Gets a list of aliases for this member.
+        /// </summary>
+        IEnumerable<string> Aliases { get; }
     }
 }

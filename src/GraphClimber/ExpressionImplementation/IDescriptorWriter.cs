@@ -9,6 +9,7 @@ namespace GraphClimber
             (Expression processor,
                 Expression owner,
                 IStateMember member,
-                Type runtimeType);
+                Type runtimeType,
+                IStateMemberProvider stateMemberProvider);
     }
 }

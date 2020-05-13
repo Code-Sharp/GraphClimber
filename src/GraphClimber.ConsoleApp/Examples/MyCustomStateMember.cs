@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -19,6 +20,8 @@ namespace GraphClimber.Examples
         {
             get { return _underlying.ElementIndex; }
         }
+
+        public IEnumerable<string> Aliases => _underlying.Aliases;
 
         public bool IsArrayElement
         {

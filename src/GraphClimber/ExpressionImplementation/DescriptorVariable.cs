@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,7 +12,8 @@ namespace GraphClimber
         private readonly ParameterExpression _reference;
         private readonly BinaryExpression _descriptorDeclaration;
 
-        public DescriptorVariable(IClimbStore store, Expression processor, Expression owner, IStateMember member, Type runtimeType)
+        public DescriptorVariable(IClimbStore store, Expression processor, Expression owner, IStateMember member,
+                                  Type runtimeType, IStateMemberProvider stateMemberProvider)
         {
             Type descriptorType =
                 DescriptorExtensions.GetDescriptorType(member, runtimeType);
@@ -20,7 +23,7 @@ namespace GraphClimber
 
             _reference = Expression.Variable(descriptorType, member.Name.FirstLowerCase() + "Descriptor" );
 
-            object memberLocal = Activator.CreateInstance(memberLocalType, store, member);
+            object memberLocal = Activator.CreateInstance(memberLocalType, store, member, stateMemberProvider);
 
             ConstructorInfo constructor = descriptorType.GetConstructors().FirstOrDefault();
 
@@ -29,10 +32,10 @@ namespace GraphClimber
 
             NewExpression creation =
                 Expression.New(constructor,
-                    processor,
-                    owner.Convert(ownerParameterType),
-                    memberLocal.Constant(),
-                    store.Constant());
+                               processor,
+                               owner.Convert(ownerParameterType),
+                               memberLocal.Constant(),
+                               store.Constant());
 
             BinaryExpression assign = Expression.Assign(_reference, creation);
 

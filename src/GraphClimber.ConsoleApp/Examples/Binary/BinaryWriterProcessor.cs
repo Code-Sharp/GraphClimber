@@ -47,6 +47,8 @@ namespace GraphClimber.Examples
         [ProcessorMethod(Precedence = 102)]
         public void Process<T>(IReadOnlyValueDescriptor<T> descriptor)
         {
+            var children = descriptor.Children;
+
             T objectToSerialize = descriptor.Get();
 
             var runtimeType = objectToSerialize.GetType();

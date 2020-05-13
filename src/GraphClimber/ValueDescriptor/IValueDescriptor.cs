@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace GraphClimber
 {
@@ -11,6 +12,11 @@ namespace GraphClimber
         /// Gets the state member that owns the value
         /// </summary>
         IStateMember StateMember { get; }
+
+        /// <summary>
+        /// Gets the children of the current state member. Useful for forward-only readers.
+        /// </summary>
+        IReadOnlyDictionary<string, IStateMember> Children { get; }
 
         /// <summary>
         /// Gets the owner of the field

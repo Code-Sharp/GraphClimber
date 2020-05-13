@@ -1,10 +1,18 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace GraphClimber
 {
     internal abstract class ValueDescriptor<TField, TRuntime> : IValueDescriptor
         where TRuntime : TField
     {
+        protected static readonly Lazy<IReadOnlyDictionary<string, IStateMember>> _emptyDictionaryInitializer =
+            new Lazy<IReadOnlyDictionary<string, IStateMember>>
+                (() =>
+                     new ReadOnlyDictionary<string, IStateMember
+                     >(new Dictionary<string, IStateMember>()));
+
         private readonly MemberLocal<TField, TRuntime> _member;
         private readonly IClimbStore _climbStore;
         protected readonly object _owner;
@@ -25,6 +33,14 @@ namespace GraphClimber
             get
             {
                 return _member.Member;
+            }
+        }
+
+        public IReadOnlyDictionary<string, IStateMember> Children
+        {
+            get
+            {
+                return _member.Children;
             }
         }
 

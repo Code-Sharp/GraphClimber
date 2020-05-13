@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -80,6 +81,14 @@ namespace GraphClimber
             get
             {
                 return EmptyIndex;
+            }
+        }
+
+        public IEnumerable<string> Aliases
+        {
+            get
+            {
+                yield return Name;
             }
         }
 

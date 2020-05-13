@@ -78,7 +78,8 @@ namespace GraphClimber
             DescriptorWriter writer = new DescriptorWriter(_climbStore);
 
             DescriptorVariable descriptor =
-                writer.GetDescriptor(castedProcessor, owner, member, member.MemberType);
+                writer.GetDescriptor(castedProcessor, owner, member, member.MemberType,
+                                     _stateMemberProvider);
 
             Expression callProcessor =
                 _mutator.GetExpression(castedProcessor, owner, member, descriptor.Reference);

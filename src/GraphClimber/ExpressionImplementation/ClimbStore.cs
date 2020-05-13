@@ -4,6 +4,7 @@ namespace GraphClimber
 {
     internal class ClimbStore : IClimbStore
     {
+        private readonly IStateMemberProvider _stateMemberProvider;
         private readonly AccessorDelegateCache _setters = new AccessorDelegateCache();
         private readonly AccessorDelegateCache _getters = new AccessorDelegateCache();
         private readonly AccessorDelegateCache _boxSetters = new AccessorDelegateCache();
@@ -17,6 +18,7 @@ namespace GraphClimber
 
         public ClimbStore(Type processorType, IStateMemberProvider stateMemberProvider, IMethodMapper methodMapper)
         {
+            _stateMemberProvider = stateMemberProvider;
             _accessorFactory = new AccessorFactory();
             _routeFactory = new RouteDelegateFactory(processorType, methodMapper, this);
             _climbFactory = new ClimbDelegateFactory(processorType, stateMemberProvider, methodMapper, this);
@@ -40,7 +42,7 @@ namespace GraphClimber
         {
             return _routes.GetOrAdd(member, runtimeMemberType,
                 (memberKey, runtimeTypeKey) =>
-                    _routeFactory.GetRouteDelegate(memberKey, runtimeTypeKey));
+                    _routeFactory.GetRouteDelegate(memberKey, runtimeTypeKey, _stateMemberProvider));
         }
 
         public ClimbDelegate<TField> GetClimb<TField>(Type runtimeType)

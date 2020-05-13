@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace GraphClimber
 {
@@ -10,13 +13,17 @@ namespace GraphClimber
         private readonly Lazy<ClimbDelegate<object>> _structClimb;
 
         private readonly IStateMember _member;
+        private readonly IStateMemberProvider _provider;
+        private readonly Lazy<IReadOnlyDictionary<string, IStateMember>> _children;
 
         public MemberLocal(IClimbStore climbStore,
-            IStateMember member)
+                           IStateMember member,
+                           IStateMemberProvider provider)
         {
             _member = member;
-    
-            _getter = 
+            _provider = provider;
+
+            _getter =
                 new Lazy<Func<object, TField>>(() => climbStore.GetGetter<TField>(member));
 
             _setter =
@@ -29,6 +36,8 @@ namespace GraphClimber
             _structClimb =
                 new Lazy<ClimbDelegate<object>>
                     (() => climbStore.GetClimb<object>(typeof(TRuntime)));
+
+            _children = GetChildrenLazy(typeof(TRuntime), provider);
         }
 
         public Func<object, TField> Getter
@@ -68,6 +77,28 @@ namespace GraphClimber
             get
             {
                 return _member;
+            }
+        }
+
+        public IReadOnlyDictionary<string, IStateMember> Children { get; }
+
+        private Lazy<IReadOnlyDictionary<string, IStateMember>> GetChildrenLazy(Type runtimeType, IStateMemberProvider memberProvider)
+        {
+            return new Lazy<IReadOnlyDictionary<string, IStateMember>>(CreateChildrenDictionary);
+
+            IReadOnlyDictionary<string, IStateMember> CreateChildrenDictionary() =>
+                new ReadOnlyDictionary<string, IStateMember>(GetChildren()
+                                                                 .ToDictionary(x => x.alias, x => x.stateMember));
+
+            IEnumerable<(string alias, IStateMember stateMember)> GetChildren()
+            {
+                foreach (IStateMember stateMember in memberProvider.Provide(runtimeType))
+                {
+                    foreach (string alias in stateMember.Aliases ?? Enumerable.Empty<string>())
+                    {
+                        yield return (alias, stateMember);
+                    }
+                }
             }
         }
     }

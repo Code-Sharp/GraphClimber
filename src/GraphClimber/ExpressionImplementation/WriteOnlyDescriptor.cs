@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace GraphClimber
 {
@@ -8,7 +9,8 @@ namespace GraphClimber
         private bool _setCalled;
         private TField _newValue;
 
-        public WriteOnlyDescriptor(object processor, object owner, MemberLocal<TField, TField> member, IClimbStore climbStore)
+        public WriteOnlyDescriptor(object processor, object owner, MemberLocal<TField, TField> member,
+                                   IClimbStore climbStore)
             : base(processor, owner, member, climbStore)
         {
         }

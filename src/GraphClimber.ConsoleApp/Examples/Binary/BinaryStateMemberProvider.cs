@@ -116,6 +116,8 @@ namespace GraphClimber.Examples
             get { return _stateMember.ElementIndex; }
         }
 
+        public IEnumerable<string> Aliases => _stateMember.Aliases;
+
         public bool KnownType
         {
             get { return _knownType; }

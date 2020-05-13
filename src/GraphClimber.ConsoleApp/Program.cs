@@ -82,14 +82,12 @@ namespace GraphClimber
         {
             BinaryFormatter formatter = new BinaryFormatter();
 
-            var person = new Box<string[,]>{Value = new [,]{{"abc", "abc", "abc"},{"2","3","4"}}};
-
             //object person = GetPerson();
 
-            //IPerson structure = new Person2() { Age = 25, Surprise = Days.Monday };
-            //person = new PersonHolder() { A = structure, B = structure, C = structure };
+            IPerson structure = new Person2() { Age = 25, Surprise = Days.Monday };
+            object person = new PersonHolder() { A = structure, B = structure, C = structure };
 
-            //structure.IncreaseAge();
+            structure.IncreaseAge();
 
             var stream = new MemoryStream();
             IWriter loggingWriter = new LoggingWriter(new CompressingWriter(new BinaryWriterAdapter(new BinaryWriter(stream))), Console.Out);

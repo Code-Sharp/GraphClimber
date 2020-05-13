@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace GraphClimber
 {
@@ -61,9 +62,9 @@ namespace GraphClimber
     {
         // TRuntime is Enum!
         public EnumReadWriteDescriptor(object processor,
-            object owner,
-            MemberLocal<TField, TRuntime> member,
-            IClimbStore climbStore)
+                                       object owner,
+                                       MemberLocal<TField, TRuntime> member,
+                                       IClimbStore climbStore)
             : base(processor, owner, member, climbStore)
         {
         }
