@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Xml;
-using System.Xml.Linq;
 
 namespace GraphClimber.Examples
 {
@@ -18,8 +17,6 @@ namespace GraphClimber.Examples
         {
             XmlReader reader = _reader;
 
-            IStateMember member = descriptor.StateMember;
-
             object owner = CreateObject(descriptor);
 
             reader.Read();
@@ -28,6 +25,7 @@ namespace GraphClimber.Examples
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
+                    IStateMember member;
                     if (descriptor.Children.TryGetValue(reader.Name, out member))
                     {
                         descriptor.Route(member, owner, false);
@@ -82,7 +80,6 @@ namespace GraphClimber.Examples
             int value = _reader.ReadElementContentAsInt();
             descriptor.Set(value);
         }
-
 
         [ProcessorMethod]
         public void ProcessString(IWriteOnlyExactValueDescriptor<string> descriptor)
