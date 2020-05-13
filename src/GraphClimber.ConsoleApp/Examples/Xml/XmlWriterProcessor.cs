@@ -61,9 +61,8 @@ namespace GraphClimber.Examples
 
         public void ProcessNull<TField>(IWriteOnlyValueDescriptor<TField> descriptor)
         {
-            //WritePropertyName(descriptor);
-            //_writer.WriteValue("null");
-            //EndWritePropertyName();
+            WritePropertyName(descriptor);
+            EndWritePropertyName();
         }
     }
 }

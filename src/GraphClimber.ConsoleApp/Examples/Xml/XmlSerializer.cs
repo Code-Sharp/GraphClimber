@@ -6,13 +6,15 @@ namespace GraphClimber.Examples
     public class XmlSerializer
     {
         private readonly IGraphClimber<XmlWriterProcessor> _writerClimber;
-        private readonly IGraphClimber<XmlReaderProcessor> _readerClimber;
+        private readonly IGraphClimber<XElementReaderProcessor> _readerClimber;
+        private readonly IGraphClimber<XmlTextReaderProcessor> _newReaderClimber;
 
         public XmlSerializer()
         {
             IStateMemberProvider memberProvider = new CachingStateMemberProvider(new PropertyStateMemberProvider());
             
-            _readerClimber = DefaultGraphClimber<XmlReaderProcessor>.Create(memberProvider);
+            _newReaderClimber = DefaultGraphClimber<XmlTextReaderProcessor>.Create(memberProvider);
+            _readerClimber = DefaultGraphClimber<XElementReaderProcessor>.Create(memberProvider);
             _writerClimber = DefaultGraphClimber<XmlWriterProcessor>.Create(memberProvider);
         }
 
@@ -29,9 +31,22 @@ namespace GraphClimber.Examples
 
         public T Deserialize<T>(XElement element)
         {
-            XmlReaderProcessor processor = new XmlReaderProcessor(element);
+            XElementReaderProcessor processor = new XElementReaderProcessor(element);
             Box<T> box = new Box<T>();
             _readerClimber.Climb(box, processor);
+            return box.Value;
+        }
+
+        public object Deserialize(XmlReader reader)
+        {
+            return Deserialize<object>(reader);
+        }
+
+        public T Deserialize<T>(XmlReader reader)
+        {
+            XmlTextReaderProcessor processor = new XmlTextReaderProcessor(reader);
+            Box<T> box = new Box<T>();
+            _newReaderClimber.Climb(box, processor);
             return box.Value;
         }
     }

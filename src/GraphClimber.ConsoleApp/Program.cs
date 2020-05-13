@@ -134,6 +134,7 @@ namespace GraphClimber
             string xml = stringWriter.ToString();
 
             object result = serializer.Deserialize(XElement.Parse(xml));
+            object result2 = serializer.Deserialize(XmlReader.Create(new StringReader(xml)));
         }
 
         public struct MyClass

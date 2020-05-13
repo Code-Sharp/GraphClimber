@@ -80,7 +80,13 @@ namespace GraphClimber
             }
         }
 
-        public IReadOnlyDictionary<string, IStateMember> Children { get; }
+        public IReadOnlyDictionary<string, IStateMember> Children
+        {
+            get
+            {
+                return _children.Value;
+            }
+        }
 
         private Lazy<IReadOnlyDictionary<string, IStateMember>> GetChildrenLazy(Type runtimeType, IStateMemberProvider memberProvider)
         {

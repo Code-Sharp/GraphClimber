@@ -3,11 +3,11 @@ using System.Xml.Linq;
 
 namespace GraphClimber.Examples
 {
-    internal class XmlReaderProcessor
+    internal class XElementReaderProcessor
     {
         private XElement _reader;
 
-        public XmlReaderProcessor(XElement reader)
+        public XElementReaderProcessor(XElement reader)
         {
             _reader = reader;
         }
@@ -30,7 +30,7 @@ namespace GraphClimber.Examples
             XElement element =
                 _reader.Element(descriptor.StateMember.Name);
 
-            if (element != null)
+            if ((element != null) && !element.IsEmpty)
             {
                 string result = element.Value;
 
