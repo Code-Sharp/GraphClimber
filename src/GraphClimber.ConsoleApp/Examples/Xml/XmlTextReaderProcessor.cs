@@ -87,7 +87,17 @@ namespace GraphClimber.Examples
         [ProcessorMethod]
         public void ProcessString(IWriteOnlyExactValueDescriptor<string> descriptor)
         {
-            string value = _reader.ReadElementContentAsString();
+            string value = null;
+
+            if (_reader.IsEmptyElement)
+            {
+                _reader.Read();
+            }
+            else
+            {
+                value = _reader.ReadElementContentAsString();
+            }
+
             descriptor.Set(value);
         }
     }
