@@ -11,20 +11,20 @@ namespace GraphClimber
         private readonly Type _arrayType;
         private readonly Type _arrayElementType;
         private readonly int[] _indices;
+        private readonly int _arrayRank;
 
-        public ArrayStateMember(Type arrayType, Type arrayElementType, int[] indices)
+        public ArrayStateMember(Type arrayType, Type arrayElementType, int arrayRank)
         {
             _arrayType = arrayType;
             _arrayElementType = arrayElementType;
-            _indices = indices;
+            _arrayRank = arrayRank;
         }
 
         public string Name
         {
             get
             {
-                return string.Format("[{0}]",
-                                     string.Join(", ", _indices));
+                return _arrayType.FullName;
             }
         }
 
@@ -54,43 +54,26 @@ namespace GraphClimber
             get { return true; }
         }
 
-        public Expression GetGetExpression(Expression obj)
+        public Expression GetGetExpression(Expression obj, Expression indices)
         {
-            Expression getExpression = ArrayAccess(obj);
+            Expression getExpression = ArrayAccess(obj, indices);
             return getExpression;
         }
 
-        private Expression ArrayAccess(Expression obj)
+        private Expression ArrayAccess(Expression obj, Expression indices)
         {
-            ConstantExpression array = Expression.Constant(_indices, typeof(int[]));
-
-            IEnumerable<BinaryExpression> indices =
-                Enumerable.Range(0, _indices.Length)
-                          .Select(x => Expression.ArrayIndex(array,
+            IEnumerable<BinaryExpression> indexAccess =
+                Enumerable.Range(0, _arrayRank)
+                          .Select(x => Expression.ArrayIndex(indices,
                                                              Expression.Constant(x)));
-            return Expression.ArrayAccess(obj.Convert(this._arrayType), indices);
+
+            return Expression.ArrayAccess(obj.Convert(this._arrayType), indexAccess);
         }
 
-        public Expression GetSetExpression(Expression obj, Expression value)
+        public Expression GetSetExpression(Expression obj, Expression indices, Expression value)
         {
-            Expression arrayAccess = ArrayAccess(obj);
+            Expression arrayAccess = ArrayAccess(obj, indices);
             return Expression.Assign(arrayAccess, value);
-        }
-
-        public bool IsArrayElement
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        public int[] ElementIndex
-        {
-            get
-            {
-                return _indices;
-            }
         }
 
         public IEnumerable<string> Aliases

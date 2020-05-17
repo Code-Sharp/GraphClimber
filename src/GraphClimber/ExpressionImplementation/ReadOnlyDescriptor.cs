@@ -9,9 +9,10 @@ namespace GraphClimber
         IReadOnlyExactValueDescriptor<TRuntime>
         where TRuntime : TField
     {
-        public ReadOnlyDescriptor(object processor, object owner, MemberLocal<TField, TRuntime> member,
+        public ReadOnlyDescriptor(object processor, object owner, int[] elementIndex,
+                                  MemberLocal<TField, TRuntime> member,
                                   IClimbStore climbStore)
-            : base(processor, owner, member, climbStore)
+            : base(processor, owner, elementIndex, member, climbStore)
         {
         }
 

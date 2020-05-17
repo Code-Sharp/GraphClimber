@@ -11,10 +11,11 @@ namespace GraphClimber
     {
         // TRuntime is Enum!
         public EnumReadOnlyDescriptor(object processor,
-            object owner,
-            MemberLocal<TField, TRuntime> member,
-            IClimbStore climbStore)
-            : base(processor, owner, member, climbStore)
+                                      object owner,
+                                      int[] elementIndex,
+                                      MemberLocal<TField, TRuntime> member,
+                                      IClimbStore climbStore)
+            : base(processor, owner, elementIndex, member, climbStore)
         {
         }
 
@@ -34,10 +35,11 @@ namespace GraphClimber
     {
         // TField is Enum!
         public EnumWriteOnlyDescriptor(object processor,
-            object owner,
-            MemberLocal<TField, TField> member,
-            IClimbStore climbStore)
-            : base(processor, owner, member, climbStore)
+                                       object owner,
+                                       int[] elementIndex,
+                                       MemberLocal<TField, TField> member,
+                                       IClimbStore climbStore)
+            : base(processor, owner, elementIndex, member, climbStore)
         {
         }
 
@@ -63,9 +65,10 @@ namespace GraphClimber
         // TRuntime is Enum!
         public EnumReadWriteDescriptor(object processor,
                                        object owner,
+                                       int[] elementIndex,
                                        MemberLocal<TField, TRuntime> member,
                                        IClimbStore climbStore)
-            : base(processor, owner, member, climbStore)
+            : base(processor, owner, elementIndex, member, climbStore)
         {
         }
 

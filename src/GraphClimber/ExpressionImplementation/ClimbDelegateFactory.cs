@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace GraphClimber
 {
@@ -51,7 +52,7 @@ namespace GraphClimber
 
             foreach (IStateMember member in members)
             {
-                Expression callProcessor = CallProcessor(castedProcessor, owner, member, descriptorVariables, expressions);
+                Expression callProcessor = CallProcessor(castedProcessor, owner, EmptyIndex.Constant, member, descriptorVariables, expressions);
                 expressions.Add(callProcessor);
             }
 
@@ -69,8 +70,9 @@ namespace GraphClimber
         }
 
         private Expression CallProcessor
-        (Expression castedProcessor, 
-         Expression owner, 
+        (Expression castedProcessor,
+         Expression owner,
+         Expression indices,
          IStateMember member,
          List<ParameterExpression> methodVariables,
          List<Expression> methodAssignments)
@@ -78,11 +80,11 @@ namespace GraphClimber
             DescriptorWriter writer = new DescriptorWriter(_climbStore);
 
             DescriptorVariable descriptor =
-                writer.GetDescriptor(castedProcessor, owner, member, member.MemberType,
+                writer.GetDescriptor(castedProcessor, owner, indices, member, member.MemberType,
                                      _stateMemberProvider);
 
             Expression callProcessor =
-                _mutator.GetExpression(castedProcessor, owner, member, descriptor.Reference);
+                _mutator.GetExpression(castedProcessor, owner, member, descriptor.Reference, indices);
 
             methodVariables.Add(descriptor.Reference);
             methodAssignments.Add(descriptor.Declaration);
@@ -101,16 +103,21 @@ namespace GraphClimber
 
             var ranks = runtimeType.GetArrayRank();
 
-            int[] indices = new int[ranks];
-            var member = _stateMemberProvider.ProvideArrayMember(runtimeType, indices);
-
             List<ParameterExpression> variables = new List<ParameterExpression>();
             List<Expression> assignments = new List<Expression>();
 
-            Expression callExpression =
-                CallProcessor(castedProcessor, owner, member, variables, assignments);
+            //int[] indices = new int[ranks];
+            ParameterExpression indicesArray = Expression.Variable(typeof(int[]), "arrayIndex");
+            variables.Add(indicesArray);
+            assignments.Add(Expression.Assign(indicesArray, Expression.NewArrayBounds(typeof(int), ranks.Constant())));
 
-            var loop = LoopArrayBounds(ranks, owner, Expression.Constant(indices), callExpression, variables, assignments);
+            IStateMember member = _stateMemberProvider.ProvideArrayMember(runtimeType, ranks);
+
+            Expression callExpression =
+                CallProcessor(castedProcessor, owner, indicesArray, member, variables, assignments);
+
+            
+            var loop = LoopArrayBounds(ranks, indicesArray, owner, callExpression, variables, assignments);
 
             BlockExpression climbBody =
                 Expression.Block(variables,
@@ -128,18 +135,14 @@ namespace GraphClimber
 
         private static Expression LoopArrayBounds
         (int ranks,
+         ParameterExpression indicesArray,
          Expression owner,
-         Expression stateMemberArray,
          Expression callExpression,
          List<ParameterExpression> parameterExpressions,
          List<Expression> assignments)
         {
-            var loopIndex = Expression.Variable(typeof(int[]), "arrayIndex");
-
-            assignments.Add(Expression.Assign(loopIndex, Expression.NewArrayBounds(typeof(int), ranks.Constant())));
-
             var loopVariables =
-                Enumerable.Range(0, ranks).Select(r => Expression.ArrayAccess(loopIndex, Expression.Constant(r))).ToList();
+                Enumerable.Range(0, ranks).Select(r => Expression.ArrayAccess(indicesArray, Expression.Constant(r))).ToList();
 
             var upperBoundParameters =
                 Enumerable.Range(0, ranks).Select(r => Expression.Variable(typeof(int), "upper_" + r)).ToList();
@@ -164,21 +167,12 @@ namespace GraphClimber
 
                 assignments.Add(currentUpperBoundAssignment);
 
-                Expression binaryExpression = Expression.ArrayAccess(stateMemberArray,
-                                                             Expression.Constant(rank));
-                Expression setIndexer =
-                    Expression.Assign(binaryExpression,
-                                      loopVariables[rank]);
-
-                Expression setIndexerAndCallMethod = 
-                    Expression.Block(setIndexer, callExpression);
-
                 var loopBody =
                     Expression.Block(
                                      Expression.IfThen(
                                                        Expression.GreaterThan(loopVariables[rank], upperBoundParameters[rank]),
                                                        Expression.Goto(breakTarget)),
-                                     setIndexerAndCallMethod,
+                                     callExpression,
                                      Expression.PostIncrementAssign(loopVariables[rank]),
                                      Expression.Goto(continueTarget));
 
@@ -187,7 +181,6 @@ namespace GraphClimber
                     Expression.Loop(loopBody, breakTarget, continueTarget));
             }
 
-            parameterExpressions.Add(loopIndex);
             parameterExpressions.AddRange(upperBoundParameters);
 
             return callExpression;

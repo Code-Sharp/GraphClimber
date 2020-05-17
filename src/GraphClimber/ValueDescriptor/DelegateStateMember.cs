@@ -42,24 +42,14 @@ namespace GraphClimber.ValueDescriptor
             get { return false; }
         }
 
-        public Expression GetGetExpression(Expression obj)
+        public Expression GetGetExpression(Expression obj, Expression indices)
         {
             return _value.Constant();
         }
 
-        public Expression GetSetExpression(Expression obj, Expression value)
+        public Expression GetSetExpression(Expression obj, Expression indices, Expression value)
         {
             return Expression.Empty();
-        }
-
-        public bool IsArrayElement
-        {
-            get { return false; }
-        }
-
-        public int[] ElementIndex
-        {
-            get { throw new NotImplementedException(); }
         }
 
         public IEnumerable<string> Aliases
@@ -107,12 +97,12 @@ namespace GraphClimber.ValueDescriptor
             get { return true; }
         }
 
-        public Expression GetGetExpression(Expression obj)
+        public Expression GetGetExpression(Expression obj, Expression indices)
         {
             throw new NotImplementedException();
         }
 
-        public Expression GetSetExpression(Expression obj, Expression value)
+        public Expression GetSetExpression(Expression obj, Expression indices, Expression value)
         {
             throw new NotImplementedException();
         }

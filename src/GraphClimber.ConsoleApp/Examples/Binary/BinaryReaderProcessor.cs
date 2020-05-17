@@ -43,7 +43,8 @@ namespace GraphClimber.Examples
             if (TryReadReferenceType(descriptor, out type))
             {
                 // Do not create instance when predefined type, Just route to it.
-                if (BinaryReaderWriterExtensions.IsPredefinedType(type))
+                if (BinaryReaderWriterExtensions.IsPredefinedType(type) ||
+                    type.IsArray)
                 {
                     descriptor.Route(
                         new BinaryStateMember

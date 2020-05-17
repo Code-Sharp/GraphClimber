@@ -25,6 +25,7 @@ namespace GraphClimber
             ParameterExpression processor = Expression.Parameter(typeof (object), "processor");
             ParameterExpression owner = Expression.Parameter(typeof (object), "owner");
             ParameterExpression skipSpecialMethods = Expression.Parameter(typeof (bool), "skipSpecialMethods");
+            ParameterExpression elementIndex = Expression.Parameter(typeof(int[]), "elementIndex");
 
             var castedProcessor =
                 processor.Convert(_processorType);
@@ -32,7 +33,7 @@ namespace GraphClimber
             DescriptorWriter descriptorWriter = new DescriptorWriter(_climbStore);
 
             DescriptorVariable descriptor =
-                descriptorWriter.GetDescriptor(processor, owner, member, runtimeMemberType, stateMemberProvider);
+                descriptorWriter.GetDescriptor(processor, owner, elementIndex, member, runtimeMemberType, stateMemberProvider);
 
             MethodInfo methodToCall =
                 _methodMapper.GetMethod(_processorType, member, runtimeMemberType, true);
@@ -41,7 +42,8 @@ namespace GraphClimber
                 Expression.Call(castedProcessor, methodToCall, descriptor.Reference);
 
             Expression callProcessWithSpecialMethods =
-                _specialMutator.Mutate(callProcess, castedProcessor, owner, member, descriptor.Reference);
+                _specialMutator.Mutate(callProcess, castedProcessor, owner, member, descriptor.Reference,
+                                       EmptyIndex.Constant);
 
             BlockExpression body =
                 Expression.Block(new[] {descriptor.Reference},
@@ -53,7 +55,7 @@ namespace GraphClimber
             Expression<RouteDelegate> lambda =
                 Expression.Lambda<RouteDelegate>(body,
                     "Route_" + runtimeMemberType.Name,
-                    new[] {processor, owner, skipSpecialMethods});
+                    new[] {processor, owner, skipSpecialMethods, elementIndex});
 
             return lambda.Compile();
         }

@@ -19,6 +19,6 @@ namespace GraphClimber
         IEnumerable<IStateMember> Provide(Type type);
 
         // TODO: rethink about this one.
-        IStateMember ProvideArrayMember(Type arrayType, int[] indices);
+        IStateMember ProvideArrayMember(Type arrayType, int arrayLength);
     }
 }

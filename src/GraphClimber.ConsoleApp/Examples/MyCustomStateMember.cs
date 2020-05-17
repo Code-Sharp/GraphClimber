@@ -16,17 +16,17 @@ namespace GraphClimber.Examples
             _memberType = memberType;
         }
 
-        public int[] ElementIndex
+        public Expression GetGetExpression(Expression obj, Expression indices)
         {
-            get { return _underlying.ElementIndex; }
+            return _underlying.GetGetExpression(obj, indices);
+        }
+
+        public Expression GetSetExpression(Expression obj, Expression indices, Expression value)
+        {
+            return _underlying.GetSetExpression(obj, indices, value);
         }
 
         public IEnumerable<string> Aliases => _underlying.Aliases;
-
-        public bool IsArrayElement
-        {
-            get { return _underlying.IsArrayElement; }
-        }
 
         public string Name
         {
@@ -54,16 +54,6 @@ namespace GraphClimber.Examples
         public bool CanWrite
         {
             get { return _underlying.CanWrite; }
-        }
-
-        public Expression GetGetExpression(Expression obj)
-        {
-            return _underlying.GetGetExpression(obj);
-        }
-
-        public Expression GetSetExpression(Expression obj, Expression value)
-        {
-            return _underlying.GetSetExpression(obj, value);
         }
 
         protected bool Equals(MyCustomStateMember other)

@@ -18,12 +18,15 @@ namespace GraphClimber
         protected readonly object _owner;
         private readonly object _processor;
         private readonly bool _isStructMember;
+        private readonly int[] _elementIndex;
 
-        protected ValueDescriptor(object processor, object owner, MemberLocal<TField, TRuntime> member, IClimbStore climbStore)
+        protected ValueDescriptor(object processor, object owner, int[] elementIndex,
+                                  MemberLocal<TField, TRuntime> member, IClimbStore climbStore)
         {
             _owner = owner;
             _member = member;
             _climbStore = climbStore;
+            _elementIndex = elementIndex;
             _processor = processor;
             _isStructMember = Member.Member.OwnerType.IsValueType;
         }
@@ -49,6 +52,22 @@ namespace GraphClimber
             get
             {
                 return _owner;
+            }
+        }
+
+        public bool IsArrayElement
+        {
+            get
+            {
+                return ElementIndex.Length > 0;
+            }
+        }
+
+        public int[] ElementIndex
+        {
+            get
+            {
+                return _elementIndex;
             }
         }
 
@@ -139,7 +158,7 @@ namespace GraphClimber
         public void Route(IStateMember stateMember, Type runtimeMemberType, object owner, bool skipSpecialMethod)
         {
             RouteDelegate route = _climbStore.GetRoute(stateMember, runtimeMemberType);
-            route(_processor, owner, skipSpecialMethod);
+            route(_processor, owner, skipSpecialMethod, ElementIndex);
         }
 
         public void Route(IStateMember stateMember, object owner, bool skipSpecialMethod)
@@ -149,12 +168,12 @@ namespace GraphClimber
 
         public TRuntime Get()
         {
-            return (TRuntime) Member.Getter(Owner);
+            return (TRuntime) Member.Getter(Owner, ElementIndex);
         }
 
         public virtual void Set(TField value)
         {
-            Member.Setter(Owner, value);
+            Member.Setter(Owner, ElementIndex, value);
         }
 
         #region Enum Members

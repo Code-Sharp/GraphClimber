@@ -24,6 +24,16 @@ namespace GraphClimber
         object Owner { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this value is an array element.
+        /// </summary>
+        bool IsArrayElement { get; }
+
+        /// <summary>
+        /// Gets the index of this value in the array.
+        /// </summary>
+        int[] ElementIndex { get; }
+
+        /// <summary>
         /// Climbs on the (current) value that found in the field by the owner
         /// </summary>
         void Climb();

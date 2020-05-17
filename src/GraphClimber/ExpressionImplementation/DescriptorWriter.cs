@@ -13,10 +13,11 @@ namespace GraphClimber
             _store = store;
         }
 
-        public DescriptorVariable GetDescriptor(Expression processor, Expression owner, IStateMember member,
+        public DescriptorVariable GetDescriptor(Expression processor, Expression owner, Expression indices,
+                                                IStateMember member,
                                                 Type runtimeType, IStateMemberProvider stateMemberProvider)
         {
-            return new DescriptorVariable(_store, processor, owner, member, runtimeType, stateMemberProvider);
+            return new DescriptorVariable(_store, processor, owner, indices, member, runtimeType, stateMemberProvider);
         }
     }
 }

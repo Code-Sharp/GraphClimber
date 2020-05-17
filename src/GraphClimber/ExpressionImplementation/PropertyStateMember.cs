@@ -8,7 +8,6 @@ namespace GraphClimber
     internal class PropertyStateMember : IStateMember
     {
         private readonly PropertyInfo _property;
-        private static readonly int[] EmptyIndex = new int[0];
 
         public PropertyStateMember(PropertyInfo property)
         {
@@ -41,15 +40,15 @@ namespace GraphClimber
             get { return _property.CanWrite; }
         }
 
-        public Expression GetGetExpression(Expression obj)
+        public Expression GetGetExpression(Expression obj, Expression indices)
         {
             return
                 Expression.Property
                     (obj.Convert(_property.DeclaringType),
-                        _property);
+                     _property);
         }
 
-        public Expression GetSetExpression(Expression obj, Expression value)
+        public Expression GetSetExpression(Expression obj, Expression indices, Expression value)
         {
             Expression convertInstance;
 
@@ -66,23 +65,11 @@ namespace GraphClimber
 
             return
                 Expression.Assign(Expression.Property
-                    (convertInstance,
-                        _property),
-                    value.Convert(_property.PropertyType));
+                                      (convertInstance,
+                                       _property),
+                                  value.Convert(_property.PropertyType));
         }
 
-        public bool IsArrayElement
-        {
-            get { return false; }
-        }
-
-        public int[] ElementIndex
-        {
-            get
-            {
-                return EmptyIndex;
-            }
-        }
 
         public IEnumerable<string> Aliases
         {
@@ -90,24 +77,6 @@ namespace GraphClimber
             {
                 yield return Name;
             }
-        }
-
-        public MemberInfo UnderlyingMemberInfo
-        {
-            get
-            {
-                return _property;
-            }
-        }
-
-        public object GetValue(object owner)
-        {
-            return _property.GetValue(owner);
-        }
-
-        public void SetValue(object owner, object value)
-        {
-            _property.SetValue(owner, value);
         }
 
         protected bool Equals(PropertyStateMember other)

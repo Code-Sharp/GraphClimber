@@ -39,24 +39,14 @@ namespace GraphClimber
             get { return _underlying.CanWrite; }
         }
 
-        public Expression GetGetExpression(Expression obj)
+        public Expression GetGetExpression(Expression obj, Expression indices)
         {
-            return _underlying.GetGetExpression(obj).Convert(MemberType);
+            return _underlying.GetGetExpression(obj, indices).Convert(MemberType);
         }
 
-        public Expression GetSetExpression(Expression obj, Expression value)
+        public Expression GetSetExpression(Expression obj, Expression indices, Expression value)
         {
-            return _underlying.GetSetExpression(obj, value.Convert(_underlying.MemberType));
-        }
-
-        public bool IsArrayElement
-        {
-            get { return _underlying.IsArrayElement; }
-        }
-
-        public int[] ElementIndex
-        {
-            get { return _underlying.ElementIndex; }
+            return _underlying.GetSetExpression(obj, indices, value.Convert(_underlying.MemberType));
         }
 
         public IEnumerable<string> Aliases

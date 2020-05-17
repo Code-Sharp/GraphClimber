@@ -39,25 +39,16 @@ namespace GraphClimber
         /// </summary>
         /// <param name="obj">An expression of the object that owns the field</param>
         /// <returns></returns>
-        Expression GetGetExpression(Expression obj);
+        Expression GetGetExpression(Expression obj, Expression indices);
 
         /// <summary>
         /// Gets the set expression to the state member
         /// </summary>
         /// <param name="obj">An expression of the object that owns the field</param>
+        /// <param name="indices"></param>
         /// <param name="value">The value to be set</param>
         /// <returns></returns>
-        Expression GetSetExpression(Expression obj, Expression value);
-
-        /// <summary>
-        /// Gets a value indicating whether this member is an array element.
-        /// </summary>
-        bool IsArrayElement { get; }
-
-        /// <summary>
-        /// Gets the index of this element in the array.
-        /// </summary>
-        int[] ElementIndex { get; }
+        Expression GetSetExpression(Expression obj, Expression indices, Expression value);
 
         /// <summary>
         /// Gets a list of aliases for this member.

@@ -12,9 +12,10 @@ namespace GraphClimber
         IWriteOnlyValueDescriptor<TField>
         where TRuntime : TField
     {
-        public ReadWriteDescriptor(object processor, object owner, MemberLocal<TField, TRuntime> member,
+        public ReadWriteDescriptor(object processor, object owner, int[] elementIndex,
+                                   MemberLocal<TField, TRuntime> member,
                                    IClimbStore climbStore) :
-            base(processor, owner, member, climbStore)
+            base(processor, owner, elementIndex, member, climbStore)
         {
         }
 

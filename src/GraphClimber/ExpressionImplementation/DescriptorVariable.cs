@@ -12,7 +12,8 @@ namespace GraphClimber
         private readonly ParameterExpression _reference;
         private readonly BinaryExpression _descriptorDeclaration;
 
-        public DescriptorVariable(IClimbStore store, Expression processor, Expression owner, IStateMember member,
+        public DescriptorVariable(IClimbStore store, Expression processor, Expression owner, Expression indices,
+                                  IStateMember member,
                                   Type runtimeType, IStateMemberProvider stateMemberProvider)
         {
             Type descriptorType =
@@ -34,6 +35,7 @@ namespace GraphClimber
                 Expression.New(constructor,
                                processor,
                                owner.Convert(ownerParameterType),
+                               indices,
                                memberLocal.Constant(),
                                store.Constant());
 

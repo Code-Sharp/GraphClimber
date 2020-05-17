@@ -39,9 +39,9 @@ namespace GraphClimber
             return retVal;
         }
 
-        public IStateMember ProvideArrayMember(Type arrayType, int[] indices)
+        public IStateMember ProvideArrayMember(Type arrayType, int arrayLength)
         {
-            return _underlying.ProvideArrayMember(arrayType, indices);
+            return _underlying.ProvideArrayMember(arrayType, arrayLength);
         }
     }
 }

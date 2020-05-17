@@ -8,6 +8,7 @@ namespace GraphClimber
         DescriptorVariable GetDescriptor
             (Expression processor,
                 Expression owner,
+                Expression indices,
                 IStateMember member,
                 Type runtimeType,
                 IStateMemberProvider stateMemberProvider);

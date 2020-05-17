@@ -18,7 +18,8 @@ namespace GraphClimber
             _nullProcessorImplemented = typeof(INullProcessor).IsAssignableFrom(processorType);
         }
 
-        public Expression Mutate(Expression oldExpression, Expression processor, Expression owner, IStateMember member, Expression descriptor)
+        public Expression Mutate(Expression oldExpression, Expression processor, Expression owner, IStateMember member,
+                                 Expression descriptor, Expression indices)
         {
             if (!_nullProcessorImplemented)
             {
@@ -48,7 +49,7 @@ namespace GraphClimber
             //      oldExpression();
             // }
 
-            var value = member.GetGetExpression(owner);
+            var value = member.GetGetExpression(owner, indices);
 
             Expression body =
                 Expression.Condition(Expression.Equal(value, ExpressionExtensions.Null),

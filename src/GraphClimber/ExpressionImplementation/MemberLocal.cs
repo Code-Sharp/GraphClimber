@@ -7,8 +7,8 @@ namespace GraphClimber
 {
     internal class MemberLocal<TField, TRuntime>
     {
-        private readonly Lazy<Func<object, TField>> _getter;
-        private readonly Lazy<Action<object, TField>> _setter;
+        private readonly Lazy<Func<object, int[], TField>> _getter;
+        private readonly Lazy<Action<object, int[], TField>> _setter;
         private readonly Lazy<ClimbDelegate<TRuntime>> _climb;
         private readonly Lazy<ClimbDelegate<object>> _structClimb;
 
@@ -24,10 +24,10 @@ namespace GraphClimber
             _provider = provider;
 
             _getter =
-                new Lazy<Func<object, TField>>(() => climbStore.GetGetter<TField>(member));
+                new Lazy<Func<object, int[], TField>>(() => climbStore.GetGetter<TField>(member));
 
             _setter =
-                new Lazy<Action<object, TField>>(() => climbStore.GetSetter<TField>(member));
+                new Lazy<Action<object, int[], TField>>(() => climbStore.GetSetter<TField>(member));
 
             _climb =
                 new Lazy<ClimbDelegate<TRuntime>>
@@ -40,7 +40,7 @@ namespace GraphClimber
             _children = GetChildrenLazy(typeof(TRuntime), provider);
         }
 
-        public Func<object, TField> Getter
+        public Func<object, int[], TField> Getter
         {
             get
             {
@@ -48,7 +48,7 @@ namespace GraphClimber
             }
         }
 
-        public Action<object, TField> Setter
+        public Action<object, int[], TField> Setter
         {
             get
             {

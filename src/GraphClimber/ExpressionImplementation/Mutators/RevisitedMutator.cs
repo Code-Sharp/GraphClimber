@@ -24,7 +24,8 @@ namespace GraphClimber
             _isRevisitedProcessor = typeof(IRevisitedProcessor).IsAssignableFrom(processorType);
         }
 
-        public Expression Mutate(Expression oldExpression, Expression processor, Expression owner, IStateMember member, Expression descriptor)
+        public Expression Mutate(Expression oldExpression, Expression processor, Expression owner, IStateMember member,
+                                 Expression descriptor, Expression indices)
         {
             if (!_isRevisitedFilter && !_isRevisitedProcessor)
             {
@@ -52,7 +53,7 @@ namespace GraphClimber
             //      oldValue();
             // }
 
-            var value = member.GetGetExpression(owner);
+            var value = member.GetGetExpression(owner, indices);
 
             Expression body =
                 Expression.Condition(Expression.Call(processor, _visitedMethod, value),

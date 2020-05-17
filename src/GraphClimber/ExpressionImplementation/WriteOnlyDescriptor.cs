@@ -9,9 +9,10 @@ namespace GraphClimber
         private bool _setCalled;
         private TField _newValue;
 
-        public WriteOnlyDescriptor(object processor, object owner, MemberLocal<TField, TField> member,
+        public WriteOnlyDescriptor(object processor, object owner, int[] elementIndex,
+                                   MemberLocal<TField, TField> member,
                                    IClimbStore climbStore)
-            : base(processor, owner, member, climbStore)
+            : base(processor, owner, elementIndex, member, climbStore)
         {
         }
 

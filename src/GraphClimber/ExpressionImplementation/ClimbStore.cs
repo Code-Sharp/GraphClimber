@@ -24,14 +24,14 @@ namespace GraphClimber
             _climbFactory = new ClimbDelegateFactory(processorType, stateMemberProvider, methodMapper, this);
         }
 
-        public Action<object, T> GetSetter<T>(IStateMember member)
+        public Action<object, int[], T> GetSetter<T>(IStateMember member)
         {
             return _setters.GetOrAdd
                 (member,
                 key => _accessorFactory.GetSetter<T>(key));
         }
 
-        public Func<object, T> GetGetter<T>(IStateMember member)
+        public Func<object, int[], T> GetGetter<T>(IStateMember member)
         {
             return _getters.GetOrAdd
                 (member,

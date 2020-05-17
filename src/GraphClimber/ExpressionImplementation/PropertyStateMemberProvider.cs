@@ -14,9 +14,9 @@ namespace GraphClimber
                 .Select(property => new PropertyStateMember(property));
         }
 
-        public IStateMember ProvideArrayMember(Type arrayType, int[] indices)
+        public IStateMember ProvideArrayMember(Type arrayType, int arrayLength)
         {
-            return new ArrayStateMember(arrayType, arrayType.GetElementType(), indices);
+            return new ArrayStateMember(arrayType, arrayType.GetElementType(), arrayLength);
         }
     }
 }

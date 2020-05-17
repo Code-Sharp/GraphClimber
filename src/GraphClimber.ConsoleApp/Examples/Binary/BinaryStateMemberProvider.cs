@@ -21,9 +21,9 @@ namespace GraphClimber.Examples
                 .Select(x => new BinaryStateMember(x));
         }
 
-        public IStateMember ProvideArrayMember(Type arrayType, int[] indices)
+        public IStateMember ProvideArrayMember(Type arrayType, int arrayLength)
         {
-            return new BinaryStateMember(_underlying.ProvideArrayMember(arrayType, indices));
+            return new BinaryStateMember(_underlying.ProvideArrayMember(arrayType, arrayLength));
         }
     }
 
@@ -96,24 +96,14 @@ namespace GraphClimber.Examples
             get { return _stateMember.MemberType; }
         }
 
-        public Expression GetGetExpression(Expression obj)
+        public Expression GetGetExpression(Expression obj, Expression indices)
         {
-            return _stateMember.GetGetExpression(obj);
+            return _stateMember.GetGetExpression(obj, indices);
         }
 
-        public Expression GetSetExpression(Expression obj, Expression value)
+        public Expression GetSetExpression(Expression obj, Expression indices, Expression value)
         {
-            return _stateMember.GetSetExpression(obj, value);
-        }
-
-        public bool IsArrayElement
-        {
-            get { return _stateMember.IsArrayElement; }
-        }
-
-        public int[] ElementIndex
-        {
-            get { return _stateMember.ElementIndex; }
+            return _stateMember.GetSetExpression(obj, indices, value);
         }
 
         public IEnumerable<string> Aliases => _stateMember.Aliases;
