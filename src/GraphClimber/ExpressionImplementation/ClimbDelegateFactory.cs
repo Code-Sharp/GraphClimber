@@ -134,8 +134,12 @@ namespace GraphClimber
          List<ParameterExpression> parameterExpressions,
          List<Expression> assignments)
         {
-            var rankParameters =
-                Enumerable.Range(0, ranks).Select(r => Expression.Variable(typeof(int), "rank_" + r)).ToList();
+            var loopIndex = Expression.Variable(typeof(int[]), "arrayIndex");
+
+            assignments.Add(Expression.Assign(loopIndex, Expression.NewArrayBounds(typeof(int), ranks.Constant())));
+
+            var loopVariables =
+                Enumerable.Range(0, ranks).Select(r => Expression.ArrayAccess(loopIndex, Expression.Constant(r))).ToList();
 
             var upperBoundParameters =
                 Enumerable.Range(0, ranks).Select(r => Expression.Variable(typeof(int), "upper_" + r)).ToList();
@@ -149,7 +153,7 @@ namespace GraphClimber
 
                 // i_k = array.GetLowerBound(k)
                 var currentLoopVariableAssignment =
-                    Expression.Assign(rankParameters[rank],
+                    Expression.Assign(loopVariables[rank],
                                       Expression.Call(owner, "GetLowerBound", null,
                                                       Expression.Constant(rank)));
 
@@ -164,7 +168,7 @@ namespace GraphClimber
                                                              Expression.Constant(rank));
                 Expression setIndexer =
                     Expression.Assign(binaryExpression,
-                                      rankParameters[rank]);
+                                      loopVariables[rank]);
 
                 Expression setIndexerAndCallMethod = 
                     Expression.Block(setIndexer, callExpression);
@@ -172,10 +176,10 @@ namespace GraphClimber
                 var loopBody =
                     Expression.Block(
                                      Expression.IfThen(
-                                                       Expression.GreaterThan(rankParameters[rank], upperBoundParameters[rank]),
+                                                       Expression.GreaterThan(loopVariables[rank], upperBoundParameters[rank]),
                                                        Expression.Goto(breakTarget)),
                                      setIndexerAndCallMethod,
-                                     Expression.PostIncrementAssign(rankParameters[rank]),
+                                     Expression.PostIncrementAssign(loopVariables[rank]),
                                      Expression.Goto(continueTarget));
 
                 callExpression = 
@@ -183,7 +187,7 @@ namespace GraphClimber
                     Expression.Loop(loopBody, breakTarget, continueTarget));
             }
 
-            parameterExpressions.AddRange(rankParameters);
+            parameterExpressions.Add(loopIndex);
             parameterExpressions.AddRange(upperBoundParameters);
 
             return callExpression;

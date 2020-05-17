@@ -10,7 +10,8 @@ namespace GraphClimber.Examples
         public static bool IsPredefinedType(Type type)
         {
             return type.IsPrimitive || type.IsEnum ||
-                   type == typeof(string) || type == typeof(DateTime);
+                   type == typeof(string) || type == typeof(DateTime) ||
+                   type.IsArray;
         }
     }
 
